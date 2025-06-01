@@ -1,3 +1,5 @@
-<div>
-    <!-- Life is available only in the present moment. - Thich Nhat Hanh -->
-</div>
+<x-layouts.plain-app>
+    <p>
+ini halaman create produk
+    </p>
+  </x-layouts.plain-app>

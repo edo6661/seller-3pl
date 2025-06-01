@@ -1,5 +1,5 @@
 <x-layouts.plain-app>
   <p>
-    products index
+    ini halaman index produk
   </p>
 </x-layouts.plain-app>

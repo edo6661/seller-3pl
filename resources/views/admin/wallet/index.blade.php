@@ -1,3 +1,5 @@
-<div>
-    <!-- Always remember that you are absolutely unique. Just like everyone else. - Margaret Mead -->
-</div>
+<x-layouts.plain-app>
+    <p>
+ini halaman index wallet
+    </p>
+  </x-layouts.plain-app>

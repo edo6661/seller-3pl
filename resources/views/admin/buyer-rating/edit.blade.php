@@ -1,3 +1,6 @@
-<div>
-    <!-- Knowing is not enough; we must apply. Being willing is not enough; we must do. - Leonardo da Vinci -->
-</div>
+<x-layouts.plain-app>
+    <p>
+      buyer rating edit page
+    </p>
+    <h1>test</h1>
+  </x-layouts.plain-app>

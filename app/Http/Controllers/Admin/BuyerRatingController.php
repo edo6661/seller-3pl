@@ -9,12 +9,12 @@ class BuyerRatingController extends Controller
 {
     public function index()
     {
-        return view('admin.buyer-rating.index'); 
+        return view('admin.buyer-rating.index');
     }
 
     public function create()
     {
-        // Logic untuk menampilkan form create buyer rating
+        return view('admin.buyer-rating.create');
     }
 
     public function store(Request $request)
@@ -24,12 +24,12 @@ class BuyerRatingController extends Controller
 
     public function show($id)
     {
-        // Logic untuk menampilkan detail buyer rating
+        return view('admin.buyer-rating.show', ['id' => $id]);
     }
 
     public function edit($id)
     {
-        // Logic untuk menampilkan form edit buyer rating
+        return view('admin.buyer-rating.edit', ['id' => $id]);
     }
 
     public function update(Request $request, $id)

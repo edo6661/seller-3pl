@@ -1,3 +1,4 @@
-<div>
-    <!-- It is quality rather than quantity that matters. - Lucius Annaeus Seneca -->
-</div>
+<x-layouts.plain-app>
+    <p>
+ini halaman edit user    </p>
+  </x-layouts.plain-app>
