@@ -18,14 +18,12 @@ class WalletTransaction extends Model
         'description',
         'reference_id',
         'status',
-        'metadata'
     ];
 
     protected $casts = [
         'amount' => 'decimal:2',
         'balance_before' => 'decimal:2',
         'balance_after' => 'decimal:2',
-        'metadata' => 'array'
     ];
 
     // Relationships

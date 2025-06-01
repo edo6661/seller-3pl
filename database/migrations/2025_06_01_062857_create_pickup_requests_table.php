@@ -33,8 +33,6 @@ return new class extends Migration
             $table->text('pickup_address');
             $table->decimal('pickup_latitude', 10, 8)->nullable();
             $table->decimal('pickup_longitude', 11, 8)->nullable();
-            $table->datetime('pickup_scheduled_at')->nullable();
-            $table->datetime('pickup_completed_at')->nullable();
             
             $table->enum('payment_method', ['balance', 'wallet']);
             $table->decimal('shipping_cost', 15, 2)->default(0);
