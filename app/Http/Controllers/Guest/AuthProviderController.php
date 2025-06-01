@@ -23,20 +23,10 @@ class AuthProviderController extends Controller
     }
     public function callback(Request $request, string $provider)
     {
-        
-        if (!$request->has('code') || $request->has('error')) {
-            return redirect()->route('guest.auth.login')
-                ->with('error', 'Login dengan Google gagal atau dibatalkan.');
-        }
-
         try {
-            
             $socialUser = Socialite::driver($provider)->stateless()->user();
-
             $user = $this->authService->handleProviderCallback($provider, $socialUser);
-            
             Auth::login($user);
-            
             return $this->authService->redirectAfterLogin();
 
         } catch (\Exception $e) {

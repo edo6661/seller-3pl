@@ -111,11 +111,11 @@ class AuthService
         }
         
         if ($user->isAdmin()) {
-            return route('admin.dashboard');
+            return route('admin.buyer-ratings.index');
         }
         
         if ($user->isSeller()) {
-            return route('seller.dashboard');
+            return route('guest.home');
         }
         
         return route('guest.home');
