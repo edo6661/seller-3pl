@@ -1,3 +1,5 @@
-<div>
-    <!-- Nothing worth having comes easy. - Theodore Roosevelt -->
-</div>
+<x-layouts.plain-app>
+    <p>
+      ini halaman create wallet
+    </p>
+  </x-layouts.plain-app>

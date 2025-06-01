@@ -12,7 +12,7 @@ class PickupRequestController extends Controller
      */
     public function index()
     {
-        //
+        return view('admin.pickup_request.index');
     }
 
     /**
@@ -20,7 +20,7 @@ class PickupRequestController extends Controller
      */
     public function create()
     {
-        //
+        return view('admin.pickup_request.create');
     }
 
     /**
@@ -36,7 +36,7 @@ class PickupRequestController extends Controller
      */
     public function show(string $id)
     {
-        //
+        return view('admin.pickup_request.show', ['id' => $id]);
     }
 
     /**
@@ -44,7 +44,7 @@ class PickupRequestController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        return view('admin.pickup_request.edit', ['id' => $id]);
     }
 
     /**

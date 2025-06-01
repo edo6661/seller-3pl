@@ -1,3 +1,5 @@
-<div>
-    <!-- Order your soul. Reduce your wants. - Augustine -->
-</div>
+<x-layouts.plain-app>
+    <p>
+ini halaman show user 
+    </p>
+  </x-layouts.plain-app>

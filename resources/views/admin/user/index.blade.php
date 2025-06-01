@@ -1,3 +1,5 @@
-<div>
-    <!-- People find pleasure in different ways. I find it in keeping my mind clear. - Marcus Aurelius -->
-</div>
+<x-layouts.plain-app>
+    <p>
+ini halaman index user
+    </p>
+  </x-layouts.plain-app>

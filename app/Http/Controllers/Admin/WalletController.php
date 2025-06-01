@@ -12,7 +12,7 @@ class WalletController extends Controller
      */
     public function index()
     {
-        //
+        return view('admin.wallet.index');
     }
 
     /**
@@ -20,7 +20,7 @@ class WalletController extends Controller
      */
     public function create()
     {
-        //
+        return view('admin.wallet.create');
     }
 
     /**
@@ -36,7 +36,7 @@ class WalletController extends Controller
      */
     public function show(string $id)
     {
-        //
+        return view('admin.wallet.show', ['id' => $id]);
     }
 
     /**
@@ -44,7 +44,7 @@ class WalletController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        return view('admin.wallet.edit', ['id' => $id]);
     }
 
     /**

@@ -1,3 +1,5 @@
-<div>
-    <!-- Simplicity is the essence of happiness. - Cedric Bledsoe -->
-</div>
+<x-layouts.plain-app>
+    <p>
+      ini halaman show pickup request
+    </p>
+  </x-layouts.plain-app>
