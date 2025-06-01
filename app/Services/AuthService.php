@@ -22,6 +22,16 @@ class AuthService
             ]);
         }
 
+        if ($user->isEmailVerified() === false) {
+            $emailVerificationService = app(EmailVerificationService::class);
+            $emailVerificationService->resendVerificationEmail($user->email);
+            throw ValidationException::withMessages([
+                'email' => ['Akun Anda belum diverifikasi. Silakan periksa email Anda untuk verifikasi.'],
+            ]);
+        }
+
+
+
         Auth::login($user, $remember);
         
         return true;
@@ -226,7 +236,7 @@ class AuthService
         
         $user = User::create($data);
         
-        event(new UserRegistered($user));
+        event(new UserRegistered(user: $user));
         
         return $user;
     }

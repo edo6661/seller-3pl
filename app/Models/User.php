@@ -32,6 +32,11 @@ class User extends Authenticatable
         'role' => UserRole::class, 
 
     ];
+
+    public function isEmailVerified(): bool
+    {
+        return !is_null($this->email_verified_at);
+    }
     
     public function sellerProfile()
     {

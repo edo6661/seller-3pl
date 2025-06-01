@@ -52,7 +52,6 @@ class EmailVerificationService
             ]);
         }
 
-        // Dispatch event to send verification email
         event(new UserRegistered($user));
 
         return true;
