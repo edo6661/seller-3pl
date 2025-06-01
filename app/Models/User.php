@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-
+use App\Enums\UserRole;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -29,8 +29,9 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
-    ];
+        'role' => UserRole::class, 
 
+    ];
     
     public function sellerProfile()
     {
@@ -69,13 +70,22 @@ class User extends Authenticatable
     }
 
     
+    
     public function isSeller()
     {
-        return $this->role === 'seller';
+        return $this->role === UserRole::SELLER;
+    }
+    public function isAdmin()
+    {
+        return $this->role === UserRole::ADMIN;
     }
 
     public function isProfileComplete()
     {
         return $this->sellerProfile && $this->sellerProfile->is_profile_complete;
+    }
+    public function getRoleLabelAttribute(): string
+    {
+        return $this->role->label();
     }
 }
