@@ -9,7 +9,6 @@ use App\Requests\LoginRequest;
 use App\Requests\RegisterRequest;
 use App\Services\AuthService;
 use App\Services\EmailVerificationService;
-use App\Services\PasswordResetService;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Hash;
@@ -41,15 +40,15 @@ class AuthController extends Controller
         try {
             $credentials = $request->only(['email', 'password']);
             $remember = $request->boolean('remember');
-
+            
             $this->authService->login($credentials, $remember);
-
+            
             $request->session()->regenerate();
-
+            
             return redirect()
                 ->intended($this->authService->redirectAfterLogin())
                 ->with('success', 'Selamat datang! Anda berhasil masuk.');
-
+                
         } catch (ValidationException $e) {
             return back()
                 ->withErrors($e->errors())
@@ -67,6 +66,26 @@ class AuthController extends Controller
     public function register(): View
     {
         return view('guest.auth.register');
+    }
+
+    /**
+     * Proses register
+     */
+    public function registerSubmit(RegisterRequest $request): RedirectResponse
+    {
+        try {
+            $userData = $request->validated();
+            $user = $this->authService->createUserWithVerification($userData);
+            
+            return redirect()
+                ->route('guest.auth.login')
+                ->with('success', 'Registrasi berhasil! Silakan cek email Anda untuk verifikasi.');
+                
+        } catch (\Exception $e) {
+            return back()
+                ->with('error', 'Terjadi kesalahan saat registrasi. Silakan coba lagi.')
+                ->withInput($request->except('password', 'password_confirmation'));
+        }
     }
 
     /**
@@ -96,49 +115,8 @@ class AuthController extends Controller
     }
 
     /**
-     * Tampilkan halaman reset password
+     * Proses forgot password - kirim email reset
      */
-    public function resetPassword(Request $request): View
-    {
-        return view('guest.auth.reset-password', [
-            'token' => $request->route('token'),
-            'email' => $request->email
-        ]);
-    }
-
-
-    public function createUserWithVerification(array $data): User
-    {
-        $data['password'] = Hash::make($data['password']);
-        $data['email'] = strtolower($data['email']);
-        
-        $user = User::create($data);
-        
-        // Dispatch event to send verification email
-        event(new UserRegistered($user));
-        
-        return $user;
-    }
-
-# 7. Update AuthController.php - Replace existing methods with these implementations:
-
-    public function registerSubmit(RegisterRequest $request): RedirectResponse
-    {
-        try {
-            $userData = $request->validated();
-            $user = $this->authService->createUserWithVerification($userData);
-            
-            return redirect()
-                ->route('guest.auth.login')
-                ->with('success', 'Registrasi berhasil! Silakan cek email Anda untuk verifikasi.');
-                
-        } catch (\Exception $e) {
-            return back()
-                ->with('error', 'Terjadi kesalahan saat registrasi. Silakan coba lagi.')
-                ->withInput($request->except('password', 'password_confirmation'));
-        }
-    }
-
     public function forgotPasswordSubmit(Request $request): RedirectResponse
     {
         $request->validate([
@@ -150,11 +128,10 @@ class AuthController extends Controller
         ]);
 
         try {
-            $passwordResetService = app(PasswordResetService::class);
-            $passwordResetService->sendResetLink($request->email);
+            $this->authService->sendPasswordResetLink($request->email);
             
             return back()
-                ->with('success', 'Link reset password telah dikirim ke email Anda.');
+                ->with('success', 'Link reset password telah dikirim ke email Anda. Silakan periksa kotak masuk dan folder spam.');
                 
         } catch (ValidationException $e) {
             return back()
@@ -162,29 +139,59 @@ class AuthController extends Controller
                 ->withInput();
         } catch (\Exception $e) {
             return back()
-                ->with('error', 'Terjadi kesalahan saat mengirim email reset password.')
+                ->with('error', 'Terjadi kesalahan saat mengirim email reset password. Silakan coba lagi.')
                 ->withInput();
         }
     }
 
+    /**
+     * Tampilkan halaman reset password
+     */
+    public function resetPassword(Request $request)
+    {
+        $token = $request->route('token');
+        $email = $request->email;
+
+        // Validasi token dan email
+        if (!$token || !$email) {
+            return redirect()
+                ->route('guest.auth.forgot-password')
+                ->with('error', 'Link reset password tidak valid.');
+    }
+
+        // Verifikasi apakah token masih valid
+        if (!$this->authService->isValidResetToken($token, $email)) {
+            return redirect()
+                ->route('guest.auth.forgot-password')
+                ->with('error', 'Link reset password sudah kedaluwarsa atau tidak valid. Silakan ajukan reset password baru.');
+        }
+
+        return view('guest.auth.form-reset-password', [
+            'token' => $token,
+            'email' => $email
+        ]);
+    }
+
+    /**
+     * Proses reset password
+     */
     public function resetPasswordSubmit(Request $request): RedirectResponse
     {
         $request->validate([
             'token' => 'required',
             'email' => 'required|email',
-            'password' => 'required|string|min:6|confirmed',
+            'password' => 'required|string|min:8|confirmed',
         ], [
             'token.required' => 'Token reset password diperlukan.',
             'email.required' => 'Email wajib diisi.',
             'email.email' => 'Format email tidak valid.',
             'password.required' => 'Password wajib diisi.',
-            'password.min' => 'Password minimal 6 karakter.',
+            'password.min' => 'Password minimal 8 karakter.',
             'password.confirmed' => 'Konfirmasi password tidak cocok.'
         ]);
 
         try {
-            $passwordResetService = app(PasswordResetService::class);
-            $passwordResetService->resetPassword(
+            $this->authService->resetPassword(
                 $request->token,
                 $request->email,
                 $request->password
@@ -192,7 +199,7 @@ class AuthController extends Controller
             
             return redirect()
                 ->route('guest.auth.login')
-                ->with('success', 'Password berhasil direset. Silakan login dengan password baru.');
+                ->with('success', 'Password berhasil direset. Silakan login dengan password baru Anda.');
                 
         } catch (ValidationException $e) {
             return back()
@@ -200,11 +207,14 @@ class AuthController extends Controller
                 ->withInput($request->except('password', 'password_confirmation'));
         } catch (\Exception $e) {
             return back()
-                ->with('error', 'Terjadi kesalahan saat reset password.')
+                ->with('error', 'Terjadi kesalahan saat reset password. Silakan coba lagi.')
                 ->withInput($request->except('password', 'password_confirmation'));
         }
     }
 
+    /**
+     * Verifikasi email user
+     */
     public function verifyEmail(Request $request): RedirectResponse
     {
         try {
@@ -229,6 +239,9 @@ class AuthController extends Controller
         }
     }
 
+    /**
+     * Kirim ulang email verifikasi
+     */
     public function resendVerification(Request $request): RedirectResponse
     {
         $request->validate([
