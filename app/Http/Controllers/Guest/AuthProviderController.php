@@ -27,7 +27,7 @@ class AuthProviderController extends Controller
             $socialUser = Socialite::driver($provider)->stateless()->user();
             $user = $this->authService->handleProviderCallback($provider, $socialUser);
             Auth::login($user);
-            return $this->authService->redirectAfterLogin();
+            return $this->authService->redirectAfterLogin(); 
 
         } catch (\Exception $e) {
             Log::error('Socialite callback error: ' . $e->getMessage(), ['exception' => $e]);

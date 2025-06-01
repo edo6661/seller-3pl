@@ -2,11 +2,17 @@
 
 namespace App\Http\Controllers\Guest;
 
+use App\Events\UserRegistered;
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use App\Requests\LoginRequest;
+use App\Requests\RegisterRequest;
 use App\Services\AuthService;
+use App\Services\EmailVerificationService;
+use App\Services\PasswordResetService;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
 use Illuminate\Validation\ValidationException;
 
@@ -90,8 +96,49 @@ class AuthController extends Controller
     }
 
     /**
-     * Proses lupa password
+     * Tampilkan halaman reset password
      */
+    public function resetPassword(Request $request): View
+    {
+        return view('guest.auth.reset-password', [
+            'token' => $request->route('token'),
+            'email' => $request->email
+        ]);
+    }
+
+
+    public function createUserWithVerification(array $data): User
+    {
+        $data['password'] = Hash::make($data['password']);
+        $data['email'] = strtolower($data['email']);
+        
+        $user = User::create($data);
+        
+        // Dispatch event to send verification email
+        event(new UserRegistered($user));
+        
+        return $user;
+    }
+
+# 7. Update AuthController.php - Replace existing methods with these implementations:
+
+    public function registerSubmit(RegisterRequest $request): RedirectResponse
+    {
+        try {
+            $userData = $request->validated();
+            $user = $this->authService->createUserWithVerification($userData);
+            
+            return redirect()
+                ->route('guest.auth.login')
+                ->with('success', 'Registrasi berhasil! Silakan cek email Anda untuk verifikasi.');
+                
+        } catch (\Exception $e) {
+            return back()
+                ->with('error', 'Terjadi kesalahan saat registrasi. Silakan coba lagi.')
+                ->withInput($request->except('password', 'password_confirmation'));
+        }
+    }
+
     public function forgotPasswordSubmit(Request $request): RedirectResponse
     {
         $request->validate([
@@ -103,12 +150,16 @@ class AuthController extends Controller
         ]);
 
         try {
-            // Logic untuk kirim email reset password
-            // Implementasi sesuai kebutuhan aplikasi
+            $passwordResetService = app(PasswordResetService::class);
+            $passwordResetService->sendResetLink($request->email);
             
             return back()
                 ->with('success', 'Link reset password telah dikirim ke email Anda.');
                 
+        } catch (ValidationException $e) {
+            return back()
+                ->withErrors($e->errors())
+                ->withInput();
         } catch (\Exception $e) {
             return back()
                 ->with('error', 'Terjadi kesalahan saat mengirim email reset password.')
@@ -116,20 +167,6 @@ class AuthController extends Controller
         }
     }
 
-    /**
-     * Tampilkan halaman reset password
-     */
-    public function resetPassword(Request $request): View
-    {
-        return view('guest.auth.reset-password', [
-            'token' => $request->route('token'),
-            'email' => $request->email
-        ]);
-    }
-
-    /**
-     * Proses reset password
-     */
     public function resetPasswordSubmit(Request $request): RedirectResponse
     {
         $request->validate([
@@ -146,13 +183,21 @@ class AuthController extends Controller
         ]);
 
         try {
-            // Logic untuk reset password
-            // Implementasi sesuai kebutuhan aplikasi
+            $passwordResetService = app(PasswordResetService::class);
+            $passwordResetService->resetPassword(
+                $request->token,
+                $request->email,
+                $request->password
+            );
             
             return redirect()
                 ->route('guest.auth.login')
                 ->with('success', 'Password berhasil direset. Silakan login dengan password baru.');
                 
+        } catch (ValidationException $e) {
+            return back()
+                ->withErrors($e->errors())
+                ->withInput($request->except('password', 'password_confirmation'));
         } catch (\Exception $e) {
             return back()
                 ->with('error', 'Terjadi kesalahan saat reset password.')
@@ -160,27 +205,23 @@ class AuthController extends Controller
         }
     }
 
-    /**
-     * Verifikasi email
-     */
     public function verifyEmail(Request $request): RedirectResponse
     {
         try {
-            $user = $this->authService->getUserById($request->route('id'));
-            
-            if (!$user) {
-                return redirect()
-                    ->route('guest.auth.login')
-                    ->with('error', 'User tidak ditemukan.');
-            }
-
-            // Logic untuk verifikasi email
-            // Implementasi sesuai kebutuhan aplikasi
+            $emailVerificationService = app(EmailVerificationService::class);
+            $emailVerificationService->verifyEmail(
+                $request->route('id'),
+                $request->route('hash')
+            );
             
             return redirect()
                 ->route('guest.auth.login')
                 ->with('success', 'Email berhasil diverifikasi. Silakan login.');
                 
+        } catch (ValidationException $e) {
+            return redirect()
+                ->route('guest.auth.login')
+                ->with('error', $e->getMessage());
         } catch (\Exception $e) {
             return redirect()
                 ->route('guest.auth.login')
@@ -188,9 +229,6 @@ class AuthController extends Controller
         }
     }
 
-    /**
-     * Kirim ulang email verifikasi
-     */
     public function resendVerification(Request $request): RedirectResponse
     {
         $request->validate([
@@ -198,12 +236,15 @@ class AuthController extends Controller
         ]);
 
         try {
-            // Logic untuk kirim ulang email verifikasi
-            // Implementasi sesuai kebutuhan aplikasi
+            $emailVerificationService = app(EmailVerificationService::class);
+            $emailVerificationService->resendVerificationEmail($request->email);
             
             return back()
                 ->with('success', 'Email verifikasi telah dikirim ulang.');
                 
+        } catch (ValidationException $e) {
+            return back()
+                ->withErrors($e->errors());
         } catch (\Exception $e) {
             return back()
                 ->with('error', 'Terjadi kesalahan saat mengirim email verifikasi.');

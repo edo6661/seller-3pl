@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Events\UserRegistered;
 use App\Models\SocialAccount;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -218,5 +219,15 @@ class AuthService
                 return $user;
             });
         }
-
+    public function createUserWithVerification(array $data): User
+    {
+        $data['password'] = Hash::make($data['password']);
+        $data['email'] = strtolower($data['email']);
+        
+        $user = User::create($data);
+        
+        event(new UserRegistered($user));
+        
+        return $user;
+    }
 }
