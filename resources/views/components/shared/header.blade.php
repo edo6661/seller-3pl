@@ -9,6 +9,9 @@
         <a href="{{ route('guest.auth.login') }}">
             login
         </a>
+        <a href="{{ route('guest.auth.register') }}">
+            register
+        </a>
         <a href="{{ route('guest.auth.redirect',['provider' => 'google']) }}">
             login with google with redirect
         </a>
