@@ -9,6 +9,10 @@
         <a href="{{ route('guest.auth.login') }}">
             login
         </a>
+        <a href="{{ route('guest.auth.redirect',['provider' => 'google']) }}">
+            login with google with redirect
+        </a>
+
     @endguest
     @auth
         <form action="{{ route('logout') }}" method="POST" class="d-inline">

@@ -2,10 +2,10 @@
 
 use Illuminate\Support\Facades\Route;
 
-require __DIR__.'/guest/auth.php';
 Route::get('/', function () {
     return view('guest.home');
 })->name('guest.home');
+require __DIR__.'/guest/auth.php';
 
 Route::middleware(['auth', 'isAdmin'])->group(function () {
     Route::prefix('/admin')->group(function () {

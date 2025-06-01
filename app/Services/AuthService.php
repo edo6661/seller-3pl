@@ -2,8 +2,10 @@
 
 namespace App\Services;
 
+use App\Models\SocialAccount;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
@@ -142,9 +144,9 @@ class AuthService
         $user = User::find($id);
         
         if ($user) {
-            // Check if user has related data
+            
             if ($user->products()->exists() || $user->pickupRequests()->exists()) {
-                // Don't delete, just deactivate
+                
                 $user->update(['is_active' => false]);
                 return true;
             }
@@ -165,4 +167,56 @@ class AuthService
         ->orderBy('name')
         ->get();
     }
+        public function handleProviderCallback(string $provider, object $socialUser): User
+        {
+            return DB::transaction(function () use ($provider, $socialUser) {
+                
+                
+                $socialAccount = SocialAccount::where('provider', $provider)
+                    ->where('provider_id', $socialUser->getId())
+                    ->first();
+                
+                
+                if ($socialAccount && $socialAccount->user) {
+                    
+                    $socialAccount->update([
+                        'provider_token' => $socialUser->token,
+                        'provider_refresh_token' => $socialUser->refreshToken,
+                    ]);
+                    
+                    return $socialAccount->user;
+                }
+                
+                
+                $user = $this->getUserByEmail($socialUser->getEmail());
+                
+                
+                if (!$user) {
+                    $user = User::create([
+                        'name' => $socialUser->getName(),
+                        'email' => $socialUser->getEmail(),
+                        'avatar' => $socialUser->getAvatar(),
+                        'password' => null,
+                        'email_verified_at' => now(),
+                        'role' => 'seller',
+                    ]);
+                }
+                
+                
+                $socialAccount = SocialAccount::updateOrCreate(
+                    [
+                        'provider' => $provider,
+                        'provider_id' => $socialUser->getId(),
+                    ],
+                    [
+                        'user_id' => $user->id, 
+                        'provider_token' => $socialUser->token,
+                        'provider_refresh_token' => $socialUser->refreshToken,
+                    ]
+                );
+                
+                return $user;
+            });
+        }
+
 }

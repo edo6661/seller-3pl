@@ -1,13 +1,16 @@
 <?php
 
 use App\Http\Controllers\Guest\AuthController;
+use App\Http\Controllers\Guest\AuthProviderController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['guest'])
     ->group(function () {
         Route::prefix('auth')
-            ->name('guest.auth.')
-            ->group(function() {
+        ->name('guest.auth.')
+        ->group(function() {
+                Route::get('/redirect/{provider}', [AuthProviderController::class, 'redirect'])->name('redirect');
+                Route::get('/callback/{provider}', action: [AuthProviderController::class,'callback'])->name('callback');
                 
                 Route::get('/login', [AuthController::class, 'login'])
                     ->name('login');
