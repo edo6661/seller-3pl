@@ -18,10 +18,12 @@ use Illuminate\Validation\ValidationException;
 class AuthController extends Controller
 {
     protected AuthService $authService;
+    protected EmailVerificationService $emailVerificationService;
 
-    public function __construct(AuthService $authService)
+    public function __construct(AuthService $authService, EmailVerificationService $emailVerificationService)
     {
         $this->authService = $authService;
+        $this->emailVerificationService = $emailVerificationService;
     }
 
     /**
@@ -218,8 +220,7 @@ class AuthController extends Controller
     public function verifyEmail(Request $request): RedirectResponse
     {
         try {
-            $emailVerificationService = app(EmailVerificationService::class);
-            $emailVerificationService->verifyEmail(
+            $this->emailVerificationService->verifyEmail(
                 $request->route('id'),
                 $request->route('hash')
             );
@@ -249,8 +250,7 @@ class AuthController extends Controller
         ]);
 
         try {
-            $emailVerificationService = app(EmailVerificationService::class);
-            $emailVerificationService->resendVerificationEmail($request->email);
+            $this->emailVerificationService->resendVerificationEmail($request->email);
             
             return back()
                 ->with('success', 'Email verifikasi telah dikirim ulang.');

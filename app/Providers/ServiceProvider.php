@@ -3,6 +3,8 @@ namespace App\Providers;
 
 use App\Services\AuthService;
 use App\Services\BuyerRatingService;
+use App\Services\EmailVerificationService;
+use App\Services\MidtransService;
 use App\Services\NotificationService;
 use App\Services\PickupService;
 use App\Services\ProductService;
@@ -23,6 +25,9 @@ class ServiceProvider extends BaseServiceProvider
         NotificationService::class => NotificationService::class,
         BuyerRatingService::class => BuyerRatingService::class,
         AuthService::class => AuthService::class,
+        EmailVerificationService::class => EmailVerificationService::class,
+        MidtransService::class => MidtransService::class,
+        
     ];
 
     /**
@@ -43,6 +48,11 @@ class ServiceProvider extends BaseServiceProvider
             return new WithdrawService(
                 $app->make(WalletService::class),
                 $app->make(NotificationService::class)
+            );
+        });
+        $this->app->singleton(AuthService::class, function ($app) {
+            return new AuthService(
+                $app->make(EmailVerificationService::class),
             );
         });
 
@@ -72,6 +82,8 @@ class ServiceProvider extends BaseServiceProvider
             BuyerRatingService::class,
             WithdrawService::class,
             AuthService::class,
+            EmailVerificationService::class,
+            MidtransService::class,
         ];
     }
 }

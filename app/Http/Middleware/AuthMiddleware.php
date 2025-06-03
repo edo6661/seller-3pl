@@ -7,7 +7,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class AdminMiddleware
+class AuthMiddleware
 {
     /**
      * Handle an incoming request.
@@ -23,8 +23,8 @@ class AdminMiddleware
 
         if (!auth()->user()->isAdmin()) {
             $redirectRoute = match(auth()->user()->role) {
-                UserRole::SELLER => 'guest.home',
-                UserRole::ADMIN => 'admin.buyer-ratings.index',
+                UserRole::SELLER => 'seller.dashboard',
+                UserRole::ADMIN => 'admin.dashboard',
                 default => 'home'
             };
 

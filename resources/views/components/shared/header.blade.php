@@ -1,9 +1,7 @@
 <header>
-    <p>
-        nav
-    </p>
+   
     <a href="{{ route('guest.home') }}">
-        test
+        home
     </a>
     @guest
         <a href="{{ route('guest.auth.login') }}">
@@ -26,8 +24,18 @@
         </form>
     @endauth
     @if(auth()->check() && auth()->user()->isAdmin())
-        <a href="{{ route('admin.buyer-ratings.index') }}">
-            index
+        <a href="{{ route('admin.dashboard') }}">
+            Dashboard
         </a>
+    @endif
+    @if(auth()->check() && auth()->user()->isSeller())
+        <nav class="flex items-center gap-20">
+            <a href="{{ route('seller.dashboard') }}">
+                Dashboard
+            </a>
+            <a href="{{ route('seller.wallet.index') }}">
+                Wallet
+            </a>
+        </nav>
     @endif
 </header>

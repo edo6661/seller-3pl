@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Enums\WalletTransactionStatus;
+use App\Enums\WalletTransactionType;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Wallet extends Model
 {
-    
-        protected $fillable = [
+    protected $fillable = [
         'user_id',
         'balance',
         'pending_balance'
@@ -19,28 +22,28 @@ class Wallet extends Model
     ];
 
     // Relationships
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function transactions()
+    public function transactions(): HasMany
     {
         return $this->hasMany(WalletTransaction::class);
     }
 
     // Helpers
-    public function getAvailableBalanceAttribute()
+    public function getAvailableBalanceAttribute(): float
     {
         return $this->balance - $this->pending_balance;
     }
 
-    public function hasSufficientBalance($amount)
+    public function hasSufficientBalance(float $amount): bool
     {
         return $this->available_balance >= $amount;
     }
 
-    public function addBalance($amount, $description, $type = 'topup', $referenceId = null)
+    public function addBalance(float $amount, string $description, WalletTransactionType $type = WalletTransactionType::TOPUP, ?string $referenceId = null): WalletTransaction
     {
         $balanceBefore = $this->balance;
         $this->increment('balance', $amount);
@@ -52,11 +55,11 @@ class Wallet extends Model
             'balance_after' => $this->fresh()->balance,
             'description' => $description,
             'reference_id' => $referenceId,
-            'status' => 'success'
+            'status' => WalletTransactionStatus::SUCCESS
         ]);
     }
 
-    public function deductBalance($amount, $description, $type = 'payment', $referenceId = null)
+    public function deductBalance(float $amount, string $description, WalletTransactionType $type = WalletTransactionType::PAYMENT, ?string $referenceId = null): WalletTransaction
     {
         if (!$this->hasSufficientBalance($amount)) {
             throw new \Exception('Insufficient balance');
@@ -72,8 +75,23 @@ class Wallet extends Model
             'balance_after' => $this->fresh()->balance,
             'description' => $description,
             'reference_id' => $referenceId,
-            'status' => 'success'
+            'status' => WalletTransactionStatus::SUCCESS
         ]);
     }
 
+    /**
+     * Format balance for display
+     */
+    public function getFormattedBalanceAttribute(): string
+    {
+        return 'Rp ' . number_format($this->balance, 0, ',', '.');
+    }
+
+    /**
+     * Format available balance for display
+     */
+    public function getFormattedAvailableBalanceAttribute(): string
+    {
+        return 'Rp ' . number_format($this->available_balance, 0, ',', '.');
+    }
 }
