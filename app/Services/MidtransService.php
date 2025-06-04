@@ -18,11 +18,6 @@ class MidtransService
         try {
             $snapResponse = Snap::createTransaction($payload);
             
-            Log::info('Midtrans Snap Response:', [
-                'order_id' => $payload['transaction_details']['order_id'],
-                'response' => json_encode($snapResponse)
-            ]);
-            
             $transaction->update([
                 'snap_token' => $snapResponse->token,
                 'snap_url' => $snapResponse->redirect_url ?? null,
@@ -69,23 +64,15 @@ class MidtransService
             $oldStatus = $transaction->status->value;
             $newStatus = $this->mapMidtransStatus($notificationData['transaction_status']);
             
-            
             $transaction->update([
                 'payment_type' => $notificationData['payment_type'] ?? null,
                 'status' => $newStatus,
             ]);
             
-            
             if ($oldStatus !== $newStatus->value) {
                 event(new PaymentStatusChanged($transaction, $oldStatus, $newStatus->value));
             }
             
-            Log::info('Midtrans notification processed', [
-                'order_id' => $orderId,
-                'old_status' => $oldStatus,
-                'new_status' => $newStatus->value,
-                'payment_type' => $notificationData['payment_type'] ?? null
-            ]);
             
             return $transaction->fresh();
         } catch (\Exception $e) {

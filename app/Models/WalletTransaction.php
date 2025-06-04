@@ -91,6 +91,15 @@ class WalletTransaction extends Model
     {
         return $this->status === WalletTransactionStatus::CANCELLED;
     }
+    public function isTopup(): bool
+    {
+        return $this->type === WalletTransactionType::TOPUP;
+    }
+    public function isWithdrawal(): bool
+    {
+        return $this->type === WalletTransactionType::WITHDRAW;
+    }
+
 
     public function canBeCancelled(): bool
     {

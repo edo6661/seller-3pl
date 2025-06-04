@@ -1,12 +1,14 @@
 <?php
 namespace App\Services;
-
 use App\Models\User;
 use App\Models\Wallet;
 use App\Models\WalletTransaction;
+use App\Models\WithdrawRequest;
 use App\Enums\WalletTransactionType;
 use App\Enums\WalletTransactionStatus;
 use App\Events\PaymentStatusChanged;
+use App\Events\WithdrawRequestCreated;
+use App\Events\WithdrawRequestStatusChanged;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -58,13 +60,6 @@ class WalletService
             try {
                 $transaction = $this->midtransService->createTransaction($transaction, $payload);
                 
-                Log::info('Top-up transaction created successfully', [
-                    'order_id' => $orderId,
-                    'transaction_id' => $transaction->id,
-                    'amount' => $amount,
-                    'user_id' => $user->id
-                ]);
-                
                 return [
                     'success' => true,
                     'snap_token' => $transaction->snap_token,
@@ -89,19 +84,125 @@ class WalletService
     }
 
     /**
+     * Create withdraw request (manual process tanpa API pihak ketiga)
+     */
+    public function createWithdrawRequest(User $user, float $amount, array $bankDetails): WalletTransaction
+    {
+        $this->validateWithdrawAmount($amount);
+        
+        $wallet = $this->getOrCreateWallet($user);
+        
+        if (!$wallet->hasSufficientBalance($amount)) {
+            throw ValidationException::withMessages([
+                'amount' => ['Saldo tidak mencukupi untuk penarikan ini'],
+            ]);
+        }
+
+        // Validasi dasar nomor rekening
+        $validation = $this->basicBankAccountValidation($bankDetails['bank_name'], $bankDetails['account_number']);
+        
+        if (!$validation['valid']) {
+            throw ValidationException::withMessages([
+                'account_number' => [$validation['message'] ?? 'Nomor rekening tidak valid'],
+            ]);
+        }
+
+        return DB::transaction(function () use ($wallet, $amount, $bankDetails, $user) {
+            $balanceBefore = $wallet->balance;
+            
+            // Create withdraw request record
+            $withdrawRequest = WithdrawRequest::create([
+                'user_id' => $user->id,
+                'withdrawal_code' => $this->generateWithdrawalCode(),
+                'amount' => $amount,
+                'admin_fee' => $this->calculateAdminFee($amount),
+                'bank_name' => $bankDetails['bank_name'],
+                'account_number' => $bankDetails['account_number'],
+                'account_name' => $bankDetails['account_name'],
+                'status' => 'pending',
+                'requested_at' => now(),
+            ]);
+
+            // Deduct balance immediately
+            $wallet->decrement('balance', $amount);
+            
+            // Create wallet transaction record
+            $transaction = $this->createTransaction($wallet, [
+                'type' => WalletTransactionType::WITHDRAW,
+                'amount' => $amount,
+                'balance_before' => $balanceBefore,
+                'balance_after' => $wallet->fresh()->balance,
+                'description' => 'Penarikan saldo ke ' . $bankDetails['bank_name'] . ' - ' . $bankDetails['account_number'],
+                'status' => WalletTransactionStatus::PENDING,
+                'reference_id' => $withdrawRequest->withdrawal_code,
+            ]);
+
+            // Trigger email notification
+            event(new WithdrawRequestCreated($user, $withdrawRequest, $transaction));
+          
+            
+            return $transaction;
+        });
+    }
+   
+    /**
+     * Process withdraw request (untuk admin)
+     */
+    public function processWithdrawRequest(WithdrawRequest $withdrawRequest, string $status, ?string $adminNotes): bool
+    {
+        return DB::transaction(function () use ($withdrawRequest, $status, $adminNotes) {
+            $oldStatus = $withdrawRequest->status;
+            
+            $withdrawRequest->update([
+                'status' => $status,
+                'admin_notes' => $adminNotes,
+                'processed_at' => now(),
+                'completed_at' => in_array($status, ['completed', 'failed']) ? now() : null,
+            ]);
+
+            // Update corresponding wallet transaction
+            $transaction = WalletTransaction::where('reference_id', $withdrawRequest->withdrawal_code)->first();
+            
+            if ($transaction) {
+                $newTransactionStatus = match($status) {
+                    'completed' => WalletTransactionStatus::SUCCESS,
+                    'failed' => WalletTransactionStatus::FAILED,
+                    'cancelled' => WalletTransactionStatus::CANCELLED,
+                    'processing' => WalletTransactionStatus::PENDING,
+                    default => WalletTransactionStatus::PENDING,
+                };
+
+                // If withdraw failed or cancelled, refund the balance
+                if (in_array($status, ['failed', 'cancelled']) && $oldStatus === 'pending') {
+                    $wallet = $transaction->wallet;
+                    $wallet->increment('balance', $withdrawRequest->amount);
+                    
+                    $transaction->update([
+                        'status' => $newTransactionStatus,
+                        'balance_after' => $wallet->fresh()->balance,
+                    ]);
+                } else {
+                    $transaction->update(['status' => $newTransactionStatus]);
+                }
+
+                // Trigger email notification for status change
+                event(new WithdrawRequestStatusChanged($withdrawRequest->user, $withdrawRequest, $transaction, $oldStatus, $status));
+            }
+
+            return true;
+        });
+    }
+
+    /**
      * Handle Midtrans notification/callback
      */
     public function handleMidtransNotification(array $notification): bool
     {
         try {
-            Log::info('Processing Midtrans notification', [
-                'order_id' => $notification['order_id'] ?? null,
-                'transaction_status' => $notification['transaction_status'] ?? null
-            ]);
-
+            
             $transaction = $this->midtransService->handleNotification($notification);
             
-            
+            // Process successful top up
             if ($transaction->status === WalletTransactionStatus::SUCCESS && 
                 $transaction->type === WalletTransactionType::TOPUP) {
                 $this->processSuccessfulTopUp($transaction);
@@ -123,30 +224,22 @@ class WalletService
             $transaction = WalletTransaction::where('reference_id', $orderId)->firstOrFail();
             $oldStatus = $transaction->status->value;
             
-            
             $newStatus = $this->mapMidtransStatusToInternal($midtransStatus);
             
             DB::transaction(function () use ($transaction, $newStatus, $oldStatus) {
                 $transaction->update(['status' => $newStatus]);
-                
                 
                 if ($newStatus === WalletTransactionStatus::SUCCESS && 
                     $transaction->type === WalletTransactionType::TOPUP) {
                     $this->processSuccessfulTopUp($transaction);
                 }
                 
-                
                 if ($oldStatus !== $newStatus->value) {
                     event(new PaymentStatusChanged($transaction, $oldStatus, $newStatus->value));
                 }
             });
 
-            Log::info('Transaction status updated', [
-                'order_id' => $orderId,
-                'old_status' => $oldStatus,
-                'new_status' => $newStatus->value
-            ]);
-
+          
             return $transaction->fresh();
         } catch (\Exception $e) {
             Log::error('Update transaction status error: ' . $e->getMessage(), [
@@ -163,7 +256,6 @@ class WalletService
     public function finishTransaction(string $orderId): WalletTransaction
     {
         try {
-            
             $statusResponse = $this->midtransService->getStatus($orderId);
             
             if ($statusResponse['success']) {
@@ -181,46 +273,6 @@ class WalletService
     }
 
     /**
-     * Create withdraw request
-     */
-    public function createWithdrawRequest(User $user, float $amount, array $bankDetails): WalletTransaction
-    {
-        $this->validateWithdrawAmount($amount);
-        
-        $wallet = $this->getOrCreateWallet($user);
-        
-        if (!$wallet->hasSufficientBalance($amount)) {
-            throw ValidationException::withMessages([
-                'amount' => ['Saldo tidak mencukupi untuk penarikan ini'],
-            ]);
-        }
-
-        return DB::transaction(function () use ($wallet, $amount, $bankDetails) {
-            $balanceBefore = $wallet->balance;
-            $wallet->decrement('balance', $amount);
-            
-            $transaction = $this->createTransaction($wallet, [
-                'type' => WalletTransactionType::WITHDRAW,
-                'amount' => $amount,
-                'balance_before' => $balanceBefore,
-                'balance_after' => $wallet->fresh()->balance,
-                'description' => 'Penarikan saldo ke ' . $bankDetails['bank_name'] . ' - ' . $bankDetails['account_number'],
-                'status' => WalletTransactionStatus::PENDING,
-                'reference_id' => $this->generateOrderId('WD', $wallet->user_id),
-            ]);
-            
-            Log::info('Withdraw request created', [
-                'transaction_id' => $transaction->id,
-                'user_id' => $wallet->user_id,
-                'amount' => $amount,
-                'bank_details' => $bankDetails
-            ]);
-
-            return $transaction;
-        });
-    }
-
-    /**
      * Get transaction history for user
      */
     public function getTransactionHistory(User $user, int $perPage = 10): LengthAwarePaginator
@@ -228,6 +280,16 @@ class WalletService
         $wallet = $this->getOrCreateWallet($user);
         
         return $wallet->transactions()
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage);
+    }
+
+    /**
+     * Get withdraw requests for user
+     */
+    public function getWithdrawRequests(User $user, int $perPage = 10): LengthAwarePaginator
+    {
+        return WithdrawRequest::where('user_id', $user->id)
             ->orderBy('created_at', 'desc')
             ->paginate($perPage);
     }
@@ -285,16 +347,19 @@ class WalletService
             $oldStatus = $transaction->status->value;
             $transaction->update(['status' => WalletTransactionStatus::CANCELLED]);
             
-            
             event(new PaymentStatusChanged($transaction, $oldStatus, WalletTransactionStatus::CANCELLED->value));
             
-            Log::info('Transaction cancelled', [
-                'transaction_id' => $transaction->id,
-                'user_id' => $transaction->wallet->user_id
-            ]);
-
+          
             return true;
         });
+    }
+
+    /**
+     * Validate bank account (validasi dasar tanpa API)
+     */
+    public function validateBankAccount(string $bankCode, string $accountNumber): array
+    {
+        return $this->basicBankAccountValidation($bankCode, $accountNumber);
     }
 
     /**
@@ -314,13 +379,28 @@ class WalletService
                 'balance_after' => $wallet->fresh()->balance,
             ]);
             
-            Log::info('Top up balance processed successfully', [
-                'transaction_id' => $transaction->id,
-                'user_id' => $wallet->user_id,
-                'amount' => $transaction->amount,
-                'new_balance' => $wallet->fresh()->balance
-            ]);
         });
+    }
+
+    /**
+     * Generate unique withdrawal code
+     */
+    private function generateWithdrawalCode(): string
+    {
+        do {
+            $code = 'WD' . date('Ymd') . strtoupper(substr(uniqid(), -6));
+        } while (WithdrawRequest::where('withdrawal_code', $code)->exists());
+
+        return $code;
+    }
+
+    /**
+     * Calculate admin fee for withdrawal
+     */
+    private function calculateAdminFee(float $amount): float
+    {
+        // Admin fee: Rp 2,500 untuk penarikan di bawah 1 juta, Rp 5,000 untuk di atas 1 juta
+        return $amount < 1000000 ? 2500 : 5000;
     }
 
     /**
@@ -422,5 +502,33 @@ class WalletService
         }
 
         return $payload;
+    }
+
+    /**
+     * Basic bank account validation (tanpa API pihak ketiga)
+     */
+    private function basicBankAccountValidation(string $bankCode, string $accountNumber): array
+    {
+        $rules = [
+            'BCA' => ['min' => 10, 'max' => 10, 'pattern' => '/^[0-9]{10}$/'],
+            'BNI' => ['min' => 10, 'max' => 10, 'pattern' => '/^[0-9]{10}$/'],
+            'BRI' => ['min' => 15, 'max' => 15, 'pattern' => '/^[0-9]{15}$/'],
+            'Mandiri' => ['min' => 13, 'max' => 13, 'pattern' => '/^[0-9]{13}$/'],
+            'CIMB Niaga' => ['min' => 13, 'max' => 14, 'pattern' => '/^[0-9]{13,14}$/'],
+            'Danamon' => ['min' => 10, 'max' => 10, 'pattern' => '/^[0-9]{10}$/'],
+            'Permata' => ['min' => 10, 'max' => 10, 'pattern' => '/^[0-9]{10}$/'],
+            'BTN' => ['min' => 16, 'max' => 16, 'pattern' => '/^[0-9]{16}$/'],
+        ];
+
+        $rule = $rules[$bankCode] ?? ['min' => 8, 'max' => 20, 'pattern' => '/^[0-9]{8,20}$/'];
+
+        if (!preg_match($rule['pattern'], $accountNumber)) {
+            return [
+                'valid' => false, 
+                'message' => "Format nomor rekening {$bankCode} tidak valid"
+            ];
+        }
+
+        return ['valid' => true];
     }
 }

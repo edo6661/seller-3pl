@@ -3,7 +3,7 @@
         <!-- Header -->
         <div class="mb-8">
             <div class="flex items-center mb-4">
-                @if($transaction->isPending())
+                @if($transaction->isPending() && $transaction->isTopup())
                      <button id="pay-button" class="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition">
                         Bayar Sekarang
                     </button>
@@ -46,26 +46,21 @@
                         <h3 class="text-sm font-medium text-gray-700">Tanggal</h3>
                         <p class="text-gray-600">{{ $transaction->created_at->format('d/m/Y H:i:s') }}</p>
                     </div>
-                    <div>
+                    {{-- <div>
                         <h3 class="text-sm font-medium text-gray-700">Metode Pembayaran</h3>
                         <p class="text-gray-600">{{ $transaction->payment_method_label }}</p>
-                    </div>
-                    @if($transaction->type->value === 'withdraw')
+                    </div> --}}
+                    {{-- @if($transaction->isWithdrawal())
                         <div>
                             <h3 class="text-sm font-medium text-gray-700">Bank Tujuan</h3>
                             <p class="text-gray-600">{{ $transaction->bank_name }} ({{ $transaction->bank_account }})</p>
                         </div>
-                    @endif
+                    @endif --}}
                 </div>
                 <div class="mt-6">
                     <h3 class="text-sm font-medium text-gray-700">Deskripsi</h3>
                     <p class="text-gray-600">{{ $transaction->description ?? 'Tidak ada deskripsi' }}</p>
                 </div>  
-                <div class="mt-6">
-                    <h3 class="text-sm font-medium text-gray-700">Catatan</h3>
-                    <p class="text-gray-600">{{ $transaction->note ?? 'Tidak ada catatan' }}</p>
-
-                </div>
             </div>
             <!-- Action Buttons -->
             <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">

@@ -33,14 +33,6 @@ class SendPaymentNotification implements ShouldQueue
             
             Mail::to($user->email)->send(new PaymentNotificationMail($user, $transaction));
             
-            Log::info("Payment notification email sent", [
-                'user_id' => $user->id,
-                'user_email' => $user->email,
-                'transaction_id' => $transaction->id,
-                'order_id' => $transaction->reference_id,
-                'old_status' => $event->oldStatus,
-                'new_status' => $event->newStatus
-            ]);
         } catch (\Exception $e) {
             Log::error("Error sending payment notification email", [
                 'error' => $e->getMessage(),

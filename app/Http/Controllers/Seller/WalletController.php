@@ -108,11 +108,6 @@ class WalletController extends Controller
                 
                 $transaction = $this->walletService->finishTransaction($orderId);
                 
-                Log::info('Transaction finished and status updated', [
-                    'order_id' => $orderId,
-                    'final_status' => $transaction->status->value,
-                    'user_id' => Auth::id()
-                ]);
             }
         } catch (\Exception $e) {
             Log::error('Error processing finish transaction', [
@@ -310,8 +305,6 @@ class WalletController extends Controller
         try {
             $notification = $request->all();
             
-            Log::info('Midtrans notification received', $notification);
-
             $result = $this->walletService->handleMidtransNotification($notification);
 
             if ($result) {
