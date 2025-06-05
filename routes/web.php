@@ -26,5 +26,6 @@ Route::middleware(['auth'])->group(function () {
         })->name('seller.dashboard');
         require __DIR__.'/seller/wallet.php';
         require __DIR__.'/seller/products.php';
+        require __DIR__.'/seller/pickup_request.php';
     });
 });

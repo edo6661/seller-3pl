@@ -38,6 +38,9 @@
             <a href="{{ route('seller.products.index') }}">
                 Produk
             </a>
+            <a href="{{ route('seller.pickup-request.index') }}">
+                Requests
+            </a>
         </nav>
     @endif
 </header>
