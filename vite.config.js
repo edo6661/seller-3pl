@@ -10,8 +10,17 @@ export default defineConfig({
         }),
         tailwindcss(),
     ],
-    server: {
-        https: true,
-        host: true,
-    },
+    // server: {
+    //     https: true,
+    //     host: true,
+    // },
+    // build: {
+    //     manifest: true,
+    //     outDir: 'public/build',
+    //     rollupOptions: {
+    //         output: {
+    //             manualChunks: undefined,
+    //         }
+    //     }
+    // }
 });
