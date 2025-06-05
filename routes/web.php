@@ -25,5 +25,6 @@ Route::middleware(['auth'])->group(function () {
             return view('seller.dashboard');
         })->name('seller.dashboard');
         require __DIR__.'/seller/wallet.php';
-    })->name('seller');
+        require __DIR__.'/seller/products.php';
+    });
 });

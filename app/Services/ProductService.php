@@ -86,20 +86,4 @@ class ProductService
         ];
     }
 
-    public function bulkUpdateStatus(array $productIds, bool $isActive): int
-    {
-        return Product::whereIn('id', $productIds)
-            ->update(['is_active' => $isActive]);
-    }
-
-    public function duplicateProduct(int $id): Product
-    {
-        $originalProduct = Product::findOrFail($id);
-
-        $newProduct = $originalProduct->replicate();
-        $newProduct->name = $originalProduct->name . ' (Copy)';
-        $newProduct->save();
-
-        return $newProduct;
-    }
 }

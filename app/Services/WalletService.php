@@ -98,7 +98,7 @@ class WalletService
             ]);
         }
 
-        // Validasi dasar nomor rekening
+        
         $validation = $this->basicBankAccountValidation($bankDetails['bank_name'], $bankDetails['account_number']);
         
         if (!$validation['valid']) {
@@ -110,7 +110,7 @@ class WalletService
         return DB::transaction(function () use ($wallet, $amount, $bankDetails, $user) {
             $balanceBefore = $wallet->balance;
             
-            // Create withdraw request record
+            
             $withdrawRequest = WithdrawRequest::create([
                 'user_id' => $user->id,
                 'withdrawal_code' => $this->generateWithdrawalCode(),
@@ -123,10 +123,10 @@ class WalletService
                 'requested_at' => now(),
             ]);
 
-            // Deduct balance immediately
+            
             $wallet->decrement('balance', $amount);
             
-            // Create wallet transaction record
+            
             $transaction = $this->createTransaction($wallet, [
                 'type' => WalletTransactionType::WITHDRAW,
                 'amount' => $amount,
@@ -137,7 +137,7 @@ class WalletService
                 'reference_id' => $withdrawRequest->withdrawal_code,
             ]);
 
-            // Trigger email notification
+            
             event(new WithdrawRequestCreated($user, $withdrawRequest, $transaction));
           
             
@@ -160,7 +160,7 @@ class WalletService
                 'completed_at' => in_array($status, ['completed', 'failed']) ? now() : null,
             ]);
 
-            // Update corresponding wallet transaction
+            
             $transaction = WalletTransaction::where('reference_id', $withdrawRequest->withdrawal_code)->first();
             
             if ($transaction) {
@@ -172,7 +172,7 @@ class WalletService
                     default => WalletTransactionStatus::PENDING,
                 };
 
-                // If withdraw failed or cancelled, refund the balance
+                
                 if (in_array($status, ['failed', 'cancelled']) && $oldStatus === 'pending') {
                     $wallet = $transaction->wallet;
                     $wallet->increment('balance', $withdrawRequest->amount);
@@ -185,7 +185,7 @@ class WalletService
                     $transaction->update(['status' => $newTransactionStatus]);
                 }
 
-                // Trigger email notification for status change
+                
                 event(new WithdrawRequestStatusChanged($withdrawRequest->user, $withdrawRequest, $transaction, $oldStatus, $status));
             }
 
@@ -202,7 +202,7 @@ class WalletService
             
             $transaction = $this->midtransService->handleNotification($notification);
             
-            // Process successful top up
+            
             if ($transaction->status === WalletTransactionStatus::SUCCESS && 
                 $transaction->type === WalletTransactionType::TOPUP) {
                 $this->processSuccessfulTopUp($transaction);
@@ -399,7 +399,7 @@ class WalletService
      */
     private function calculateAdminFee(float $amount): float
     {
-        // Admin fee: Rp 2,500 untuk penarikan di bawah 1 juta, Rp 5,000 untuk di atas 1 juta
+        
         return $amount < 1000000 ? 2500 : 5000;
     }
 

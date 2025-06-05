@@ -13,7 +13,6 @@
         <a href="{{ route('guest.auth.redirect',['provider' => 'google']) }}">
             login with google with redirect
         </a>
-
     @endguest
     @auth
         <form action="{{ route('logout') }}" method="POST" class="d-inline">
@@ -35,6 +34,9 @@
             </a>
             <a href="{{ route('seller.wallet.index') }}">
                 Wallet
+            </a>
+            <a href="{{ route('seller.products.index') }}">
+                Produk
             </a>
         </nav>
     @endif
