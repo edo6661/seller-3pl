@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('guest.home');
 })->name('guest.home');
+
 require __DIR__.'/guest/auth.php';
 
 Route::middleware(['auth'])->group(function () {

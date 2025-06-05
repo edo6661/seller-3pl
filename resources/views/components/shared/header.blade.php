@@ -23,9 +23,26 @@
         </form>
     @endauth
     @if(auth()->check() && auth()->user()->isAdmin())
-        <a href="{{ route('admin.dashboard') }}">
-            Dashboard
-        </a>
+        <nav class="flex items-center gap-20">
+            <a href="{{ route('admin.dashboard') }}">
+                Dashboard
+            </a>
+            <a href="{{ route('admin.buyer-ratings.index') }}">
+                Buyer Ratings
+            </a>
+            <a href="{{ route('admin.users.index') }}">
+                Users
+            </a>
+            <a href="{{ route('admin.wallets.index') }}">
+                Wallets
+            </a>
+            <a href="{{ route('admin.products.index') }}">
+                Products
+            </a>
+            <a href="{{ route('admin.pickup-requests.index') }}">
+                Pickup Requests
+            </a>
+        </nav>
     @endif
     @if(auth()->check() && auth()->user()->isSeller())
         <nav class="flex items-center gap-20">

@@ -7,39 +7,34 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['guest'])
     ->group(function () {
         Route::prefix('auth')
-        ->name('guest.auth.')
         ->group(function() {
-                Route::get('/redirect/{provider}', [AuthProviderController::class, 'redirect'])->name('redirect');
-                Route::get('/callback/{provider}', action: [AuthProviderController::class,'callback'])->name('callback');
+                Route::get('/redirect/{provider}', [AuthProviderController::class, 'redirect'])->name('guest.auth.redirect');
+                Route::get('/callback/{provider}', action: [AuthProviderController::class,'callback'])->name('guest.auth.callback');
                 
                 Route::get('/login', [AuthController::class, 'login'])
-                    ->name('login');
+                    ->name('guest.auth.login');
                 Route::post('/login', [AuthController::class, 'loginSubmit'])
-                    ->name('login.submit');
-                
-                
+                    ->name('guest.auth.login.submit');
                 Route::get('/register', [AuthController::class, 'register'])
-                    ->name('register');
+                    ->name('guest.auth.register');
                 Route::post('/register', [AuthController::class, 'registerSubmit'])
-                    ->name('register.submit');
-                
-                
+                    ->name('guest.auth.register.submit');
                 Route::get('/forgot-password', [AuthController::class, 'forgotPassword'])
-                    ->name('forgot-password');
+                    ->name('guest.auth.forgot-password');
                 Route::post('/forgot-password', [AuthController::class, 'forgotPasswordSubmit'])
-                    ->name('forgot-password.submit');
+                    ->name('guest.auth.forgot-password.submit');
                 
                 
                 Route::get('/reset-password/{token}', [AuthController::class, 'resetPassword'])
-                    ->name('reset-password');
+                    ->name('guest.auth.reset-password');
                 Route::post('/reset-password', [AuthController::class, 'resetPasswordSubmit'])
-                    ->name('reset-password.submit');
+                    ->name('guest.auth.reset-password.submit');
                 
                 
                 Route::get('/verify-email/{id}/{hash}', [AuthController::class, 'verifyEmail'])
-                    ->name('verification.verify');
+                    ->name('guest.auth.verification.verify');
                 Route::post('/resend-verification', [AuthController::class, 'resendVerification'])
-                    ->name('verification.resend');
+                    ->name('guest.auth.verification.resend');
             });
     });
 
