@@ -1,56 +1,63 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Enums\RiskLevel;
 
 class BuyerRating extends Model
 {
-        protected $fillable = [
-        'phone_number','name', 'total_orders', 'successful_orders',
+    protected $fillable = [
+        'phone_number', 'name', 'total_orders', 'successful_orders',
         'failed_cod_orders', 'cancelled_orders', 'success_rate',
         'risk_level', 'notes'
     ];
 
     protected $casts = [
         'success_rate' => 'decimal:2',
+        'risk_level' => RiskLevel::class,
     ];
 
-    public function isHighRisk()
+    public function isHighRisk(): bool
     {
-        return $this->risk_level === 'high';
+        return $this->risk_level === RiskLevel::HIGH;
     }
 
-    public function isMediumRisk()
+    public function isMediumRisk(): bool
     {
-        return $this->risk_level === 'medium';
+        return $this->risk_level === RiskLevel::MEDIUM;
     }
 
-    public function isLowRisk()
+    public function isLowRisk(): bool
     {
-        return $this->risk_level === 'low';
+        return $this->risk_level === RiskLevel::LOW;
     }
 
-    public function getRiskWarningAttribute()
+    public function getRiskWarningAttribute(): ?string
     {
-        switch ($this->risk_level) {
-            case 'high':
-                return 'PERINGATAN: Buyer ini memiliki tingkat kegagalan tinggi (' . (100 - $this->success_rate) . '%)';
-            case 'medium':
-                return 'PERHATIAN: Buyer ini memiliki riwayat kegagalan sedang (' . (100 - $this->success_rate) . '%)';
-            default:
-                return null;
-        }
+        return match($this->risk_level) {
+            RiskLevel::HIGH => 'PERINGATAN: Buyer ini memiliki tingkat kegagalan tinggi (' . (100 - $this->success_rate) . '%)',
+            RiskLevel::MEDIUM => 'PERHATIAN: Buyer ini memiliki riwayat kegagalan sedang (' . (100 - $this->success_rate) . '%)',
+            RiskLevel::LOW => null,
+        };
     }
 
     public function scopeHighRisk($query)
     {
-        return $query->where('risk_level', 'high');
+        return $query->where('risk_level', RiskLevel::HIGH->value);
+    }
+
+    public function scopeMediumRisk($query)
+    {
+        return $query->where('risk_level', RiskLevel::MEDIUM->value);
+    }
+
+    public function scopeLowRisk($query)
+    {
+        return $query->where('risk_level', RiskLevel::LOW->value);
     }
 
     public function scopeByPhone($query, $phone)
     {
         return $query->where('phone_number', $phone);
     }
-
 }

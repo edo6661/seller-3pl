@@ -1,15 +1,34 @@
 <?php
-
 namespace App\Services;
 
 use App\Models\BuyerRating;
+use App\Enums\RiskLevel;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class BuyerRatingService
 {
     public function getAllRatings(): Collection
     {
         return BuyerRating::orderBy('success_rate', 'asc')->get();
+    }
+
+    public function getPaginatedRatings(int $perPage = 10): LengthAwarePaginator
+    {
+        return BuyerRating::orderBy('success_rate', 'asc')->paginate($perPage);
+    }
+
+    public function searchRatings(string $search, int $perPage = 10): LengthAwarePaginator
+    {
+        return BuyerRating::where('name', 'like', "%{$search}%")
+            ->orWhere('phone_number', 'like', "%{$search}%")
+            ->orderBy('success_rate', 'asc')
+            ->paginate($perPage);
+    }
+
+    public function getRatingById(int $id): ?BuyerRating
+    {
+        return BuyerRating::find($id);
     }
 
     public function getRatingByPhone(string $phoneNumber): ?BuyerRating
@@ -22,23 +41,67 @@ class BuyerRatingService
         return BuyerRating::highRisk()->orderBy('success_rate', 'asc')->get();
     }
 
+    public function createRating(array $data): BuyerRating
+    {
+        // Calculate success rate
+        if (isset($data['total_orders']) && $data['total_orders'] > 0) {
+            $data['success_rate'] = ($data['successful_orders'] / $data['total_orders']) * 100;
+        }
+
+        // Calculate risk level
+        $data['risk_level'] = $this->calculateRiskLevel($data['success_rate'] ?? 0);
+
+        return BuyerRating::create($data);
+    }
+
+    public function updateRating(int $id, array $data): ?BuyerRating
+    {
+        $rating = $this->getRatingById($id);
+        
+        if (!$rating) {
+            return null;
+        }
+
+        // Recalculate success rate if order data changed
+        if (isset($data['total_orders']) && $data['total_orders'] > 0) {
+            $successfulOrders = $data['successful_orders'] ?? $rating->successful_orders;
+            $data['success_rate'] = ($successfulOrders / $data['total_orders']) * 100;
+        }
+
+        // Recalculate risk level
+        if (isset($data['success_rate'])) {
+            $data['risk_level'] = $this->calculateRiskLevel($data['success_rate']);
+        }
+
+        $rating->update($data);
+        return $rating;
+    }
+
+    public function deleteRating(int $id): bool
+    {
+        $rating = BuyerRating::find($id);
+        return $rating ? $rating->delete() : false;
+    }
+
     public function createOrUpdateRating(array $data): BuyerRating
     {
         $rating = BuyerRating::byPhone($data['phone_number'])->first();
-
+        
         if ($rating) {
-            $rating->update($data);
+            // Update existing rating
+            unset($data['phone_number']); // Don't update phone number
+            $this->updateRating($rating->id, $data);
+            return $rating->refresh();
         } else {
-            $rating = BuyerRating::create($data);
+            // Create new rating
+            return $this->createRating($data);
         }
-
-        return $rating;
     }
 
     public function updateOrderStats(string $phoneNumber, string $orderStatus): BuyerRating
     {
         $rating = $this->getRatingByPhone($phoneNumber);
-
+        
         if (!$rating) {
             $rating = BuyerRating::create([
                 'phone_number' => $phoneNumber,
@@ -48,7 +111,7 @@ class BuyerRatingService
                 'failed_cod_orders' => 0,
                 'cancelled_orders' => 0,
                 'success_rate' => 0.00,
-                'risk_level' => 'low'
+                'risk_level' => RiskLevel::LOW->value
             ]);
         }
 
@@ -81,33 +144,28 @@ class BuyerRatingService
     public function calculateRiskLevel(float $successRate): string
     {
         if ($successRate >= 80) {
-            return 'low';
+            return RiskLevel::LOW->value;
         } elseif ($successRate >= 60) {
-            return 'medium';
+            return RiskLevel::MEDIUM->value;
         } else {
-            return 'high';
+            return RiskLevel::HIGH->value;
         }
-    }
-
-    public function deleteRating(int $id): bool
-    {
-        $rating = BuyerRating::find($id);
-        return $rating ? $rating->delete() : false;
     }
 
     public function getRatingStats(): array
     {
         $total = BuyerRating::count();
         $highRisk = BuyerRating::highRisk()->count();
-        $mediumRisk = BuyerRating::where('risk_level', 'medium')->count();
-        $lowRisk = BuyerRating::where('risk_level', 'low')->count();
+        $mediumRisk = BuyerRating::where('risk_level', RiskLevel::MEDIUM->value)->count();
+        $lowRisk = BuyerRating::where('risk_level', RiskLevel::LOW->value)->count();
 
         return [
             'total' => $total,
             'high_risk' => $highRisk,
             'medium_risk' => $mediumRisk,
             'low_risk' => $lowRisk,
-            'high_risk_percentage' => $total > 0 ? round(($highRisk / $total) * 100, 2) : 0
+            'high_risk_percentage' => $total > 0 ? round(($highRisk / $total) * 100, 2) : 0,
+            'average_success_rate' => BuyerRating::avg('success_rate') ?? 0
         ];
     }
 }
