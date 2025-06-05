@@ -10,4 +10,8 @@ export default defineConfig({
         }),
         tailwindcss(),
     ],
+     server: {
+        https: true,
+        host: true,
+    },
 });
