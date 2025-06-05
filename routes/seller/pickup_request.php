@@ -15,3 +15,9 @@ Route::prefix('pickup-request')->name('seller.pickup-request.')->group(function 
     Route::post('/{id}/confirm', [PickupRequestController::class, 'confirm'])->name('confirm');
     Route::post('/{id}/schedule', [PickupRequestController::class, 'schedulePickup'])->name('schedule');
 });
+
+
+Route::prefix('api/maps')->group(function () {
+    Route::post('/geocode', [PickupRequestController::class, 'geocodeAddress']);
+    Route::post('/reverse-geocode', [PickupRequestController::class, 'reverseGeocode']);
+});

@@ -4,6 +4,7 @@ namespace App\Providers;
 use App\Services\AuthService;
 use App\Services\BuyerRatingService;
 use App\Services\EmailVerificationService;
+use App\Services\GoogleMapsService;
 use App\Services\MidtransService;
 use App\Services\NotificationService;
 use App\Services\PickupService;
@@ -27,6 +28,7 @@ class ServiceProvider extends BaseServiceProvider
         AuthService::class => AuthService::class,
         EmailVerificationService::class => EmailVerificationService::class,
         MidtransService::class => MidtransService::class,
+        GoogleMapsService::class => GoogleMapsService::class,
         
     ];
 
@@ -84,6 +86,7 @@ class ServiceProvider extends BaseServiceProvider
             AuthService::class,
             EmailVerificationService::class,
             MidtransService::class,
+            GoogleMapsService::class,
         ];
     }
 }
