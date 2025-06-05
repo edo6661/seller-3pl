@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\PickupRequest;
 use Illuminate\Http\Request;
 
 class PickupRequestController extends Controller
@@ -10,56 +11,78 @@ class PickupRequestController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return view('admin.pickup_request.index');
-    }
+        $query = PickupRequest::with(['user', 'items.product']);
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        return view('admin.pickup_request.create');
-    }
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('pickup_code', 'like', "%{$search}%")
+                  ->orWhere('recipient_name', 'like', "%{$search}%")
+                  ->orWhere('recipient_phone', 'like', "%{$search}%")
+                  ->orWhere('pickup_name', 'like', "%{$search}%")
+                  ->orWhere('pickup_phone', 'like', "%{$search}%")
+                  ->orWhere('courier_tracking_number', 'like', "%{$search}%")
+                  ->orWhereHas('user', function ($userQuery) use ($search) {
+                      $userQuery->where('name', 'like', "%{$search}%")
+                               ->orWhere('email', 'like', "%{$search}%");
+                  });
+            });
+        }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
+        // Status filter
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        return view('admin.pickup_request.show', ['id' => $id]);
-    }
+        // Payment method filter
+        if ($request->filled('payment_method')) {
+            $query->where('payment_method', $request->payment_method);
+        }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        return view('admin.pickup_request.edit', ['id' => $id]);
-    }
+        // Date range filter
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        // Sort by latest
+        $query->orderBy('created_at', 'desc');
+
+        // Paginate results
+        $pickupRequests = $query->paginate(20)->withQueryString();
+
+        // Statistics
+        $stats = [
+            'total' => PickupRequest::count(),
+            'pending' => PickupRequest::where('status', 'pending')->count(),
+            'confirmed' => PickupRequest::where('status', 'confirmed')->count(),
+            'pickup_scheduled' => PickupRequest::where('status', 'pickup_scheduled')->count(),
+            'picked_up' => PickupRequest::where('status', 'picked_up')->count(),
+            'in_transit' => PickupRequest::where('status', 'in_transit')->count(),
+            'delivered' => PickupRequest::where('status', 'delivered')->count(),
+            'failed' => PickupRequest::where('status', 'failed')->count(),
+            'cancelled' => PickupRequest::where('status', 'cancelled')->count(),
+        ];
+
+        // Revenue stats
+        $revenue = [
+            'total_revenue' => PickupRequest::where('status', 'delivered')->sum('product_total'),
+            'total_shipping' => PickupRequest::where('status', 'delivered')->sum('shipping_cost'),
+            'total_service_fee' => PickupRequest::where('status', 'delivered')->sum('service_fee'),
+            'total_amount' => PickupRequest::where('status', 'delivered')->sum('total_amount'),
+        ];
+
+        return view('admin.pickup_request.index', compact(
+            'pickupRequests',
+            'stats',
+            'revenue',
+            'request'
+        ));
     }
 }
