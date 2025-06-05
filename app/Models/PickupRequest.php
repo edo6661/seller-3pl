@@ -2,13 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class PickupRequest extends Model
 {
-    /** @use HasFactory<\Database\Factories\PickupRequestFactory> */
-    use HasFactory;
 
     protected $fillable = [
         'pickup_code',
@@ -30,7 +27,6 @@ class PickupRequest extends Model
         'pickup_latitude',
         'pickup_longitude',
         'pickup_scheduled_at',
-        'pickup_completed_at',
         'payment_method',
         'shipping_cost',
         'service_fee',
@@ -61,7 +57,6 @@ class PickupRequest extends Model
         'courier_response' => 'array',
         'requested_at' => 'datetime',
         'pickup_scheduled_at' => 'datetime',
-        'pickup_completed_at' => 'datetime',
         'picked_up_at' => 'datetime',
         'delivered_at' => 'datetime',
         'cod_collected_at' => 'datetime',

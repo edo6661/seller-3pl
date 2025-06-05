@@ -2,21 +2,15 @@
 
 namespace App\Models;
 
-
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Enums\UserRole;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
+   
     protected $fillable = [
         'name',
         'email',
@@ -35,8 +29,14 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'role' => UserRole::class, 
+
     ];
 
+    public function isEmailVerified(): bool
+    {
+        return !is_null($this->email_verified_at);
+    }
     
     public function sellerProfile()
     {
@@ -75,13 +75,22 @@ class User extends Authenticatable
     }
 
     
+    
     public function isSeller()
     {
-        return $this->role === 'seller';
+        return $this->role === UserRole::SELLER;
+    }
+    public function isAdmin()
+    {
+        return $this->role === UserRole::ADMIN;
     }
 
     public function isProfileComplete()
     {
         return $this->sellerProfile && $this->sellerProfile->is_profile_complete;
+    }
+    public function getRoleLabelAttribute(): string
+    {
+        return $this->role->label();
     }
 }

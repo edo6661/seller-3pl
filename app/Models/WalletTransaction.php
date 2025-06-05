@@ -2,14 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Enums\WalletTransactionStatus;
+use App\Enums\WalletTransactionType;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class WalletTransaction extends Model
 {
-    /** @use HasFactory<\Database\Factories\WalletTransactionFactory> */
-    use HasFactory;
-        protected $fillable = [
+    protected $fillable = [
         'wallet_id',
         'type',
         'amount',
@@ -18,46 +18,91 @@ class WalletTransaction extends Model
         'description',
         'reference_id',
         'status',
-        'metadata'
+        'snap_token',
+        'snap_url',
+        'payment_type'
     ];
 
     protected $casts = [
+        'type' => WalletTransactionType::class,
+        'status' => WalletTransactionStatus::class,
         'amount' => 'decimal:2',
         'balance_before' => 'decimal:2',
         'balance_after' => 'decimal:2',
-        'metadata' => 'array'
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime'
     ];
 
     // Relationships
-    public function wallet()
+    public function wallet(): BelongsTo
     {
         return $this->belongsTo(Wallet::class);
     }
 
-    // Scopes
-    public function scopeTopups($query)
+    // Accessors
+    public function getFormattedAmountAttribute(): string
     {
-        return $query->where('type', 'topup');
+        $sign = $this->type->increasesBalance() ? '+' : '-';
+        return $sign . 'Rp ' . number_format($this->amount, 0, ',', '.');
     }
 
-    public function scopeWithdrawals($query)
+    public function getFormattedBalanceBeforeAttribute(): string
     {
-        return $query->where('type', 'withdraw');
+        return 'Rp ' . number_format($this->balance_before, 0, ',', '.');
     }
 
-    public function scopePayments($query)
+    public function getFormattedBalanceAfterAttribute(): string
     {
-        return $query->where('type', 'payment');
+        return 'Rp ' . number_format($this->balance_after, 0, ',', '.');
     }
 
-    public function scopeRefunds($query)
+    public function getStatusColorAttribute(): string
     {
-        return $query->where('type', 'refund');
+        return $this->status->color();
     }
 
-    public function scopeSuccess($query)
+    public function getStatusLabelAttribute(): string
     {
-        return $query->where('status', 'success');
+        return $this->status->label();
     }
 
+    public function getTypeLabelAttribute(): string
+    {
+        return $this->type->label();
+    }
+
+    // Helpers
+    public function isPending(): bool
+    {
+        return $this->status === WalletTransactionStatus::PENDING;
+    }
+
+    public function isSuccess(): bool
+    {
+        return $this->status === WalletTransactionStatus::SUCCESS;
+    }
+
+    public function isFailed(): bool
+    {
+        return $this->status === WalletTransactionStatus::FAILED;
+    }
+
+    public function isCancelled(): bool
+    {
+        return $this->status === WalletTransactionStatus::CANCELLED;
+    }
+    public function isTopup(): bool
+    {
+        return $this->type === WalletTransactionType::TOPUP;
+    }
+    public function isWithdrawal(): bool
+    {
+        return $this->type === WalletTransactionType::WITHDRAW;
+    }
+
+
+    public function canBeCancelled(): bool
+    {
+        return $this->isPending() && in_array($this->type, [WalletTransactionType::TOPUP]);
+    }
 }

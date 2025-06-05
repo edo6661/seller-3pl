@@ -2,13 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class BuyerRating extends Model
 {
-    /** @use HasFactory<\Database\Factories\BuyerRatingFactory> */
-    use HasFactory;
         protected $fillable = [
         'phone_number','name', 'total_orders', 'successful_orders',
         'failed_cod_orders', 'cancelled_orders', 'success_rate',
