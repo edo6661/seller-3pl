@@ -1,13 +1,14 @@
 <?php
-
 namespace App\Http\Controllers\Seller;
 
 use App\Http\Controllers\Controller;
+use App\Requests\PickupRequest\SchedulePickupRequest;
+use App\Requests\PickupRequest\StorePickupRequestRequest;
+use App\Requests\PickupRequest\UpdatePickupRequestRequest;
 use App\Services\PickupRequestService;
 use App\Services\ProductService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rule;
 
 class PickupRequestController extends Controller
 {
@@ -48,38 +49,12 @@ class PickupRequestController extends Controller
         return view('seller.pickup-request.create', compact('products'));
     }
 
-    public function store(Request $request)
+    public function store(StorePickupRequestRequest $request)
     {
-        $request->validate([
-            'recipient_name' => 'required|string|max:255',
-            'recipient_phone' => 'required|string|max:20',
-            'recipient_city' => 'required|string|max:100',
-            'recipient_province' => 'required|string|max:100',
-            'recipient_postal_code' => 'required|string|max:10',
-            'recipient_address' => 'required|string|max:500',
-            'pickup_name' => 'required|string|max:255',
-            'pickup_phone' => 'required|string|max:20',
-            'pickup_city' => 'required|string|max:100',
-            'pickup_province' => 'required|string|max:100',
-            'pickup_postal_code' => 'required|string|max:10',
-            'pickup_address' => 'required|string|max:500',
-            'pickup_scheduled_at' => 'nullable|date|after:now',
-            'payment_method' => ['required', Rule::in(['balance', 'wallet', 'cod'])],
-            'shipping_cost' => 'required|numeric|min:0',
-            'service_fee' => 'nullable|numeric|min:0',
-            'courier_service' => 'nullable|string|max:100',
-            'notes' => 'nullable|string|max:1000',
-            'items' => 'required|array|min:1',
-            'items.*.product_id' => 'required|exists:products,id',
-            'items.*.quantity' => 'required|integer|min:1',
-        ]);
-
         try {
-            $data = $request->all();
-            $data['user_id'] = Auth::id();
-
+            $data = $request->validated();
             $pickupRequest = $this->pickupRequestService->createPickupRequest($data);
-
+            
             return redirect()
                 ->route('seller.pickup-request.show', $pickupRequest->id)
                 ->with('success', 'Pickup request berhasil dibuat dengan kode: ' . $pickupRequest->pickup_code);
@@ -119,7 +94,7 @@ class PickupRequestController extends Controller
         return view('seller.pickup-request.edit', compact('pickupRequest', 'products'));
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdatePickupRequestRequest $request, $id)
     {
         $pickupRequest = $this->pickupRequestService->getPickupRequestById($id);
 
@@ -131,33 +106,9 @@ class PickupRequestController extends Controller
             return back()->with('error', 'Pickup request ini tidak dapat diedit');
         }
 
-        $request->validate([
-            'recipient_name' => 'required|string|max:255',
-            'recipient_phone' => 'required|string|max:20',
-            'recipient_city' => 'required|string|max:100',
-            'recipient_province' => 'required|string|max:100',
-            'recipient_postal_code' => 'required|string|max:10',
-            'recipient_address' => 'required|string|max:500',
-            'pickup_name' => 'required|string|max:255',
-            'pickup_phone' => 'required|string|max:20',
-            'pickup_city' => 'required|string|max:100',
-            'pickup_province' => 'required|string|max:100',
-            'pickup_postal_code' => 'required|string|max:10',
-            'pickup_address' => 'required|string|max:500',
-            'pickup_scheduled_at' => 'nullable|date|after:now',
-            'payment_method' => ['required', Rule::in(['balance', 'wallet', 'cod'])],
-            'shipping_cost' => 'required|numeric|min:0',
-            'service_fee' => 'nullable|numeric|min:0',
-            'courier_service' => 'nullable|string|max:100',
-            'notes' => 'nullable|string|max:1000',
-            'items' => 'required|array|min:1',
-            'items.*.product_id' => 'required|exists:products,id',
-            'items.*.quantity' => 'required|integer|min:1',
-        ]);
-
         try {
-            $updatedPickupRequest = $this->pickupRequestService->updatePickupRequest($id, $request->all());
-
+            $updatedPickupRequest = $this->pickupRequestService->updatePickupRequest($id, $request->validated());
+            
             return redirect()
                 ->route('seller.pickup-request.show', $updatedPickupRequest->id)
                 ->with('success', 'Pickup request berhasil diupdate');
@@ -178,7 +129,6 @@ class PickupRequestController extends Controller
 
         try {
             $this->pickupRequestService->cancelPickupRequest($id);
-
             return back()->with('success', 'Pickup request berhasil dibatalkan');
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());
@@ -195,19 +145,14 @@ class PickupRequestController extends Controller
 
         try {
             $this->pickupRequestService->confirmPickupRequest($id);
-
             return back()->with('success', 'Pickup request berhasil dikonfirmasi');
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());
         }
     }
 
-    public function schedulePickup(Request $request, $id)
+    public function schedulePickup(SchedulePickupRequest $request, $id)
     {
-        $request->validate([
-            'pickup_scheduled_at' => 'required|date|after:now'
-        ]);
-
         $pickupRequest = $this->pickupRequestService->getPickupRequestById($id);
 
         if (!$pickupRequest || $pickupRequest->user_id !== Auth::id()) {
@@ -215,8 +160,7 @@ class PickupRequestController extends Controller
         }
 
         try {
-            $this->pickupRequestService->schedulePickup($id, $request->pickup_scheduled_at);
-
+            $this->pickupRequestService->schedulePickup($id, $request->validated()['pickup_scheduled_at']);
             return back()->with('success', 'Jadwal pickup berhasil diatur');
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());

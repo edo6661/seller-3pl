@@ -149,7 +149,7 @@
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
-                    <div>
+                    {{-- <div>
                         <label for="pickup_scheduled_at" class="block text-sm font-medium text-gray-700">Waktu Pickup (Opsional)</label>
                         <input type="datetime-local" name="pickup_scheduled_at" id="pickup_scheduled_at" 
                                value="{{ old('pickup_scheduled_at', $pickupRequest->pickup_scheduled_at ? $pickupRequest->pickup_scheduled_at->format('Y-m-d\TH:i') : '') }}" 
@@ -157,7 +157,7 @@
                         @error('pickup_scheduled_at')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
-                    </div>
+                    </div> --}}
                 </div>
                 <div class="mt-4">
                     <label for="pickup_address" class="block text-sm font-medium text-gray-700">Alamat Pickup</label>
@@ -284,14 +284,15 @@
 
         document.getElementById('add-product').addEventListener('click', function() {
             const container = document.getElementById('product-container');
-            const productOptions = @json($products->map(function($product) {
+            // Buat variabel untuk menyimpan data produk
+            const productOptions = {!! json_encode($products->map(function($product) {
                 return [
                     'id' => $product->id,
                     'name' => $product->name,
                     'price' => $product->price,
-                    'weight_per_pcs' => $product->weight_per_pcs
+                    'weight_per_pcs' => $product->weight_per_pcs ?? 0
                 ];
-            }));
+            })) !!};
 
             let optionsHtml = '<option value="">Pilih Produk</option>';
             productOptions.forEach(product => {

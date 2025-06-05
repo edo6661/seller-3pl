@@ -121,14 +121,14 @@
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
-                    <div>
+                    {{-- <div>
                         <label for="pickup_scheduled_at" class="block text-sm font-medium text-gray-700">Waktu Pickup (Opsional)</label>
                         <input type="datetime-local" name="pickup_scheduled_at" id="pickup_scheduled_at" value="{{ old('pickup_scheduled_at') }}" 
                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                         @error('pickup_scheduled_at')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
-                    </div>
+                    </div> --}}
                 </div>
                 <div class="mt-4">
                     <label for="pickup_address" class="block text-sm font-medium text-gray-700">Alamat Pickup</label>
