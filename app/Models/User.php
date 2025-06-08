@@ -42,6 +42,14 @@ class User extends Authenticatable
     {
         return $this->hasOne(SellerProfile::class);
     }
+    public function hasSellerProfile(): bool
+    {
+        return $this->sellerProfile()->exists();
+    }
+    public function hasCompleteSellerProfile(): bool
+    {
+        return $this->sellerProfile()->complete()->exists();
+    }
 
     public function wallet()
     {

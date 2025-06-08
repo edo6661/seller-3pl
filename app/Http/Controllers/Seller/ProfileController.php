@@ -1,65 +1,162 @@
 <?php
 
-namespace App\Http\Controllers\seller;
+namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\UpdateProfileRequest;
+use App\Requests\Profile\UpdateProfileRequest as ProfileUpdateProfileRequest;
+use App\Services\ProfileService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class ProfileController extends Controller
 {
+    protected ProfileService $profileService;
+
+    public function __construct(ProfileService $profileService)
+    {
+        $this->profileService = $profileService;
+    }
+
     /**
-     * Display a listing of the resource.
+     * Display the user's profile
      */
     public function index()
     {
-        return view('seller.profile.index');
+        try {
+            $userId = auth()->id();
+            $profileData = $this->profileService->getUserProfile($userId);
+            $completionPercentage = $this->profileService->getProfileCompletionPercentage($userId);
+            
+            return view('profile.index', compact('profileData', 'completionPercentage'));
+        } catch (\Exception $e) {
+            Log::error('Error loading profile: ' . $e->getMessage(), [
+                'user_id' => auth()->id()
+            ]);
+            
+            return redirect()->back()->with('error', 'Terjadi kesalahan saat memuat profil.');
+        }
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Show the form for editing the profile
      */
-    public function create()
+    public function edit()
     {
-        return view('seller.profile.create');
+        try {
+            $userId = auth()->id();
+            $profileData = $this->profileService->getUserProfile($userId);
+            
+            // For sellers, ensure seller profile exists
+            if (auth()->user()->isSeller()) {
+                $this->profileService->getOrCreateSellerProfile($userId);
+            }
+            
+            return view('profile.edit', compact('profileData'));
+        } catch (\Exception $e) {
+            Log::error('Error loading profile edit form: ' . $e->getMessage(), [
+                'user_id' => auth()->id()
+            ]);
+            
+            return redirect()->back()->with('error', 'Terjadi kesalahan saat memuat form edit profil.');
+        }
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Update the user's profile
      */
-    public function store(Request $request)
+    public function update(ProfileUpdateProfileRequest $request)
     {
-        //
+        try {
+            $userId = auth()->id();
+            $data = $request->validated();
+            
+            // Handle avatar upload
+            if ($request->hasFile('avatar')) {
+                $avatarPath = $this->profileService->uploadAvatar($userId, $request->file('avatar'));
+                $data['avatar'] = $avatarPath;
+            }
+            
+            $this->profileService->updateProfile($userId, $data);
+            
+            return redirect()
+                ->route('profile.index')
+                ->with('success', 'Profil berhasil diperbarui!');
+                
+        } catch (\Exception $e) {
+            Log::error('Error updating profile: ' . $e->getMessage(), [
+                'user_id' => auth()->id(),
+                'data' => $request->except(['password', 'password_confirmation'])
+            ]);
+            
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', 'Gagal memperbarui profil. Silakan coba lagi.');
+        }
     }
 
     /**
-     * Display the specified resource.
+     * Update coordinates for seller profile (AJAX)
      */
-    public function show(string $id)
+    public function updateCoordinates(Request $request)
     {
-        return view('seller.profile.show', ['id' => $id]);
+        if (!auth()->user()->isSeller()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Hanya seller yang dapat mengupdate koordinat'
+            ], 403);
+        }
+        
+        $request->validate([
+            'latitude' => 'required|numeric|between:-90,90',
+            'longitude' => 'required|numeric|between:-180,180'
+        ]);
+
+        try {
+            $this->profileService->updateCoordinates(
+                auth()->id(),
+                $request->latitude,
+                $request->longitude
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Koordinat berhasil diperbarui'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error updating coordinates: ' . $e->getMessage(), [
+                'user_id' => auth()->id(),
+                'latitude' => $request->latitude,
+                'longitude' => $request->longitude
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memperbarui koordinat'
+            ], 500);
+        }
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Get profile completion status (AJAX)
      */
-    public function edit(string $id)
+    public function getCompletionStatus()
     {
-        return view('seller.profile.edit', ['id' => $id]);
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        try {
+            $userId = auth()->id();
+            $percentage = $this->profileService->getProfileCompletionPercentage($userId);
+            
+            return response()->json([
+                'success' => true,
+                'completion_percentage' => $percentage,
+                'is_complete' => $percentage >= 100
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mendapatkan status profil'
+            ], 500);
+        }
     }
 }
