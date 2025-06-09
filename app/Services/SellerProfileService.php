@@ -34,6 +34,7 @@ class SellerProfileService
                 'city' => '',
                 'province' => '',
                 'postal_code' => '',
+                
             ]);
         }
         
