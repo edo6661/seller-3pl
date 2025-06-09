@@ -13,8 +13,11 @@
         <a href="{{ route('guest.auth.redirect',['provider' => 'google']) }}">
             login with google with redirect
         </a>
-    @endguest
-    @auth
+        @endguest
+        @auth
+        <a href="{{ route('profile.index') }}">
+            profile
+        </a>
         <form action="{{ route('logout') }}" method="POST" class="d-inline">
             @csrf
             <button type="submit" class="btn btn-link text-decoration-none">

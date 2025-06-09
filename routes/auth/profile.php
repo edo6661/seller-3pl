@@ -1,9 +1,9 @@
 <?php
 
-use App\Http\Controllers\seller\ProfileController;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('profile')->name('seller.profile.')->group(function () {
+Route::prefix('profile')->name('profile.')->group(function () {
   Route::get('/', [ProfileController::class, 'index'])->name('index');
   Route::get('/create', [ProfileController::class, 'create'])->name('create');
   Route::post('/', [ProfileController::class, 'store'])->name('store');

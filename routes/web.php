@@ -9,6 +9,7 @@ Route::get('/', function () {
 require __DIR__.'/guest/auth.php';
 
 Route::middleware(['auth'])->group(function () {
+    require __DIR__ . '/auth/profile.php';
     Route::middleware(['isAdmin'])->group(function () {
         Route::prefix('/admin')->group(function () {
             Route::get('/dashboard', function () {
@@ -28,6 +29,5 @@ Route::middleware(['auth'])->group(function () {
         require __DIR__ . '/seller/wallet.php';
         require __DIR__ . '/seller/products.php';
         require __DIR__ . '/seller/pickup_request.php';
-        require __DIR__ . '/seller/profile.php';
     });
 });
