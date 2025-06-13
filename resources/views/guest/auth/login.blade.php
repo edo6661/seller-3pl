@@ -67,7 +67,6 @@
 
                 <form action="{{ route('guest.auth.login.submit') }}" method="POST" id="loginForm" class="space-y-6">
                     @csrf
-                    
                     <div>
                         <label for="email" class="block text-sm font-semibold text-gray-700 mb-2">Email</label>
                         <div class="relative">

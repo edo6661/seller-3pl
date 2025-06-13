@@ -207,4 +207,52 @@ class ProfileService
         
         return round(($completedFields / $totalFields) * 100);
     }
+        public function changePassword(int $userId, string $currentPassword, string $newPassword): bool
+    {
+        try {
+            $user = User::findOrFail($userId);
+            
+            // Verify current password
+            if (!Hash::check($currentPassword, $user->password)) {
+                throw new \Exception('Password saat ini tidak sesuai.');
+            }
+            
+            // Update password
+            $user->update([
+                'password' => Hash::make($newPassword)
+            ]);
+            
+            return true;
+            
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * Validate password strength
+     */
+    public function validatePasswordStrength(string $password): array
+    {
+        $errors = [];
+        
+        if (strlen($password) < 8) {
+            $errors[] = 'Password minimal 8 karakter.';
+        }
+        
+        if (!preg_match('/[A-Z]/', $password)) {
+            $errors[] = 'Password harus mengandung minimal 1 huruf besar.';
+        }
+        
+        if (!preg_match('/[a-z]/', $password)) {
+            $errors[] = 'Password harus mengandung minimal 1 huruf kecil.';
+        }
+        
+        if (!preg_match('/[0-9]/', $password)) {
+            $errors[] = 'Password harus mengandung minimal 1 angka.';
+        }
+        
+        return $errors;
+    }
+    
 }

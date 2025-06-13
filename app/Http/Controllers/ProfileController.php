@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdateProfileRequest;
+use App\Requests\Profile\ChangePasswordRequest;
 use App\Requests\Profile\UpdateProfileRequest as ProfileUpdateProfileRequest;
 use App\Services\ProfileService;
 use Illuminate\Http\Request;
@@ -27,8 +28,8 @@ class ProfileController extends Controller
             $userId = auth()->id();
             $profileData = $this->profileService->getUserProfile($userId);
             $completionPercentage = $this->profileService->getProfileCompletionPercentage($userId);
-            
-            return view('profile.index', compact('profileData', 'completionPercentage'));
+            $isPasswordExists = auth()->user()->password !== null;
+            return view('profile.index', compact('profileData', 'completionPercentage', 'isPasswordExists'));
         } catch (\Exception $e) {
             Log::error('Error loading profile: ' . $e->getMessage(), [
                 'user_id' => auth()->id()
@@ -159,4 +160,47 @@ class ProfileController extends Controller
             ], 500);
         }
     }
+    public function changePasswordForm()
+    {
+        try {
+            return view('profile.change-password');
+        } catch (\Exception $e) {
+            Log::error('Error loading change password form: ' . $e->getMessage(), [
+                'user_id' => auth()->id()
+            ]);
+            
+            return redirect()->back()->with('error', 'Terjadi kesalahan saat memuat form ganti password.');
+        }
+    }
+
+    /**
+     * Change user password
+     */
+    public function changePassword(ChangePasswordRequest $request)
+    {
+        try {
+            $userId = auth()->id();
+            $data = $request->validated();
+            
+            $this->profileService->changePassword(
+                $userId,
+                $data['current_password'],
+                $data['password']
+            );
+            
+            return redirect()
+                ->route('profile.index')
+                ->with('success', 'Password berhasil diubah!');
+                
+        } catch (\Exception $e) {
+            Log::error('Error changing password: ' . $e->getMessage(), [
+                'user_id' => auth()->id()
+            ]);
+            
+            return redirect()
+                ->back()
+                ->with('error', $e->getMessage() ?: 'Gagal mengubah password. Silakan coba lagi.');
+        }
+    }
+
 }
