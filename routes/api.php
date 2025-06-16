@@ -1,8 +1,6 @@
 <?php
 
-use App\Collection\UserCollection;
-use App\Http\Controllers\Api\Auth\ApiAuthController;
-use App\Models\User;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -15,4 +13,5 @@ Route::middleware(['auth:sanctum','apiIsAdmin'])->prefix('admin')->group(functio
 });
 Route::prefix('seller')->middleware('auth:sanctum')->group(function () {
     require __DIR__ . '/api/seller/product.php';    
+    require __DIR__ . '/api/seller/pickup-request.php';
 });

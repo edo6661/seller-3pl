@@ -17,6 +17,24 @@ class BuyerRating extends Model
         'risk_level' => RiskLevel::class,
     ];
 
+    public function findOrCreateByPhone(string $phone, string $name): self
+    {
+        return self::firstOrCreate(
+            ['phone_number' => $phone],
+            [
+                'name' => $name,
+                'total_orders' => 0,
+                'successful_orders' => 0,
+                'failed_cod_orders' => 0,
+                'cancelled_orders' => 0,
+                'success_rate' => 0.00,
+                'risk_level' => RiskLevel::LOW,
+                'notes' => null
+            ]
+
+        );
+    }
+
     public function isHighRisk(): bool
     {
         return $this->risk_level === RiskLevel::HIGH;

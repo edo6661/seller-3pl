@@ -150,6 +150,11 @@ class PickupRequest extends Model
         return in_array($this->status, ['pending', 'confirmed']);
     }
 
+    public function statusAlreadyCancelled()
+    {
+        return $this->status === 'cancelled';
+    }
+
     public function isCompleted()
     {
         return $this->status === 'delivered';

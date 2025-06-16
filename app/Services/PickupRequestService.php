@@ -44,7 +44,7 @@ class PickupRequestService
     public function createPickupRequest(array $data): PickupRequest
     {
         return DB::transaction(function () use ($data) {
-            // Hitung total dari items
+            
             $productTotal = 0;
             $totalWeight = 0;
 
@@ -57,7 +57,7 @@ class PickupRequestService
                 $totalWeight += $itemWeight;
             }
 
-            // Data pickup request
+            
             $pickupData = [
                 'user_id' => $data['user_id'],
                 'recipient_name' => $data['recipient_name'],
@@ -90,7 +90,7 @@ class PickupRequestService
 
             $pickupRequest = PickupRequest::create($pickupData);
 
-            // Buat items
+            
             foreach ($data['items'] as $item) {
                 $product = Product::findOrFail($item['product_id']);
                 
@@ -112,17 +112,17 @@ class PickupRequestService
         return DB::transaction(function () use ($id, $data) {
             $pickupRequest = PickupRequest::findOrFail($id);
             
-            // Update data pickup request
+            
             $pickupRequest->update($data);
 
-            // Jika ada items baru, update items
+            
             if (isset($data['items'])) {
-                // Hapus items lama
+                
                 $pickupRequest->items()->delete();
 
                 $productTotal = 0;
                 
-                // Buat items baru
+                
                 foreach ($data['items'] as $item) {
                     $product = Product::findOrFail($item['product_id']);
                     $totalPrice = $item['quantity'] * $product->price;
@@ -137,7 +137,7 @@ class PickupRequestService
                     ]);
                 }
 
-                // Update total
+                
                 $pickupRequest->update([
                     'product_total' => $productTotal,
                     'cod_amount' => $pickupRequest->payment_method === 'cod' ? $productTotal : 0,
@@ -153,6 +153,9 @@ class PickupRequestService
     {
         $pickupRequest = PickupRequest::findOrFail($id);
         
+        if($pickupRequest->statusAlreadyCancelled()) {
+            throw new \Exception('Pickup request sudah dibatalkan sebelumnya');
+        }
         if (!$pickupRequest->canBeCancelled()) {
             throw new \Exception('Pickup request tidak dapat dibatalkan');
         }
@@ -232,7 +235,7 @@ class PickupRequestService
             'delivered_at' => now()
         ];
 
-        // Jika COD, tandai sebagai collected
+        
         if ($pickupRequest->payment_method === 'cod') {
             $updateData['cod_collected_at'] = now();
         }
