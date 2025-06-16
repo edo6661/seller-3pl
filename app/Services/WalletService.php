@@ -336,23 +336,51 @@ class WalletService
     public function cancelTransaction(User $user, int $transactionId): bool
     {
         $transaction = $this->getTransactionById($user, $transactionId);
-        
-        if (!$transaction || $transaction->status !== WalletTransactionStatus::PENDING) {
+
+        if (!$transaction || !$transaction->canBeCancelled()) {
             throw ValidationException::withMessages([
-                'transaction' => ['Transaksi tidak dapat dibatalkan'],
+                'transaction' => ['Transaksi ini tidak ada atau tidak dapat dibatalkan.'],
             ]);
         }
 
-        return DB::transaction(function () use ($transaction) {
+        return DB::transaction(function () use ($transaction, $user) {
             $oldStatus = $transaction->status->value;
-            $transaction->update(['status' => WalletTransactionStatus::CANCELLED]);
+
+            if ($transaction->isWithdrawal()) {
+                $withdrawRequest = WithdrawRequest::where('withdrawal_code', $transaction->reference_id)
+                                                  ->where('user_id', $user->id)
+                                                  ->first();
+
+                if (!$withdrawRequest || $withdrawRequest->status !== 'pending') {
+                    throw ValidationException::withMessages([
+                        'transaction' => ['Permintaan penarikan terkait tidak dapat dibatalkan.'],
+                    ]);
+                }
+                // todo: logika untuk membatalkan penarikan midtrans
+
+                $wallet = $transaction->wallet;
+                $wallet->increment('balance', $transaction->amount);
+                
+                $withdrawRequest->update(['status' => 'cancelled']);
+
+                $transaction->update([
+                    'status' => WalletTransactionStatus::CANCELLED,
+                ]);
+                
+
+            } else if ($transaction->isTopup()) {
+                
+                // TODO: logika untuk batalin top up midtrans
+                $transaction->update(['status' => WalletTransactionStatus::CANCELLED]);
+            }
             
             event(new PaymentStatusChanged($transaction, $oldStatus, WalletTransactionStatus::CANCELLED->value));
-            
-          
+
             return true;
         });
     }
+
+    
 
     /**
      * Validate bank account (validasi dasar tanpa API)

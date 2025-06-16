@@ -40,6 +40,10 @@ class MidtransService
     {
         try {
             $status = MidtransTransaction::status($orderId);
+            Log::info('Midtrans Status Retrieved', [
+                'order_id' => $orderId,
+                'status' => $status
+            ]);
             return [
                 'success' => true,
                 'data' => json_decode(json_encode($status), true)

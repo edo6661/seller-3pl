@@ -100,9 +100,11 @@ class WalletTransaction extends Model
         return $this->type === WalletTransactionType::WITHDRAW;
     }
 
-
     public function canBeCancelled(): bool
     {
-        return $this->isPending() && in_array($this->type, [WalletTransactionType::TOPUP]);
+        return $this->isPending() && in_array($this->type, [
+            WalletTransactionType::TOPUP, 
+            WalletTransactionType::WITHDRAW
+        ]);
     }
 }
