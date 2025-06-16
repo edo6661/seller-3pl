@@ -1,6 +1,7 @@
 <?php
 namespace App\Providers;
 
+use App\Services\ApiAuthService;
 use App\Services\AuthService;
 use App\Services\BuyerRatingService;
 use App\Services\EmailVerificationService;
@@ -37,6 +38,7 @@ class ServiceProvider extends BaseServiceProvider
         UserService::class => UserService::class,
         WalletService::class => WalletService::class,
         WithdrawService::class => WithdrawService::class,
+        ApiAuthService::class => ApiAuthService::class,
     ];
 
     /**
@@ -97,6 +99,7 @@ class ServiceProvider extends BaseServiceProvider
             UserService::class,
             WalletService::class,
             WithdrawService::class,
+            ApiAuthService::class,
             
         ];
     }

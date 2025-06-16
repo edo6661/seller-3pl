@@ -26,17 +26,11 @@ class AuthController extends Controller
         $this->emailVerificationService = $emailVerificationService;
     }
 
-    /**
-     * Tampilkan halaman login
-     */
     public function login(): View
     {
         return view('guest.auth.login');
     }
 
-    /**
-     * Proses login
-     */
     public function loginSubmit(LoginRequest $request): RedirectResponse
     {
         try {
@@ -63,17 +57,11 @@ class AuthController extends Controller
         }
     }
 
-    /**
-     * Tampilkan halaman register
-     */
     public function register(): View
     {
         return view('guest.auth.register');
     }
 
-    /**
-     * Proses register
-     */
     public function registerSubmit(RegisterRequest $request): RedirectResponse
     {
         try {
@@ -91,9 +79,6 @@ class AuthController extends Controller
         }
     }
 
-    /**
-     * Proses logout
-     */
     public function logout(Request $request): RedirectResponse
     {
         try {
@@ -109,17 +94,11 @@ class AuthController extends Controller
         }
     }
 
-    /**
-     * Tampilkan halaman lupa password
-     */
     public function forgotPassword(): View
     {
         return view('guest.auth.forgot-password');
     }
 
-    /**
-     * Proses forgot password - kirim email reset
-     */
     public function forgotPasswordSubmit(Request $request): RedirectResponse
     {
         $request->validate([
@@ -147,9 +126,6 @@ class AuthController extends Controller
         }
     }
 
-    /**
-     * Tampilkan halaman reset password
-     */
     public function resetPassword(Request $request)
     {
         $token = $request->route('token');
@@ -175,9 +151,6 @@ class AuthController extends Controller
         ]);
     }
 
-    /**
-     * Proses reset password
-     */
     public function resetPasswordSubmit(Request $request): RedirectResponse
     {
         $request->validate([
@@ -215,9 +188,6 @@ class AuthController extends Controller
         }
     }
 
-    /**
-     * Verifikasi email user
-     */
     public function verifyEmail(Request $request): RedirectResponse
     {
         try {
@@ -241,9 +211,6 @@ class AuthController extends Controller
         }
     }
 
-    /**
-     * Kirim ulang email verifikasi
-     */
     public function resendVerification(Request $request): RedirectResponse
     {
         $request->validate([

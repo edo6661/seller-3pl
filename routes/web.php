@@ -1,10 +1,14 @@
 <?php
 
+use App\Collection\UserCollection;
+use App\Http\Resources\UserResource;
+use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('guest.home');
 })->name('guest.home');
+
 
 require __DIR__.'/guest/auth.php';
 
