@@ -22,6 +22,14 @@ class ProductService
             ->get();
     }
 
+    public function getInactiveProducts(int $userId): Collection
+    {
+        return Product::where('user_id', $userId)
+            ->inactive()
+            ->orderBy('name')
+            ->get();
+    }
+
     public function getProductById(int $id): ?Product
     {
         return Product::with('user')->find($id);

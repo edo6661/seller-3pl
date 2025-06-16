@@ -19,9 +19,9 @@ class ProductResource extends JsonResource
             'description' => $this->description,
             'price' => $this->price,
             'price_formatted' => 'Rp ' . number_format($this->price, 0, ',', '.'),
-            'unit' => $this->unit,
+            'weight_per_pcs' => number_format($this->weight_per_pcs, 1),
+            'weight_per_pcs_formatted' => number_format($this->weight_per_pcs, 1) . ' kg',
             'is_active' => $this->is_active,
-            'status' => $this->is_active ? 'Aktif' : 'Tidak Aktif',
             'user' => [
                 'id' => $this->user->id,
                 'name' => $this->user->name,
