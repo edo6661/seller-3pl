@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Middleware\AdminMiddleware;
+use App\Http\Middleware\Api\ApiAdminMiddleware;
 use App\Http\Middleware\AuthMiddleware;
 use App\Http\Middleware\PasswordValidationMiddleware;
 use Illuminate\Foundation\Application;
@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'isAdmin' => AuthMiddleware::class,
             'passwordValidation' => PasswordValidationMiddleware::class,
+            'apiIsAdmin' => ApiAdminMiddleware::class,
         ]);    
         $middleware->redirectGuestsTo(function ($request) {
            

@@ -42,7 +42,7 @@ class ApiAuthService
             ]);
         }
 
-        
+        // Buat token untuk API authentication
         $token = $user->createToken($deviceName)->plainTextToken;
         
         return [
@@ -58,7 +58,7 @@ class ApiAuthService
     public function logout(User $user, ?string $tokenId = null): bool
     {
         if ($tokenId) {
-            
+            // Logout token tertentu
             $token = $user->tokens()->where('id', $tokenId)->first();
             if ($token) {
                 $token->delete();
@@ -66,7 +66,7 @@ class ApiAuthService
             }
             return false;
         } else {
-            
+            // Logout current token (dari request)
             $user->currentAccessToken()?->delete();
             return true;
         }
@@ -85,10 +85,10 @@ class ApiAuthService
      */
     public function refreshToken(User $user, string $deviceName = 'api-device'): array
     {
-        
+        // Hapus token lama
         $user->currentAccessToken()?->delete();
         
-        
+        // Buat token baru
         $token = $user->createToken($deviceName)->plainTextToken;
         
         return [
@@ -165,7 +165,7 @@ class ApiAuthService
             return $user;
         });
 
-        
+        // Buat token untuk user
         $token = $user->createToken($deviceName)->plainTextToken;
 
         return [
@@ -187,7 +187,7 @@ class ApiAuthService
         
         event(new UserRegistered(user: $user));
 
-        
+        // Buat token untuk user yang baru register
         $token = $user->createToken($deviceName)->plainTextToken;
         
         return [
@@ -203,11 +203,11 @@ class ApiAuthService
      */
     public function loginWithSocialToken(string $provider, string $accessToken, string $deviceName = 'api-device'): array
     {
-        
-        
+        // Implementasi tergantung provider (Google, Facebook, etc.)
+        // Contoh untuk Google:
         
         if ($provider === 'google') {
-            
+            // Verifikasi token dengan Google API
             $userInfo = $this->verifyGoogleToken($accessToken);
             
             if (!$userInfo) {
@@ -216,10 +216,10 @@ class ApiAuthService
                 ]);
             }
 
-            
+            // Cari atau buat user
             $user = $this->findOrCreateSocialUser($provider, $userInfo);
             
-            
+            // Buat token
             $token = $user->createToken($deviceName)->plainTextToken;
             
             return [
@@ -277,22 +277,22 @@ class ApiAuthService
             ]);
         }
 
-        
+        // Hapus token reset password yang sudah ada untuk email ini
         DB::table('password_reset_tokens')
             ->where('email', $email)
             ->delete();
 
-        
+        // Generate token baru
         $token = Str::random(64);
         
-        
+        // Simpan token ke database
         DB::table('password_reset_tokens')->insert([
             'email' => $email,
             'token' => Hash::make($token),
             'created_at' => Carbon::now()
         ]);
 
-        
+        // Dispatch event untuk mengirim email
         event(new PasswordResetRequested($user, $token));
 
         return true;
@@ -303,7 +303,7 @@ class ApiAuthService
      */
     public function resetPassword(string $token, string $email, string $password): bool
     {
-        
+        // Cari record reset password
         $resetRecord = DB::table('password_reset_tokens')
             ->where('email', $email)
             ->first();
@@ -314,17 +314,17 @@ class ApiAuthService
             ]);
         }
 
-        
+        // Verifikasi token
         if (!Hash::check($token, $resetRecord->token)) {
             throw ValidationException::withMessages([
                 'token' => ['Token reset password tidak valid.'],
             ]);
         }
 
-        
+        // Cek apakah token sudah kedaluwarsa (60 menit)
         $tokenAge = Carbon::parse($resetRecord->created_at)->diffInMinutes(Carbon::now());
         if ($tokenAge > 60) {
-            
+            // Hapus token yang kedaluwarsa
             DB::table('password_reset_tokens')
                 ->where('email', $email)
                 ->delete();
@@ -334,7 +334,7 @@ class ApiAuthService
             ]);
         }
 
-        
+        // Update password user
         $user = $this->getUserByEmail($email);
         if (!$user) {
             throw ValidationException::withMessages([
@@ -346,10 +346,10 @@ class ApiAuthService
             'password' => Hash::make($password)
         ]);
 
-        
+        // Hapus semua token user setelah reset password (untuk keamanan)
         $user->tokens()->delete();
 
-        
+        // Hapus token reset password
         DB::table('password_reset_tokens')
             ->where('email', $email)
             ->delete();
@@ -370,15 +370,15 @@ class ApiAuthService
             return false;
         }
 
-        
+        // Verifikasi token
         if (!Hash::check($token, $resetRecord->token)) {
             return false;
         }
 
-        
+        // Cek apakah token masih berlaku (60 menit)
         $tokenAge = Carbon::parse($resetRecord->created_at)->diffInMinutes(Carbon::now());
         if ($tokenAge > 60) {
-            
+            // Hapus token yang kedaluwarsa
             DB::table('password_reset_tokens')
                 ->where('email', $email)
                 ->delete();
@@ -393,19 +393,19 @@ class ApiAuthService
      */
     private function verifyGoogleToken(string $token): ?array
     {
-        
-        
+        // Implementasi verifikasi Google token
+        // Gunakan Google Client Library atau HTTP request ke Google API
         
         try {
-            $response = file_get_contents("https:
+            $response = file_get_contents("https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=" . $token);
             $tokenInfo = json_decode($response, true);
             
             if (isset($tokenInfo['error'])) {
                 return null;
             }
             
-            
-            $userResponse = file_get_contents("https:
+            // Get user info
+            $userResponse = file_get_contents("https://www.googleapis.com/oauth2/v2/userinfo?access_token=" . $token);
             $userInfo = json_decode($userResponse, true);
             
             return $userInfo;
