@@ -4,18 +4,7 @@
     <div class="bg-gray-50 py-12">
         <div class="container mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
             
-            {{-- Notifikasi Sukses atau Error --}}
-            @if (session('success'))
-                <div class="mb-6 rounded-lg bg-green-100 p-4 text-sm text-green-700" role="alert">
-                    {{ session('success') }}
-                </div>
-            @endif
-            @if (session('error'))
-                <div class="mb-6 rounded-lg bg-red-100 p-4 text-sm text-red-700" role="alert">
-                    {{ session('error') }}
-                </div>
-            @endif
-
+            
             <div class="overflow-hidden rounded-lg bg-white shadow-md">
                 <div class="p-6 md:flex md:items-center md:justify-between">
                     <div class="flex-1 md:flex md:items-center">

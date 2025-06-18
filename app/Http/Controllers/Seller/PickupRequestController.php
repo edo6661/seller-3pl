@@ -7,6 +7,7 @@ use App\Requests\PickupRequest\StorePickupRequestRequest;
 use App\Requests\PickupRequest\UpdatePickupRequestRequest;
 use App\Services\PickupRequestService;
 use App\Services\ProductService;
+use App\Services\WalletService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -14,11 +15,13 @@ class PickupRequestController extends Controller
 {
     protected $pickupRequestService;
     protected $productService;
+    protected $walletService;
 
-    public function __construct(PickupRequestService $pickupRequestService, ProductService $productService)
+    public function __construct(PickupRequestService $pickupRequestService, ProductService $productService, WalletService $walletService)
     {
         $this->pickupRequestService = $pickupRequestService;
         $this->productService = $productService;
+        $this->walletService = $walletService;
     }
 
     public function index(Request $request)
@@ -43,11 +46,43 @@ class PickupRequestController extends Controller
 
     public function create()
     {
-        $userId = Auth::id();
-        $products = $this->productService->getActiveProducts($userId);
-
-        return view('seller.pickup-request.create', compact('products'));
+        $user = Auth::user();
+        $products = $this->productService->getActiveProducts($user->id);
+        
+        $wallet = $this->walletService->getOrCreateWallet(
+            $user
+        );
+        
+        return view('seller.pickup-request.create', compact('products', 'wallet'));
     }
+    public function checkWalletBalance(Request $request)
+    {
+        try {
+            $totalAmount = $request->input('total_amount');
+            
+            $wallet = $this->walletService->getOrCreateWallet(auth()->user());
+            
+            $hasSufficientBalance = $wallet->hasSufficientBalance($totalAmount);
+            
+            return response()->json([
+                'success' => true,
+                'has_sufficient_balance' => $hasSufficientBalance,
+                'current_balance' => $wallet->available_balance,
+                'formatted_balance' => $wallet->getFormattedAvailableBalanceAttribute(),
+                'required_amount' => $totalAmount,
+                'formatted_required_amount' => 'Rp ' . number_format($totalAmount, 0, ',', '.'),
+                'message' => $hasSufficientBalance 
+                    ? 'Saldo wallet mencukupi' 
+                    : 'Saldo wallet tidak mencukupi untuk transaksi ini'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat mengecek saldo wallet'
+            ], 500);
+        }
+    }
+
 
     public function store(StorePickupRequestRequest $request)
     {

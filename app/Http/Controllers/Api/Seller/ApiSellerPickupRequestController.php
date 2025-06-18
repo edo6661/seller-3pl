@@ -93,9 +93,9 @@ class ApiSellerPickupRequestController extends Controller
         try {
             $data = $request->validated();
             $data['user_id'] = $request->user()->id;
-
+            
             $pickupRequest = $this->pickupRequestService->createPickupRequest($data);
-
+            
             return response()->json([
                 'success' => true,
                 'message' => 'Pickup request berhasil dibuat dengan kode: ' . $pickupRequest->pickup_code,
@@ -103,7 +103,6 @@ class ApiSellerPickupRequestController extends Controller
                     'pickup_request' => new PickupRequestResource($pickupRequest)
                 ]
             ], 201);
-
         } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
@@ -113,9 +112,9 @@ class ApiSellerPickupRequestController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan saat membuat pickup request',
+                'message' => $e->getMessage(), 
                 'error' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 

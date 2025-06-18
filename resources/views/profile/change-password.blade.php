@@ -12,18 +12,6 @@
                 </p>
             </div>
 
-            {{-- Notifikasi --}}
-            @if (session('success'))
-                <div class="mb-6 rounded-lg bg-green-100 p-4 text-sm text-green-700" role="alert">
-                    {{ session('success') }}
-                </div>
-            @endif
-
-            @if (session('error'))
-                <div class="mb-6 rounded-lg bg-red-100 p-4 text-sm text-red-700" role="alert">
-                    {{ session('error') }}
-                </div>
-            @endif
 
             {{-- Form Ganti Password --}}
             <div class="overflow-hidden rounded-lg bg-white shadow-md">

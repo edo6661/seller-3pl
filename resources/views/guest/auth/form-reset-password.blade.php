@@ -74,18 +74,6 @@
                 {{ session('status') }}
             </div>
         @endif
-        @if(session('error'))
-            <div class="alert alert-danger" role="alert">
-                <i class="fas fa-exclamation-triangle me-1"></i>
-                {{ session('error') }}
-            </div>
-        @endif
-        @if(session('success'))
-            <div class="alert alert-success" role="alert">
-                <i class="fas fa-check-circle me-1"></i>
-                {{ session('success') }}
-            </div>
-        @endif
 
        
 

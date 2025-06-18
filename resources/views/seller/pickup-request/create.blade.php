@@ -174,13 +174,23 @@
             </div>
 
             <!-- Informasi Pengiriman dan Pembayaran -->
+            {{-- Modifikasi bagian Informasi Pengiriman dan Pembayaran --}}
             <div class="bg-white rounded-lg shadow p-6">
                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Pengiriman & Pembayaran</h3>
+                
+                {{-- Wallet Balance Info --}}
+                <div class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-md">
+                    <h4 class="text-sm font-medium text-blue-800 mb-2">Informasi Wallet</h4>
+                    <p class="text-sm text-blue-700">
+                        Saldo Wallet: <span class="font-semibold">{{ $wallet->getFormattedAvailableBalanceAttribute() }}</span>
+                    </p>
+                </div>
+                
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label for="shipping_cost" class="block text-sm font-medium text-gray-700">Biaya Pengiriman</label>
                         <input type="number" name="shipping_cost" id="shipping_cost" value="{{ old('shipping_cost', 0) }}" min="0" step="0.01" 
-                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
                         @error('shipping_cost')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
@@ -188,7 +198,7 @@
                     <div>
                         <label for="service_fee" class="block text-sm font-medium text-gray-700">Biaya Layanan (Opsional)</label>
                         <input type="number" name="service_fee" id="service_fee" value="{{ old('service_fee', 0) }}" min="0" step="0.01" 
-                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                         @error('service_fee')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
@@ -208,16 +218,42 @@
                     <div>
                         <label for="courier_service" class="block text-sm font-medium text-gray-700">Jasa Kurir (Opsional)</label>
                         <input type="text" name="courier_service" id="courier_service" value="{{ old('courier_service') }}" 
-                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                         @error('courier_service')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
                 </div>
+                
+                {{-- Total Amount Display --}}
+                <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm font-medium text-gray-700">Total Pembayaran:</span>
+                        <span id="total-amount" class="text-lg font-bold text-gray-900">Rp 0</span>
+                    </div>
+                </div>
+                
+                {{-- Wallet Balance Warning --}}
+                <div id="wallet-warning" class="mt-4 p-4 bg-red-50 border border-red-200 rounded-md" style="display: none;">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-red-800">Saldo Wallet Tidak Mencukupi</h3>
+                            <div class="mt-2 text-sm text-red-700">
+                                <p id="wallet-warning-message"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="mt-4">
                     <label for="notes" class="block text-sm font-medium text-gray-700">Catatan (Opsional)</label>
                     <textarea name="notes" id="notes" rows="3" 
-                              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">{{ old('notes') }}</textarea>
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">{{ old('notes') }}</textarea>
                     @error('notes')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -239,11 +275,89 @@
 
     <script>
         let productIndex = 1;
-
+        const currentWalletBalance = {{ $wallet->available_balance }};
+        
+        
+        function calculateTotal() {
+            let productTotal = 0;
+            
+            document.querySelectorAll('.product-item').forEach(function(item) {
+                const productSelect = item.querySelector('select[name*="[product_id]"]');
+                const quantityInput = item.querySelector('input[name*="[quantity]"]');
+                
+                if (productSelect.value && quantityInput.value) {
+                    const selectedOption = productSelect.options[productSelect.selectedIndex];
+                    const price = parseFloat(selectedOption.dataset.price) || 0;
+                    const quantity = parseInt(quantityInput.value) || 0;
+                    productTotal += price * quantity;
+                }
+            });
+            
+            const shippingCost = parseFloat(document.getElementById('shipping_cost').value) || 0;
+            const serviceFee = parseFloat(document.getElementById('service_fee').value) || 0;
+            
+            const totalAmount = productTotal + shippingCost + serviceFee;
+            
+            document.getElementById('total-amount').textContent = 'Rp ' + new Intl.NumberFormat('id-ID').format(totalAmount);
+            
+            
+            checkWalletBalance(totalAmount);
+            
+            return totalAmount;
+        }
+        
+        
+        function checkWalletBalance(totalAmount) {
+            const paymentMethod = document.getElementById('payment_method').value;
+            const walletWarning = document.getElementById('wallet-warning');
+            const submitButton = document.querySelector('button[type="submit"]');
+            
+            if (paymentMethod === 'wallet' && totalAmount > 0) {
+                if (currentWalletBalance < totalAmount) {
+                    const shortfall = totalAmount - currentWalletBalance;
+                    document.getElementById('wallet-warning-message').innerHTML = 
+                        `Saldo Anda: <strong>Rp ${new Intl.NumberFormat('id-ID').format(currentWalletBalance)}</strong><br>` +
+                        `Yang dibutuhkan: <strong>Rp ${new Intl.NumberFormat('id-ID').format(totalAmount)}</strong><br>` +
+                        `Kekurangan: <strong>Rp ${new Intl.NumberFormat('id-ID').format(shortfall)}</strong>`;
+                    
+                    walletWarning.style.display = 'block';
+                    submitButton.disabled = true;
+                    submitButton.classList.add('opacity-50', 'cursor-not-allowed');
+                } else {
+                    walletWarning.style.display = 'none';
+                    submitButton.disabled = false;
+                    submitButton.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
+            } else {
+                walletWarning.style.display = 'none';
+                submitButton.disabled = false;
+                submitButton.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        }
+        
+        
+        document.addEventListener('change', function(e) {
+            if (e.target.matches('select[name*="[product_id]"]') || 
+                e.target.matches('input[name*="[quantity]"]') ||
+                e.target.id === 'shipping_cost' ||
+                e.target.id === 'service_fee' ||
+                e.target.id === 'payment_method') {
+                calculateTotal();
+            }
+        });
+        
+        document.addEventListener('input', function(e) {
+            if (e.target.matches('input[name*="[quantity]"]') ||
+                e.target.id === 'shipping_cost' ||
+                e.target.id === 'service_fee') {
+                calculateTotal();
+            }
+        });
+        
+        
         document.getElementById('add-product').addEventListener('click', function() {
             const container = document.getElementById('product-container');
             
-            // Buat variabel untuk menyimpan data produk
             const productOptions = {!! json_encode($products->map(function($product) {
                 return [
                     'id' => $product->id,
@@ -252,13 +366,12 @@
                     'weight_per_pcs' => $product->weight_per_pcs ?? 0
                 ];
             })) !!};
-
             let optionsHtml = '<option value="">Pilih Produk</option>';
             productOptions.forEach(function(product) {
                 const formattedPrice = new Intl.NumberFormat('id-ID').format(product.price);
                 optionsHtml += `<option value="${product.id}" data-price="${product.price}" data-weight="${product.weight_per_pcs}">${product.name} - Rp ${formattedPrice}</option>`;
             });
-
+            
             const newProductItem = `
                 <div class="product-item grid grid-cols-1 md:grid-cols-3 gap-4 items-end mb-4">
                     <div>
@@ -270,7 +383,7 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700">Jumlah</label>
                         <input type="number" name="items[${productIndex}][quantity]" min="1" value="1" 
-                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
                     </div>
                     <div>
                         <button type="button" class="remove-product px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
@@ -279,23 +392,21 @@
                     </div>
                 </div>
             `;
-
             container.insertAdjacentHTML('beforeend', newProductItem);
             productIndex++;
-
-            // Update visibility tombol hapus
+            
             updateRemoveButtons();
+            calculateTotal();
         });
-
-        // Event listener untuk tombol hapus
+        
         document.addEventListener('click', function(e) {
             if (e.target.classList.contains('remove-product')) {
                 e.target.closest('.product-item').remove();
                 updateRemoveButtons();
+                calculateTotal();
             }
         });
-
-        // Fungsi untuk mengatur visibility tombol hapus
+        
         function updateRemoveButtons() {
             const productItems = document.querySelectorAll('.product-item');
             const removeButtons = document.querySelectorAll('.remove-product');
@@ -310,11 +421,10 @@
                 });
             }
         }
+        
+        
+        calculateTotal();
     </script>
 
-    @if(session('error'))
-        <div class="fixed top-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded shadow-lg z-50" role="alert">
-            <span class="block sm:inline">{{ session('error') }}</span>
-        </div>
-    @endif
+
 </x-layouts.plain-app>

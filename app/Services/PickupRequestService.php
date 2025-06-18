@@ -2,14 +2,23 @@
 
 namespace App\Services;
 
+use App\Enums\WalletTransactionType;
 use App\Models\PickupRequest;
 use App\Models\PickupRequestItem;
 use App\Models\Product;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
+use App\Services\WalletService;
 
 class PickupRequestService
 {
+    protected WalletService $walletService;
+
+    public function __construct(WalletService $walletService)
+    {
+        $this->walletService = $walletService;
+
+    }
     public function getUserPickupRequests(int $userId): Collection
     {
         return PickupRequest::where('user_id', $userId)
@@ -40,14 +49,12 @@ class PickupRequestService
     {
         return PickupRequest::with(['items.product', 'user'])->find($id);
     }
-
     public function createPickupRequest(array $data): PickupRequest
     {
         return DB::transaction(function () use ($data) {
             
             $productTotal = 0;
             $totalWeight = 0;
-
             foreach ($data['items'] as $item) {
                 $product = Product::findOrFail($item['product_id']);
                 $totalPrice = $item['quantity'] * $product->price;
@@ -56,7 +63,19 @@ class PickupRequestService
                 $productTotal += $totalPrice;
                 $totalWeight += $itemWeight;
             }
-
+            
+            $totalAmount = $productTotal + $data['shipping_cost'] + ($data['service_fee'] ?? 0);
+            
+            
+            if ($data['payment_method'] === 'wallet') {
+                $wallet = $this->walletService->getOrCreateWallet(
+                    auth()->user()
+                );
+                
+                if (!$wallet->hasSufficientBalance($totalAmount)) {
+                    throw new \Exception('Saldo wallet tidak mencukupi. Saldo Anda: ' . $wallet->getFormattedAvailableBalanceAttribute() . ', Total yang dibutuhkan: Rp ' . number_format($totalAmount, 0, ',', '.'));
+                }
+            }
             
             $pickupData = [
                 'user_id' => $data['user_id'],
@@ -82,14 +101,12 @@ class PickupRequestService
                 'service_fee' => $data['service_fee'] ?? 0,
                 'product_total' => $productTotal,
                 'cod_amount' => $data['payment_method'] === 'cod' ? $productTotal : 0,
-                'total_amount' => $productTotal + $data['shipping_cost'] + ($data['service_fee'] ?? 0),
+                'total_amount' => $totalAmount,
                 'status' => 'pending',
                 'courier_service' => $data['courier_service'] ?? null,
                 'notes' => $data['notes'] ?? null,
             ];
-
             $pickupRequest = PickupRequest::create($pickupData);
-
             
             foreach ($data['items'] as $item) {
                 $product = Product::findOrFail($item['product_id']);
@@ -102,7 +119,19 @@ class PickupRequestService
                     'price_per_pcs' => $product->price,
                 ]);
             }
-
+            
+            
+            if ($data['payment_method'] === 'wallet') {
+                $wallet = $this->walletService->getOrCreateWallet(auth()->user());
+                
+                $wallet->deductBalance(
+                    $totalAmount,
+                    'Pembayaran Pickup Request #' . $pickupRequest->pickup_code,
+                    WalletTransactionType::PAYMENT,
+                    $pickupRequest->id
+                );
+            }
+            
             return $pickupRequest->load(['items.product']);
         });
     }

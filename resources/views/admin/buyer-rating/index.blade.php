@@ -8,18 +8,7 @@
                 <p class="mt-2 text-gray-600">Kelola dan pantau rating buyer untuk mengurangi risiko bisnis</p>
             </div>
 
-            {{-- Success/Error Messages --}}
-            @if(session('success'))
-                <div class="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
-                    {{ session('success') }}
-                </div>
-            @endif
-
-            @if(session('error'))
-                <div class="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-                    {{ session('error') }}
-                </div>
-            @endif
+            
 
             {{-- Statistics Cards --}}
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">

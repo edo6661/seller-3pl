@@ -1,23 +1,40 @@
 <?php
+
 namespace App\Services;
 
-use App\Enums\WalletTransactionStatus;
-use App\Events\PaymentStatusChanged;
 use App\Models\WalletTransaction;
-use Illuminate\Support\Facades\Log;
+use App\Events\PaymentStatusChanged;
+use App\Enums\WalletTransactionStatus;
+use Midtrans\Config;
 use Midtrans\Snap;
 use Midtrans\Transaction as MidtransTransaction;
+use Illuminate\Support\Facades\Log;
 
 class MidtransService
 {
+    public function __construct()
+    {
+        Config::$serverKey = config('midtrans.server_key');
+        Config::$isProduction = config('midtrans.is_production');
+        Config::$isSanitized = config('midtrans.is_sanitized');
+        Config::$is3ds = config('midtrans.is_3ds');
+    }
+
     /**
-     * Membuat transaksi dan mendapatkan snap token
+     * Create transaction in Midtrans
      */
     public function createTransaction(WalletTransaction $transaction, array $payload): WalletTransaction
     {
         try {
             $snapResponse = Snap::createTransaction($payload);
             
+            Log::info('Midtrans Transaction Created', [
+                'order_id' => $payload['transaction_details']['order_id'],
+                'amount' => $payload['transaction_details']['gross_amount'],
+                'snap_token' => $snapResponse->token,
+                'transaction_id' => $transaction->id
+            ]);
+
             $transaction->update([
                 'snap_token' => $snapResponse->token,
                 'snap_url' => $snapResponse->redirect_url ?? null,
@@ -30,6 +47,45 @@ class MidtransService
                 'transaction_id' => $transaction->id
             ]);
             throw $e;
+        }
+    }
+
+    /**
+     * Cancel transaction in Midtrans
+     */
+    public function cancelTransaction(string $orderId): array
+    {
+        try {
+            $cancelResponse = MidtransTransaction::cancel($orderId);
+            
+            Log::info('Midtrans Transaction Cancelled', [
+                'order_id' => $orderId,
+                'status' => $cancelResponse->transaction_status ?? 'cancelled'
+            ]);
+            
+            return [
+                'success' => true,
+                'data' => json_decode(json_encode($cancelResponse), true)
+            ];
+        } catch (\Exception $e) {
+            Log::error('Midtrans Cancel Error: ' . $e->getMessage(), [
+                'order_id' => $orderId
+            ]);
+            
+            // Jika error 404 atau transaksi sudah expired/cancelled, anggap berhasil
+            if (strpos($e->getMessage(), '404') !== false || 
+                strpos($e->getMessage(), 'Transaction doesn\'t exist') !== false ||
+                strpos($e->getMessage(), 'Transaction status cannot be updated') !== false) {
+                return [
+                    'success' => true,
+                    'data' => ['transaction_status' => 'cancel']
+                ];
+            }
+            
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
         }
     }
 
@@ -76,7 +132,6 @@ class MidtransService
             if ($oldStatus !== $newStatus->value) {
                 event(new PaymentStatusChanged($transaction, $oldStatus, $newStatus->value));
             }
-            
             
             return $transaction->fresh();
         } catch (\Exception $e) {

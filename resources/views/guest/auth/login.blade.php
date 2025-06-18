@@ -29,42 +29,6 @@
                     </div>
                 @endif
 
-                @if (session('success'))
-                    <div class="bg-green-50 border border-green-200 rounded-md p-4 mb-6" id="successAlert">
-                        <div class="flex">
-                            <div class="flex-shrink-0">
-                                <i class="fas fa-check-circle text-green-400"></i>
-                            </div>
-                            <div class="ml-3">
-                                <p class="text-sm text-green-700">{{ session('success') }}</p>
-                            </div>
-                            <div class="ml-auto pl-3">
-                                <button type="button" class="text-green-400 hover:text-green-600" onclick="closeAlert('successAlert')">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                @endif
-
-                @if (session('error'))
-                    <div class="bg-red-50 border border-red-200 rounded-md p-4 mb-6" id="sessionErrorAlert">
-                        <div class="flex">
-                            <div class="flex-shrink-0">
-                                <i class="fas fa-exclamation-triangle text-red-400"></i>
-                            </div>
-                            <div class="ml-3">
-                                <p class="text-sm text-red-700">{{ session('error') }}</p>
-                            </div>
-                            <div class="ml-auto pl-3">
-                                <button type="button" class="text-red-400 hover:text-red-600" onclick="closeAlert('sessionErrorAlert')">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                @endif
-
                 <form action="{{ route('guest.auth.login.submit') }}" method="POST" id="loginForm" class="space-y-6">
                     @csrf
                     <div>

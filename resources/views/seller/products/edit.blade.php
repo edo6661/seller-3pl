@@ -8,13 +8,6 @@
                 <p class="text-gray-600">Perbarui informasi produk Anda</p>
             </div>
 
-            <!-- Flash Messages -->
-            @if(session('error'))
-                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6" role="alert">
-                    <span class="block sm:inline">{{ session('error') }}</span>
-                </div>
-            @endif
-
             <div class="bg-white shadow rounded-lg">
                 <form action="{{ route('seller.products.update', $product->id) }}" method="POST" class="p-6 space-y-6">
                     @csrf
