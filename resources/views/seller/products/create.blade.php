@@ -38,6 +38,24 @@
                                 </p>
                             @enderror
                         </div>
+                        <div class="space-y-2">
+                            <label for="price" class="block text-sm font-semibold text-neutral-700">
+                                Harga Produk (Rp) <span class="text-error-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <span class="text-neutral-400 font-semibold">Rp</span>
+                                </div>
+                                <input type="number" id="price" name="price" value="{{ old('price') }}"
+                                    class="w-full pl-10 pr-4 py-3 border border-neutral-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 @error('price') border-error-500 @enderror"
+                                    placeholder="Contoh: 50000" required min="0">
+                            </div>
+                            @error('price')
+                                <p class="mt-1 text-sm text-error-600 flex items-center">
+                                    <i class="fas fa-exclamation-circle mr-1"></i> {{ $message }}
+                                </p>
+                            @enderror
+                        </div>
 
                         <!-- Deskripsi -->
                         <div class="space-y-2">
@@ -118,4 +136,14 @@
             </div>
         </div>
     </div>
+    @if($errors->any())
+        @foreach ($errors->all() as $error)
+            <div class="fixed bottom-40 right-40 max-w-sm w-full bg-red-100 text-red-800 p-4 rounded-lg shadow-lg">
+                <div class="flex items-center">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    <span>{{ $error }}</span>
+                </div>
+            </div>
+        @endforeach
+    @endif
 </x-layouts.plain-app>

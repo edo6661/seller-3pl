@@ -15,7 +15,7 @@ class PickupRequestController extends Controller
     {
         $query = PickupRequest::with(['user', 'items.product']);
 
-        // Search functionality
+        
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -32,17 +32,17 @@ class PickupRequestController extends Controller
             });
         }
 
-        // Status filter
+        
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        // Payment method filter
+        
         if ($request->filled('payment_method')) {
             $query->where('payment_method', $request->payment_method);
         }
 
-        // Date range filter
+        
         if ($request->filled('date_from')) {
             $query->whereDate('created_at', '>=', $request->date_from);
         }
@@ -51,13 +51,13 @@ class PickupRequestController extends Controller
             $query->whereDate('created_at', '<=', $request->date_to);
         }
 
-        // Sort by latest
+        
         $query->orderBy('created_at', 'desc');
 
-        // Paginate results
+        
         $pickupRequests = $query->paginate(20)->withQueryString();
 
-        // Statistics
+        
         $stats = [
             'total' => PickupRequest::count(),
             'pending' => PickupRequest::where('status', 'pending')->count(),
@@ -70,7 +70,7 @@ class PickupRequestController extends Controller
             'cancelled' => PickupRequest::where('status', 'cancelled')->count(),
         ];
 
-        // Revenue stats
+        
         $revenue = [
             'total_revenue' => PickupRequest::where('status', 'delivered')->sum('product_total'),
             'total_shipping' => PickupRequest::where('status', 'delivered')->sum('shipping_cost'),

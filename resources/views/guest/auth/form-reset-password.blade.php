@@ -68,12 +68,7 @@
                 </div>
             @enderror
         </div>
-        @if(session('status'))
-            <div class="alert alert-success" role="alert">
-                <i class="fas fa-check-circle me-1"></i>
-                {{ session('status') }}
-            </div>
-        @endif
+        
 
        
 

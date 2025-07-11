@@ -17,7 +17,7 @@ class BuyerRating extends Model
         'risk_level' => RiskLevel::class,
     ];
 
-    public function findOrCreateByPhone(string $phone, string $name): self
+    public static function findOrCreateByPhone(string $phone, string $name): self
     {
         return self::firstOrCreate(
             ['phone_number' => $phone],
@@ -34,6 +34,33 @@ class BuyerRating extends Model
 
         );
     }
+    public function updateStats(bool $isSuccessful, bool $isCancelled, bool $isFailed): void
+    {
+        $this->total_orders++;
+
+        if ($isSuccessful) {
+            $this->successful_orders++;
+        } elseif ($isCancelled) {
+            $this->cancelled_orders++;
+        } elseif ($isFailed) {
+            $this->failed_cod_orders++;
+        }
+        // todo: berkemungkinan saalah logika nya, test lagi nanti
+        $this->success_rate = ($this->total_orders > 0)
+            ? ($this->successful_orders / $this->total_orders) * 100
+            : 0;
+
+        if ($this->success_rate < 70 || $this->failed_cod_orders >= 5) {
+            $this->risk_level = RiskLevel::HIGH;
+        } elseif ($this->success_rate < 90 || $this->failed_cod_orders >= 2) {
+            $this->risk_level = RiskLevel::MEDIUM;
+        } else {
+            $this->risk_level = RiskLevel::LOW;
+        }
+
+        $this->save();
+    }
+
 
     public function isHighRisk(): bool
     {

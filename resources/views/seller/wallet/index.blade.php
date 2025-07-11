@@ -99,15 +99,15 @@
                                     <td class="px-4 py-4 text-center whitespace-nowrap">
                                         <span
                                             class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium 
-                                            {{ $transaction->status === 'pending'
+                                            {{ $transaction->status->value === 'pending'
                                                 ? 'bg-warning-100 text-warning-700'
-                                                : ($transaction->status === 'success'
+                                                : ($transaction->status->value === 'success'
                                                     ? 'bg-success-100 text-success-700'
                                                     : 'bg-error-100 text-error-700') }}">
                                             <i
-                                                class="fas {{ $transaction->status === 'pending'
+                                                class="fas {{ $transaction->status->value === 'pending'
                                                     ? 'fa-clock mr-1'
-                                                    : ($transaction->status === 'success'
+                                                    : ($transaction->status->value === 'success'
                                                         ? 'fa-check-circle mr-1'
                                                         : 'fa-times-circle mr-1') }}"></i>
                                             {{ $transaction->status_label }}
