@@ -1,210 +1,251 @@
 <x-layouts.plain-app>
     <x-slot name="title">Kelola Pengguna</x-slot>
-    
-    <div class="container mx-auto px-4 py-8">
-        <div class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-900 mb-4">Kelola Pengguna</h1>
-            
-            <!-- Stats Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-                <div class="bg-white rounded-lg shadow p-6">
-                    <div class="flex items-center">
-                        <div class="p-3 rounded-full bg-blue-100 text-blue-600">
-                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
-                            </svg>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-600">Total Pengguna</p>
-                            <p class="text-2xl font-bold text-gray-900">{{ $stats['total'] }}</p>
-                        </div>
+
+    <div class="container mx-auto px-4 py-6">
+        <!-- Header Section with Gradient Background -->
+        <div class="bg-gradient-to-r from-primary-50 to-secondary-50 rounded-xl p-6 mb-8 border border-primary-100">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+                <div>
+                    <h1 class="text-2xl font-bold text-neutral-800">Kelola Pengguna</h1>
+                    <p class="text-sm text-neutral-600 mt-1">Manajemen data pengguna sistem</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Cards with Colorful Backgrounds -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+            <!-- Total Users Card -->
+            <div
+                class="bg-gradient-to-br from-secondary-50 to-white rounded-xl shadow-xs p-5 border border-secondary-100 hover:shadow-sm transition-all duration-300">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-xl bg-secondary-100 text-secondary-600">
+                        <i class="fas fa-users text-lg"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-neutral-600">Total Pengguna</p>
+                        <p class="text-2xl font-semibold text-neutral-800 mt-1">{{ $stats['total'] }}</p>
                     </div>
                 </div>
-                
-                <div class="bg-white rounded-lg shadow p-6">
-                    <div class="flex items-center">
-                        <div class="p-3 rounded-full bg-green-100 text-green-600">
-                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                            </svg>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-600">Penjual</p>
-                            <p class="text-2xl font-bold text-gray-900">{{ $stats['sellers'] }}</p>
-                        </div>
+            </div>
+
+            <!-- Sellers Card -->
+            <div
+                class="bg-gradient-to-br from-success-50 to-white rounded-xl shadow-xs p-5 border border-success-100 hover:shadow-sm transition-all duration-300">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-xl bg-success-100 text-success-600">
+                        <i class="fas fa-store text-lg"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-neutral-600">Penjual</p>
+                        <p class="text-2xl font-semibold text-neutral-800 mt-1">{{ $stats['sellers'] }}</p>
                     </div>
                 </div>
-                
-                <div class="bg-white rounded-lg shadow p-6">
-                    <div class="flex items-center">
-                        <div class="p-3 rounded-full bg-purple-100 text-purple-600">
-                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-                            </svg>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-600">Admin</p>
-                            <p class="text-2xl font-bold text-gray-900">{{ $stats['admins'] }}</p>
-                        </div>
+            </div>
+
+            <!-- Admins Card -->
+            <div
+                class="bg-gradient-to-br from-primary-50 to-white rounded-xl shadow-xs p-5 border border-primary-100 hover:shadow-sm transition-all duration-300">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-xl bg-primary-100 text-primary-600">
+                        <i class="fas fa-user-shield text-lg"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-neutral-600">Admin</p>
+                        <p class="text-2xl font-semibold text-neutral-800 mt-1">{{ $stats['admins'] }}</p>
                     </div>
                 </div>
-                
-                <div class="bg-white rounded-lg shadow p-6">
-                    <div class="flex items-center">
-                        <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
-                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-600">Email Terverifikasi</p>
-                            <p class="text-2xl font-bold text-gray-900">{{ $stats['verified'] }}</p>
-                        </div>
+            </div>
+
+            <!-- Verified Users Card -->
+            <div
+                class="bg-gradient-to-br from-warning-50 to-white rounded-xl shadow-xs p-5 border border-warning-100 hover:shadow-sm transition-all duration-300">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-xl bg-warning-100 text-warning-600">
+                        <i class="fas fa-check-circle text-lg"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-neutral-600">Email Terverifikasi</p>
+                        <p class="text-2xl font-semibold text-neutral-800 mt-1">{{ $stats['verified'] }}</p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Action Bar -->
-        <div class="flex flex-col lg:flex-row justify-between items-center mb-6 gap-4">
-            <div class="flex-1 max-w-md">
-                <form action="{{ route('admin.users.index') }}" method="GET" class="relative">
-                    <input type="hidden" name="role" value="{{ $role }}">
-                    <input type="hidden" name="status" value="{{ $status }}">
-                    <input 
-                        type="text" 
-                        name="search" 
-                        value="{{ $search }}"
-                        placeholder="Cari nama, email, atau telepon..." 
-                        class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    >
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                        </svg>
-                    </div>
-                </form>
-            </div>
-            
-            <!-- Filters -->
-            <div class="flex flex-col sm:flex-row gap-3">
-                <!-- Role Filter -->
-                <form action="{{ route('admin.users.index') }}" method="GET" class="inline">
-                    <input type="hidden" name="search" value="{{ $search }}">
-                    <input type="hidden" name="status" value="{{ $status }}">
-                    <select name="role" onchange="this.form.submit()" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        <option value="">Semua Role</option>
-                        <option value="seller" {{ $role === 'seller' ? 'selected' : '' }}>Penjual</option>
-                        <option value="admin" {{ $role === 'admin' ? 'selected' : '' }}>Admin</option>
-                    </select>
-                </form>
-                
-                <!-- Status Filter -->
-                <form action="{{ route('admin.users.index') }}" method="GET" class="inline">
-                    <input type="hidden" name="search" value="{{ $search }}">
-                    <input type="hidden" name="role" value="{{ $role }}">
-                    <select name="status" onchange="this.form.submit()" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        <option value="">Semua Status</option>
-                        <option value="verified" {{ $status === 'verified' ? 'selected' : '' }}>Email Terverifikasi</option>
-                        <option value="unverified" {{ $status === 'unverified' ? 'selected' : '' }}>Email Belum Terverifikasi</option>
-                    </select>
-                </form>
-                
-                <!-- Clear Filters -->
-                @if($search || $role || $status)
-                    <a href="{{ route('admin.users.index') }}" 
-                       class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-2 px-4 rounded-lg transition duration-200 flex items-center">
-                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
-                        Reset Filter
-                    </a>
-                @endif
+        <!-- Action Bar with Subtle Background -->
+        <div
+            class="bg-gradient-to-r from-neutral-50 to-neutral-50 rounded-xl shadow-xs p-5 border border-neutral-200 mb-6">
+            <div class="flex flex-col lg:flex-row justify-between items-center gap-4">
+                <!-- Search Bar -->
+                <div class="w-full lg:w-auto lg:flex-1 ">
+                    <form action="{{ route('admin.users.index') }}" method="GET" class="relative">
+                        <input type="hidden" name="role" value="{{ $role }}">
+                        <input type="hidden" name="status" value="{{ $status }}">
+                        <div class="relative">
+                            <input type="text" name="search" value="{{ $search }}"
+                                placeholder="Cari nama, email, atau telepon..."
+                                class="w-full pl-10 pr-4 py-2.5 border border-neutral-200 rounded-lg focus:ring-2 focus:ring-primary-400 focus:border-transparent text-neutral-700 placeholder-neutral-400 bg-white">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-search text-neutral-400"></i>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Filters -->
+                <div class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+                    <!-- Role Filter -->
+                    <form action="{{ route('admin.users.index') }}" method="GET" class="inline">
+                        <input type="hidden" name="search" value="{{ $search }}">
+                        <input type="hidden" name="status" value="{{ $status }}">
+                        <select name="role" onchange="this.form.submit()"
+                            class="border border-neutral-200 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-primary-400 focus:border-transparent text-neutral-700 text-sm w-full bg-white">
+                            <option value="">Semua Role</option>
+                            <option value="seller" {{ $role === 'seller' ? 'selected' : '' }}>Penjual</option>
+                            <option value="admin" {{ $role === 'admin' ? 'selected' : '' }}>Admin</option>
+                        </select>
+                    </form>
+
+                    <!-- Status Filter -->
+                    <form action="{{ route('admin.users.index') }}" method="GET" class="inline">
+                        <input type="hidden" name="search" value="{{ $search }}">
+                        <input type="hidden" name="role" value="{{ $role }}">
+                        <select name="status" onchange="this.form.submit()"
+                            class="border border-neutral-200 rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-primary-400 focus:border-transparent text-neutral-700 text-sm w-full bg-white">
+                            <option value="">Semua Status</option>
+                            <option value="verified" {{ $status === 'verified' ? 'selected' : '' }}>Terverifikasi
+                            </option>
+                            <option value="unverified" {{ $status === 'unverified' ? 'selected' : '' }}>Belum
+                                Terverifikasi</option>
+                        </select>
+                    </form>
+
+                    <!-- Clear Filters -->
+                    @if ($search || $role || $status)
+                        <a href="{{ route('admin.users.index') }}"
+                            class="bg-white hover:bg-neutral-50 text-neutral-700 font-medium py-2.5 px-4 rounded-lg transition duration-200 flex items-center justify-center text-sm border border-neutral-200">
+                            <i class="fas fa-times mr-2"></i>
+                            Reset
+                        </a>
+                    @endif
+                </div>
             </div>
         </div>
 
-       
-
-        <!-- Users Table -->
-        <div class="bg-white shadow rounded-lg overflow-hidden">
-            @if($users->count() > 0)
+        <!-- Users Table with Alternating Row Colors -->
+        <div class="bg-white rounded-xl shadow-xs overflow-hidden border border-neutral-200">
+            @if ($users->count() > 0)
                 <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
+                    <table class="min-w-full divide-y divide-neutral-200">
+                        <thead class="bg-neutral-50">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pengguna</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kontak</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bergabung</th>
+                                <th scope="col"
+                                    class="px-6 py-3 text-left text-xs font-medium text-neutral-600 uppercase tracking-wider">
+                                    Pengguna</th>
+                                <th scope="col"
+                                    class="px-6 py-3 text-left text-xs font-medium text-neutral-600 uppercase tracking-wider">
+                                    Kontak</th>
+                                <th scope="col"
+                                    class="px-6 py-3 text-left text-xs font-medium text-neutral-600 uppercase tracking-wider">
+                                    Role</th>
+                                <th scope="col"
+                                    class="px-6 py-3 text-left text-xs font-medium text-neutral-600 uppercase tracking-wider">
+                                    Status</th>
+                                <th scope="col"
+                                    class="px-6 py-3 text-left text-xs font-medium text-neutral-600 uppercase tracking-wider">
+                                    Bergabung</th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            @foreach($users as $user)
-                                <tr class="hover:bg-gray-50">
-                                    <td class="px-6 py-4">
+                        <tbody class="bg-white divide-y divide-neutral-100">
+                            @foreach ($users as $user)
+                                <tr
+                                    class="{{ $loop->odd ? 'bg-neutral-50' : 'bg-white' }} hover:bg-primary-50 transition-colors duration-150">
+                                    <!-- User Column -->
+                                    <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
                                             <div class="flex-shrink-0 h-10 w-10">
-                                                @if($user->avatar)
-                                                    <img class="h-10 w-10 rounded-full object-cover" src="{{ Storage::url($user->avatar) }}" alt="{{ $user->name }}">
+                                                @if ($user->avatar)
+                                                    <img class="h-10 w-10 rounded-full object-cover"
+                                                        src="{{ Storage::url($user->avatar) }}"
+                                                        alt="{{ $user->name }}">
                                                 @else
-                                                    <div class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                                                        <span class="text-sm font-medium text-gray-700">{{ substr($user->name, 0, 1) }}</span>
+                                                    <div
+                                                        class="h-10 w-10 rounded-full bg-neutral-100 flex items-center justify-center">
+                                                        <span
+                                                            class="text-sm font-medium text-neutral-600">{{ substr($user->name, 0, 1) }}</span>
                                                     </div>
                                                 @endif
                                             </div>
                                             <div class="ml-4">
-                                                <div class="text-sm font-medium text-gray-900">{{ $user->name }}</div>
-                                                <div class="text-sm text-gray-500">ID: {{ $user->id }}</div>
+                                                <div class="text-sm font-semibold text-neutral-800">
+                                                    {{ $user->name }}</div>
+                                                <div class="text-xs text-neutral-500 mt-1">ID: {{ $user->id }}
+                                                </div>
                                             </div>
                                         </div>
                                     </td>
-                                    <td class="px-6 py-4">
-                                        <div class="text-sm text-gray-900">{{ $user->email }}</div>
-                                        @if($user->phone)
-                                            <div class="text-sm text-gray-500">{{ $user->phone }}</div>
-                                        @else
-                                            <div class="text-sm text-gray-400 italic">Tidak ada telepon</div>
-                                        @endif
+
+                                    <!-- Contact Column -->
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-neutral-800">{{ $user->email }}</div>
+                                        <div class="text-xs text-neutral-500 mt-1">
+                                            @if ($user->phone)
+                                                {{ $user->phone }}
+                                            @else
+                                                <span class="text-neutral-400 italic">Tidak ada telepon</span>
+                                            @endif
+                                        </div>
                                     </td>
-                                    <td class="px-6 py-4">
-                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $user->role->value === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800' }}">
+
+                                    <!-- Role Column -->
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span
+                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $user->role->value === 'admin' ? 'bg-primary-100 text-primary-800' : 'bg-secondary-100 text-secondary-800' }}">
                                             {{ $user->role_label }}
                                         </span>
                                     </td>
-                                    <td class="px-6 py-4">
-                                        <div class="flex flex-col space-y-1">
-                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $user->isEmailVerified() ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                                {{ $user->isEmailVerified() ? 'Email Terverifikasi' : 'Email Belum Terverifikasi' }}
+
+                                    <!-- Status Column -->
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex flex-col gap-1.5">
+                                            <span
+                                                class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $user->isEmailVerified() ? 'bg-success-100 text-success-800' : 'bg-error-100 text-error-800' }}">
+                                                {{ $user->isEmailVerified() ? 'Terverifikasi' : 'Belum Terverifikasi' }}
                                             </span>
-                                            @if($user->isSeller() && $user->sellerProfile)
-                                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $user->isProfileComplete() ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
+                                            @if ($user->isSeller() && $user->sellerProfile)
+                                                <span
+                                                    class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $user->isProfileComplete() ? 'bg-success-100 text-success-800' : 'bg-warning-100 text-warning-800' }}">
                                                     {{ $user->isProfileComplete() ? 'Profil Lengkap' : 'Profil Belum Lengkap' }}
                                                 </span>
                                             @endif
                                         </div>
                                     </td>
-                                    <td class="px-6 py-4 text-sm text-gray-500">
+
+                                    <!-- Join Date Column -->
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-600">
                                         {{ $user->created_at->format('d M Y') }}
+                                        <div class="text-xs text-neutral-400 mt-1">
+                                            {{ $user->created_at->diffForHumans() }}
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach
                         </tbody>
                     </table>
                 </div>
-                
+
                 <!-- Pagination -->
-                <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
+                <div class="bg-neutral-50 px-4 py-3 border-t border-neutral-200 sm:px-6 rounded-b-xl">
                     {{ $users->links() }}
                 </div>
             @else
-                <div class="text-center py-12">
-                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
-                    </svg>
-                    <h3 class="mt-2 text-sm font-medium text-gray-900">Tidak ada pengguna</h3>
-                    <p class="mt-1 text-sm text-gray-500">
-                        @if($search)
+                <div class="text-center py-12 bg-gradient-to-br from-neutral-50 to-white rounded-b-xl">
+                    <div
+                        class="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-white text-neutral-400 mb-4 border border-neutral-200">
+                        <i class="fas fa-users text-xl"></i>
+                    </div>
+                    <h3 class="text-sm font-medium text-neutral-700">Tidak ada pengguna</h3>
+                    <p class="mt-1 text-sm text-neutral-500 max-w-md mx-auto">
+                        @if ($search)
                             Tidak ada pengguna yang cocok dengan pencarian "{{ $search }}".
                         @elseif($role || $status)
                             Tidak ada pengguna dengan filter yang dipilih.

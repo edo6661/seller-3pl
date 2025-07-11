@@ -4,269 +4,334 @@
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <!-- Header -->
         <div class="mb-8">
-            <div class="flex items-center justify-between">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
-                    <h1 class="text-3xl font-bold text-gray-900">Buat Pickup Request</h1>
-                    <p class="mt-2 text-gray-600">Buat permintaan pickup baru untuk produk Anda</p>
+                    <h1 class="text-3xl font-bold text-neutral-900">Buat Pickup Request</h1>
+                    <p class="mt-2 text-neutral-600">Buat permintaan pickup baru untuk produk Anda</p>
                 </div>
-                <a href="{{ route('seller.pickup-request.index') }}" 
-                   class="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-                    </svg>
+                <a href="{{ route('seller.pickup-request.index') }}"
+                    class="inline-flex items-center px-4 py-2 bg-secondary text-white rounded-lg hover:bg-secondary-600 transition-colors shadow-sm">
+                    <i class="fas fa-arrow-left mr-2"></i>
                     Kembali
                 </a>
             </div>
         </div>
 
-        <form method="POST" action="{{ route('seller.pickup-request.store') }}" class="space-y-8">
+        <form method="POST" action="{{ route('seller.pickup-request.store') }}" class="space-y-6">
             @csrf
-            
+
             <!-- Informasi Penerima -->
-            <div class="bg-white rounded-lg shadow p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Informasi Penerima</h3>
+            <div class="bg-white rounded-xl shadow-md p-6 border border-neutral-200">
+                <div class="flex items-center mb-4">
+                    <div class="bg-primary-100 p-2 rounded-lg mr-3">
+                        <i class="fas fa-user text-primary-600"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-neutral-900">Informasi Penerima</h3>
+                </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label for="recipient_name" class="block text-sm font-medium text-gray-700">Nama Penerima</label>
-                        <input type="text" name="recipient_name" id="recipient_name" value="{{ old('recipient_name') }}" 
-                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                        <label for="recipient_name" class="block text-sm font-medium text-neutral-700 mb-1">Nama
+                            Penerima</label>
+                        <input type="text" name="recipient_name" id="recipient_name"
+                            value="{{ old('recipient_name') }}"
+                            class="block w-full rounded-lg border-neutral-300 focus:border-primary-500 focus:ring-primary-500 shadow-sm"
+                            required>
                         @error('recipient_name')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            <p class="mt-1 text-sm text-error-600">{{ $message }}</p>
                         @enderror
                     </div>
                     <div>
-                        <label for="recipient_phone" class="block text-sm font-medium text-gray-700">Nomor Telepon</label>
-                        <input type="text" name="recipient_phone" id="recipient_phone" value="{{ old('recipient_phone') }}" 
-                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                        <label for="recipient_phone" class="block text-sm font-medium text-neutral-700 mb-1">Nomor
+                            Telepon</label>
+                        <input type="text" name="recipient_phone" id="recipient_phone"
+                            value="{{ old('recipient_phone') }}"
+                            class="block w-full rounded-lg border-neutral-300 focus:border-primary-500 focus:ring-primary-500 shadow-sm"
+                            required>
                         @error('recipient_phone')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            <p class="mt-1 text-sm text-error-600">{{ $message }}</p>
                         @enderror
                     </div>
                     <div>
-                        <label for="recipient_city" class="block text-sm font-medium text-gray-700">Kota</label>
-                        <input type="text" name="recipient_city" id="recipient_city" value="{{ old('recipient_city') }}" 
-                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                        <label for="recipient_city" class="block text-sm font-medium text-neutral-700 mb-1">Kota</label>
+                        <input type="text" name="recipient_city" id="recipient_city"
+                            value="{{ old('recipient_city') }}"
+                            class="block w-full rounded-lg border-neutral-300 focus:border-primary-500 focus:ring-primary-500 shadow-sm"
+                            required>
                         @error('recipient_city')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            <p class="mt-1 text-sm text-error-600">{{ $message }}</p>
                         @enderror
                     </div>
                     <div>
-                        <label for="recipient_province" class="block text-sm font-medium text-gray-700">Provinsi</label>
-                        <input type="text" name="recipient_province" id="recipient_province" value="{{ old('recipient_province') }}" 
-                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                        <label for="recipient_province"
+                            class="block text-sm font-medium text-neutral-700 mb-1">Provinsi</label>
+                        <input type="text" name="recipient_province" id="recipient_province"
+                            value="{{ old('recipient_province') }}"
+                            class="block w-full rounded-lg border-neutral-300 focus:border-primary-500 focus:ring-primary-500 shadow-sm"
+                            required>
                         @error('recipient_province')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            <p class="mt-1 text-sm text-error-600">{{ $message }}</p>
                         @enderror
                     </div>
                     <div>
-                        <label for="recipient_postal_code" class="block text-sm font-medium text-gray-700">Kode Pos</label>
-                        <input type="text" name="recipient_postal_code" id="recipient_postal_code" value="{{ old('recipient_postal_code') }}" 
-                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                        <label for="recipient_postal_code" class="block text-sm font-medium text-neutral-700 mb-1">Kode
+                            Pos</label>
+                        <input type="text" name="recipient_postal_code" id="recipient_postal_code"
+                            value="{{ old('recipient_postal_code') }}"
+                            class="block w-full rounded-lg border-neutral-300 focus:border-primary-500 focus:ring-primary-500 shadow-sm"
+                            required>
                         @error('recipient_postal_code')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            <p class="mt-1 text-sm text-error-600">{{ $message }}</p>
                         @enderror
                     </div>
                 </div>
                 <div class="mt-4">
-                    <label for="recipient_address" class="block text-sm font-medium text-gray-700">Alamat Lengkap</label>
-                    <textarea name="recipient_address" id="recipient_address" rows="3" 
-                              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>{{ old('recipient_address') }}</textarea>
+                    <label for="recipient_address" class="block text-sm font-medium text-neutral-700 mb-1">Alamat
+                        Lengkap</label>
+                    <textarea name="recipient_address" id="recipient_address" rows="3"
+                        class="block w-full rounded-lg border-neutral-300 focus:border-primary-500 focus:ring-primary-500 shadow-sm"
+                        required>{{ old('recipient_address') }}</textarea>
                     @error('recipient_address')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        <p class="mt-1 text-sm text-error-600">{{ $message }}</p>
                     @enderror
                 </div>
             </div>
 
             <!-- Informasi Pickup -->
-            <div class="bg-white rounded-lg shadow p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Informasi Lokasi Pickup</h3>
+            <div class="bg-white rounded-xl shadow-md p-6 border border-neutral-200">
+                <div class="flex items-center mb-4">
+                    <div class="bg-secondary-100 p-2 rounded-lg mr-3">
+                        <i class="fas fa-truck-pickup text-secondary-600"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-neutral-900">Informasi Lokasi Pickup</h3>
+                </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label for="pickup_name" class="block text-sm font-medium text-gray-700">Nama Pengirim</label>
-                        <input type="text" name="pickup_name" id="pickup_name" value="{{ old('pickup_name') }}" 
-                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                        <label for="pickup_name" class="block text-sm font-medium text-neutral-700 mb-1">Nama
+                            Pengirim</label>
+                        <input type="text" name="pickup_name" id="pickup_name" value="{{ old('pickup_name') }}"
+                            class="block w-full rounded-lg border-neutral-300 focus:border-primary-500 focus:ring-primary-500 shadow-sm"
+                            required>
                         @error('pickup_name')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            <p class="mt-1 text-sm text-error-600">{{ $message }}</p>
                         @enderror
                     </div>
                     <div>
-                        <label for="pickup_phone" class="block text-sm font-medium text-gray-700">Nomor Telepon</label>
-                        <input type="text" name="pickup_phone" id="pickup_phone" value="{{ old('pickup_phone') }}" 
-                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                        <label for="pickup_phone" class="block text-sm font-medium text-neutral-700 mb-1">Nomor
+                            Telepon</label>
+                        <input type="text" name="pickup_phone" id="pickup_phone" value="{{ old('pickup_phone') }}"
+                            class="block w-full rounded-lg border-neutral-300 focus:border-primary-500 focus:ring-primary-500 shadow-sm"
+                            required>
                         @error('pickup_phone')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            <p class="mt-1 text-sm text-error-600">{{ $message }}</p>
                         @enderror
                     </div>
                     <div>
-                        <label for="pickup_city" class="block text-sm font-medium text-gray-700">Kota</label>
-                        <input type="text" name="pickup_city" id="pickup_city" value="{{ old('pickup_city') }}" 
-                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                        <label for="pickup_city" class="block text-sm font-medium text-neutral-700 mb-1">Kota</label>
+                        <input type="text" name="pickup_city" id="pickup_city" value="{{ old('pickup_city') }}"
+                            class="block w-full rounded-lg border-neutral-300 focus:border-primary-500 focus:ring-primary-500 shadow-sm"
+                            required>
                         @error('pickup_city')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            <p class="mt-1 text-sm text-error-600">{{ $message }}</p>
                         @enderror
                     </div>
                     <div>
-                        <label for="pickup_province" class="block text-sm font-medium text-gray-700">Provinsi</label>
-                        <input type="text" name="pickup_province" id="pickup_province" value="{{ old('pickup_province') }}" 
-                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                        <label for="pickup_province"
+                            class="block text-sm font-medium text-neutral-700 mb-1">Provinsi</label>
+                        <input type="text" name="pickup_province" id="pickup_province"
+                            value="{{ old('pickup_province') }}"
+                            class="block w-full rounded-lg border-neutral-300 focus:border-primary-500 focus:ring-primary-500 shadow-sm"
+                            required>
                         @error('pickup_province')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            <p class="mt-1 text-sm text-error-600">{{ $message }}</p>
                         @enderror
                     </div>
                     <div>
-                        <label for="pickup_postal_code" class="block text-sm font-medium text-gray-700">Kode Pos</label>
-                        <input type="text" name="pickup_postal_code" id="pickup_postal_code" value="{{ old('pickup_postal_code') }}" 
-                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                        <label for="pickup_postal_code" class="block text-sm font-medium text-neutral-700 mb-1">Kode
+                            Pos</label>
+                        <input type="text" name="pickup_postal_code" id="pickup_postal_code"
+                            value="{{ old('pickup_postal_code') }}"
+                            class="block w-full rounded-lg border-neutral-300 focus:border-primary-500 focus:ring-primary-500 shadow-sm"
+                            required>
                         @error('pickup_postal_code')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            <p class="mt-1 text-sm text-error-600">{{ $message }}</p>
                         @enderror
                     </div>
-                    {{-- <div>
-                        <label for="pickup_scheduled_at" class="block text-sm font-medium text-gray-700">Waktu Pickup (Opsional)</label>
-                        <input type="datetime-local" name="pickup_scheduled_at" id="pickup_scheduled_at" value="{{ old('pickup_scheduled_at') }}" 
-                               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                        @error('pickup_scheduled_at')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div> --}}
                 </div>
                 <div class="mt-4">
-                    <label for="pickup_address" class="block text-sm font-medium text-gray-700">Alamat Pickup</label>
-                    <textarea name="pickup_address" id="pickup_address" rows="3" 
-                              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>{{ old('pickup_address') }}</textarea>
+                    <label for="pickup_address" class="block text-sm font-medium text-neutral-700 mb-1">Alamat
+                        Pickup</label>
+                    <textarea name="pickup_address" id="pickup_address" rows="3"
+                        class="block w-full rounded-lg border-neutral-300 focus:border-primary-500 focus:ring-primary-500 shadow-sm"
+                        required>{{ old('pickup_address') }}</textarea>
                     @error('pickup_address')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        <p class="mt-1 text-sm text-error-600">{{ $message }}</p>
                     @enderror
                 </div>
             </div>
 
             <!-- Produk -->
-            <div class="bg-white rounded-lg shadow p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Pilih Produk</h3>
+            <div class="bg-white rounded-xl shadow-md p-6 border border-neutral-200">
+                <div class="flex items-center mb-4">
+                    <div class="bg-success-100 p-2 rounded-lg mr-3">
+                        <i class="fas fa-boxes text-success-600"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-neutral-900">Pilih Produk</h3>
+                </div>
                 <div id="product-container">
                     <div class="product-item grid grid-cols-1 md:grid-cols-3 gap-4 items-end mb-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Produk</label>
-                            <select name="items[0][product_id]" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                            <label class="block text-sm font-medium text-neutral-700 mb-1">Produk</label>
+                            <select name="items[0][product_id]"
+                                class="block w-full rounded-lg border-neutral-300 focus:border-primary-500 focus:ring-primary-500 shadow-sm"
+                                required>
                                 <option value="">Pilih Produk</option>
-                                @foreach($products as $product)
-                                    <option value="{{ $product->id }}" data-price="{{ $product->price }}" data-weight="{{ $product->weight_per_pcs }}">
+                                @foreach ($products as $product)
+                                    <option value="{{ $product->id }}" data-price="{{ $product->price }}"
+                                        data-weight="{{ $product->weight_per_pcs }}">
                                         {{ $product->name }} - Rp {{ number_format($product->price, 0, ',', '.') }}
                                     </option>
                                 @endforeach
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Jumlah</label>
-                            <input type="number" name="items[0][quantity]" min="1" value="1" 
-                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                            <label class="block text-sm font-medium text-neutral-700 mb-1">Jumlah</label>
+                            <input type="number" name="items[0][quantity]" min="1" value="1"
+                                class="block w-full rounded-lg border-neutral-300 focus:border-primary-500 focus:ring-primary-500 shadow-sm"
+                                required>
                         </div>
                         <div>
-                            <button type="button" class="remove-product px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700" style="display: none;">
-                                Hapus
+                            <button type="button"
+                                class="remove-product px-3 py-2 bg-error-600 text-white rounded-lg hover:bg-error-700 transition-colors shadow-sm"
+                                style="display: none;">
+                                <i class="fas fa-trash mr-1"></i> Hapus
                             </button>
                         </div>
                     </div>
                 </div>
-                <button type="button" id="add-product" class="mt-4 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
-                    Tambah Produk
+                <button type="button" id="add-product"
+                    class="mt-4 px-4 py-2 bg-success-600 text-white rounded-lg hover:bg-success-700 transition-colors shadow-sm">
+                    <i class="fas fa-plus mr-2"></i> Tambah Produk
                 </button>
             </div>
 
             <!-- Informasi Pengiriman dan Pembayaran -->
-            {{-- Modifikasi bagian Informasi Pengiriman dan Pembayaran --}}
-            <div class="bg-white rounded-lg shadow p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Pengiriman & Pembayaran</h3>
-                
-                {{-- Wallet Balance Info --}}
-                <div class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-md">
-                    <h4 class="text-sm font-medium text-blue-800 mb-2">Informasi Wallet</h4>
-                    <p class="text-sm text-blue-700">
-                        Saldo Wallet: <span class="font-semibold">{{ $wallet->getFormattedAvailableBalanceAttribute() }}</span>
-                    </p>
+            <div class="bg-white rounded-xl shadow-md p-6 border border-neutral-200">
+                <div class="flex items-center mb-4">
+                    <div class="bg-warning-100 p-2 rounded-lg mr-3">
+                        <i class="fas fa-truck text-warning-600"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-neutral-900">Pengiriman & Pembayaran</h3>
                 </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label for="shipping_cost" class="block text-sm font-medium text-gray-700">Biaya Pengiriman</label>
-                        <input type="number" name="shipping_cost" id="shipping_cost" value="{{ old('shipping_cost', 0) }}" min="0" step="0.01" 
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
-                        @error('shipping_cost')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-                    <div>
-                        <label for="service_fee" class="block text-sm font-medium text-gray-700">Biaya Layanan (Opsional)</label>
-                        <input type="number" name="service_fee" id="service_fee" value="{{ old('service_fee', 0) }}" min="0" step="0.01" 
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                        @error('service_fee')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-                    <div>
-                        <label for="payment_method" class="block text-sm font-medium text-gray-700">Metode Pembayaran</label>
-                        <select name="payment_method" id="payment_method" 
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
-                            <option value="">Pilih Metode</option>
-                            <option value="wallet" {{ old('payment_method') === 'wallet' ? 'selected' : '' }}>Wallet</option>
-                            <option value="cod" {{ old('payment_method') === 'cod' ? 'selected' : '' }}>COD</option>
-                        </select>
-                        @error('payment_method')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-                    <div>
-                        <label for="courier_service" class="block text-sm font-medium text-gray-700">Jasa Kurir (Opsional)</label>
-                        <input type="text" name="courier_service" id="courier_service" value="{{ old('courier_service') }}" 
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                        @error('courier_service')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-                </div>
-                
-                {{-- Total Amount Display --}}
-                <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-md">
-                    <div class="flex justify-between items-center">
-                        <span class="text-sm font-medium text-gray-700">Total Pembayaran:</span>
-                        <span id="total-amount" class="text-lg font-bold text-gray-900">Rp 0</span>
-                    </div>
-                </div>
-                
-                {{-- Wallet Balance Warning --}}
-                <div id="wallet-warning" class="mt-4 p-4 bg-red-50 border border-red-200 rounded-md" style="display: none;">
-                    <div class="flex">
+
+                <!-- Wallet Balance Info -->
+                <div class="mb-4 p-4 bg-secondary-50 border border-secondary-200 rounded-lg">
+                    <div class="flex items-start">
                         <div class="flex-shrink-0">
-                            <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-                            </svg>
+                            <i class="fas fa-wallet text-secondary-600 mt-1"></i>
                         </div>
                         <div class="ml-3">
-                            <h3 class="text-sm font-medium text-red-800">Saldo Wallet Tidak Mencukupi</h3>
-                            <div class="mt-2 text-sm text-red-700">
+                            <h4 class="text-sm font-medium text-secondary-800">Informasi Wallet</h4>
+                            <p class="text-sm text-secondary-700 mt-1">
+                                Saldo Wallet: <span
+                                    class="font-semibold">{{ $wallet->getFormattedAvailableBalanceAttribute() }}</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="shipping_cost" class="block text-sm font-medium text-neutral-700 mb-1">Biaya
+                            Pengiriman</label>
+                        <input type="number" name="shipping_cost" id="shipping_cost"
+                            value="{{ old('shipping_cost', 0) }}" min="0" step="0.01"
+                            class="block w-full rounded-lg border-neutral-300 focus:border-primary-500 focus:ring-primary-500 shadow-sm"
+                            required>
+                        @error('shipping_cost')
+                            <p class="mt-1 text-sm text-error-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    <div>
+                        <label for="service_fee" class="block text-sm font-medium text-neutral-700 mb-1">Biaya Layanan
+                            (Opsional)</label>
+                        <input type="number" name="service_fee" id="service_fee"
+                            value="{{ old('service_fee', 0) }}" min="0" step="0.01"
+                            class="block w-full rounded-lg border-neutral-300 focus:border-primary-500 focus:ring-primary-500 shadow-sm">
+                        @error('service_fee')
+                            <p class="mt-1 text-sm text-error-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    <div>
+                        <label for="payment_method" class="block text-sm font-medium text-neutral-700 mb-1">Metode
+                            Pembayaran</label>
+                        <select name="payment_method" id="payment_method"
+                            class="block w-full rounded-lg border-neutral-300 focus:border-primary-500 focus:ring-primary-500 shadow-sm"
+                            required>
+                            <option value="">Pilih Metode</option>
+                            <option value="wallet" {{ old('payment_method') === 'wallet' ? 'selected' : '' }}>Wallet
+                            </option>
+                            <option value="cod" {{ old('payment_method') === 'cod' ? 'selected' : '' }}>COD
+                            </option>
+                        </select>
+                        @error('payment_method')
+                            <p class="mt-1 text-sm text-error-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    <div>
+                        <label for="courier_service" class="block text-sm font-medium text-neutral-700 mb-1">Jasa
+                            Kurir (Opsional)</label>
+                        <input type="text" name="courier_service" id="courier_service"
+                            value="{{ old('courier_service') }}"
+                            class="block w-full rounded-lg border-neutral-300 focus:border-primary-500 focus:ring-primary-500 shadow-sm">
+                        @error('courier_service')
+                            <p class="mt-1 text-sm text-error-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+
+                <!-- Total Amount Display -->
+                <div class="mt-4 p-4 bg-primary-50 border border-primary-200 rounded-lg">
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm font-medium text-primary-800">Total Pembayaran:</span>
+                        <span id="total-amount" class="text-lg font-bold text-primary-900">Rp 0</span>
+                    </div>
+                </div>
+
+                <!-- Wallet Balance Warning -->
+                <div id="wallet-warning" class="mt-4 p-4 bg-error-50 border border-error-200 rounded-lg"
+                    style="display: none;">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-exclamation-circle text-error-500 mt-1"></i>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-error-800">Saldo Wallet Tidak Mencukupi</h3>
+                            <div class="mt-1 text-sm text-error-700">
                                 <p id="wallet-warning-message"></p>
                             </div>
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="mt-4">
-                    <label for="notes" class="block text-sm font-medium text-gray-700">Catatan (Opsional)</label>
-                    <textarea name="notes" id="notes" rows="3" 
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">{{ old('notes') }}</textarea>
+                    <label for="notes" class="block text-sm font-medium text-neutral-700 mb-1">Catatan
+                        (Opsional)</label>
+                    <textarea name="notes" id="notes" rows="3"
+                        class="block w-full rounded-lg border-neutral-300 focus:border-primary-500 focus:ring-primary-500 shadow-sm">{{ old('notes') }}</textarea>
                     @error('notes')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        <p class="mt-1 text-sm text-error-600">{{ $message }}</p>
                     @enderror
                 </div>
             </div>
 
             <!-- Submit Button -->
-            <div class="flex justify-end space-x-4">
-                <a href="{{ route('seller.pickup-request.index') }}" 
-                   class="px-6 py-3 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
+            <div class="flex flex-col sm:flex-row justify-end gap-3">
+                <a href="{{ route('seller.pickup-request.index') }}"
+                    class="px-6 py-3 bg-neutral-200 text-neutral-700 rounded-lg hover:bg-neutral-300 transition-colors shadow-sm text-center">
                     Batal
                 </a>
-                <button type="submit" class="px-6 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
+                <button type="submit"
+                    class="px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors shadow-sm">
                     Buat Pickup Request
                 </button>
             </div>
@@ -276,15 +341,14 @@
     <script>
         let productIndex = 1;
         const currentWalletBalance = {{ $wallet->available_balance }};
-        
-        
+
         function calculateTotal() {
             let productTotal = 0;
-            
+
             document.querySelectorAll('.product-item').forEach(function(item) {
                 const productSelect = item.querySelector('select[name*="[product_id]"]');
                 const quantityInput = item.querySelector('input[name*="[quantity]"]');
-                
+
                 if (productSelect.value && quantityInput.value) {
                     const selectedOption = productSelect.options[productSelect.selectedIndex];
                     const price = parseFloat(selectedOption.dataset.price) || 0;
@@ -292,34 +356,33 @@
                     productTotal += price * quantity;
                 }
             });
-            
+
             const shippingCost = parseFloat(document.getElementById('shipping_cost').value) || 0;
             const serviceFee = parseFloat(document.getElementById('service_fee').value) || 0;
-            
+
             const totalAmount = productTotal + shippingCost + serviceFee;
-            
-            document.getElementById('total-amount').textContent = 'Rp ' + new Intl.NumberFormat('id-ID').format(totalAmount);
-            
-            
+
+            document.getElementById('total-amount').textContent = 'Rp ' + new Intl.NumberFormat('id-ID').format(
+            totalAmount);
+
             checkWalletBalance(totalAmount);
-            
+
             return totalAmount;
         }
-        
-        
+
         function checkWalletBalance(totalAmount) {
             const paymentMethod = document.getElementById('payment_method').value;
             const walletWarning = document.getElementById('wallet-warning');
             const submitButton = document.querySelector('button[type="submit"]');
-            
+
             if (paymentMethod === 'wallet' && totalAmount > 0) {
                 if (currentWalletBalance < totalAmount) {
                     const shortfall = totalAmount - currentWalletBalance;
-                    document.getElementById('wallet-warning-message').innerHTML = 
+                    document.getElementById('wallet-warning-message').innerHTML =
                         `Saldo Anda: <strong>Rp ${new Intl.NumberFormat('id-ID').format(currentWalletBalance)}</strong><br>` +
                         `Yang dibutuhkan: <strong>Rp ${new Intl.NumberFormat('id-ID').format(totalAmount)}</strong><br>` +
                         `Kekurangan: <strong>Rp ${new Intl.NumberFormat('id-ID').format(shortfall)}</strong>`;
-                    
+
                     walletWarning.style.display = 'block';
                     submitButton.disabled = true;
                     submitButton.classList.add('opacity-50', 'cursor-not-allowed');
@@ -334,10 +397,9 @@
                 submitButton.classList.remove('opacity-50', 'cursor-not-allowed');
             }
         }
-        
-        
+
         document.addEventListener('change', function(e) {
-            if (e.target.matches('select[name*="[product_id]"]') || 
+            if (e.target.matches('select[name*="[product_id]"]') ||
                 e.target.matches('input[name*="[quantity]"]') ||
                 e.target.id === 'shipping_cost' ||
                 e.target.id === 'service_fee' ||
@@ -345,7 +407,7 @@
                 calculateTotal();
             }
         });
-        
+
         document.addEventListener('input', function(e) {
             if (e.target.matches('input[name*="[quantity]"]') ||
                 e.target.id === 'shipping_cost' ||
@@ -353,52 +415,54 @@
                 calculateTotal();
             }
         });
-        
-        
+
         document.getElementById('add-product').addEventListener('click', function() {
             const container = document.getElementById('product-container');
-            
-            const productOptions = {!! json_encode($products->map(function($product) {
-                return [
-                    'id' => $product->id,
-                    'name' => $product->name,
-                    'price' => $product->price,
-                    'weight_per_pcs' => $product->weight_per_pcs ?? 0
-                ];
-            })) !!};
+
+            const productOptions = {!! json_encode(
+                $products->map(function ($product) {
+                    return [
+                        'id' => $product->id,
+                        'name' => $product->name,
+                        'price' => $product->price,
+                        'weight_per_pcs' => $product->weight_per_pcs ?? 0,
+                    ];
+                }),
+            ) !!};
             let optionsHtml = '<option value="">Pilih Produk</option>';
             productOptions.forEach(function(product) {
                 const formattedPrice = new Intl.NumberFormat('id-ID').format(product.price);
-                optionsHtml += `<option value="${product.id}" data-price="${product.price}" data-weight="${product.weight_per_pcs}">${product.name} - Rp ${formattedPrice}</option>`;
+                optionsHtml +=
+                    `<option value="${product.id}" data-price="${product.price}" data-weight="${product.weight_per_pcs}">${product.name} - Rp ${formattedPrice}</option>`;
             });
-            
+
             const newProductItem = `
                 <div class="product-item grid grid-cols-1 md:grid-cols-3 gap-4 items-end mb-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Produk</label>
-                        <select name="items[${productIndex}][product_id]" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                        <label class="block text-sm font-medium text-neutral-700 mb-1">Produk</label>
+                        <select name="items[${productIndex}][product_id]" class="block w-full rounded-lg border-neutral-300 focus:border-primary-500 focus:ring-primary-500 shadow-sm" required>
                             ${optionsHtml}
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Jumlah</label>
+                        <label class="block text-sm font-medium text-neutral-700 mb-1">Jumlah</label>
                         <input type="number" name="items[${productIndex}][quantity]" min="1" value="1" 
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                            class="block w-full rounded-lg border-neutral-300 focus:border-primary-500 focus:ring-primary-500 shadow-sm" required>
                     </div>
                     <div>
-                        <button type="button" class="remove-product px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
-                            Hapus
+                        <button type="button" class="remove-product px-3 py-2 bg-error-600 text-white rounded-lg hover:bg-error-700 transition-colors shadow-sm">
+                            <i class="fas fa-trash mr-1"></i> Hapus
                         </button>
                     </div>
                 </div>
             `;
             container.insertAdjacentHTML('beforeend', newProductItem);
             productIndex++;
-            
+
             updateRemoveButtons();
             calculateTotal();
         });
-        
+
         document.addEventListener('click', function(e) {
             if (e.target.classList.contains('remove-product')) {
                 e.target.closest('.product-item').remove();
@@ -406,14 +470,14 @@
                 calculateTotal();
             }
         });
-        
+
         function updateRemoveButtons() {
             const productItems = document.querySelectorAll('.product-item');
             const removeButtons = document.querySelectorAll('.remove-product');
-            
+
             if (productItems.length > 1) {
                 removeButtons.forEach(function(button) {
-                    button.style.display = 'block';
+                    button.style.display = 'inline-flex';
                 });
             } else {
                 removeButtons.forEach(function(button) {
@@ -421,10 +485,7 @@
                 });
             }
         }
-        
-        
+
         calculateTotal();
     </script>
-
-
 </x-layouts.plain-app>
