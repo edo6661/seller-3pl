@@ -1,4 +1,4 @@
-{{-- resources/views/components/chat-notification.blade.php --}}
+{{-- resources/views/components/shared/chat-notification.blade.php --}}
 <div x-data="chatNotification()" 
      x-init="init()" 
      class="relative">
@@ -27,6 +27,8 @@
         </div>
         <span class="ml-2 hidden md:inline-block">Chat</span>
     </a>
+
+    <!-- Toast Notification -->
     <div x-show="showToast" 
          x-transition:enter="transition ease-out duration-300 transform"
          x-transition:enter-start="translate-x-full opacity-0"
@@ -67,6 +69,7 @@
         </div>
     </div>
 </div>
+
 <script>
 function chatNotification() {
     return {
@@ -76,67 +79,120 @@ function chatNotification() {
         toastProgress: 100,
         toastTimer: null,
         currentUserId: {{ auth()->id() }},
+        currentUserRole: '{{ auth()->user()->role->value }}',
         lastMessage: {
             sender_name: '',
             content: '',
             time: '',
             conversation_id: null
         },
+
         init() {
+            console.log('Chat notification initialized for user:', this.currentUserId, 'role:', this.currentUserRole);
             this.setupGlobalEcho();
             this.loadInitialUnreadCount();
         },
+
         setupGlobalEcho() {
-            @if(auth()->user()->isAdmin())
+            // PERBAIKAN: Setup listener berdasarkan role
+            if (this.currentUserRole === 'admin') {
+                // Admin mendengarkan dari channel admin-notifications untuk pesan dari seller
                 window.Echo.channel('admin-notifications')
-                    .listen('.new.message', (e) => {
+                    .listen('.message.sent', (e) => {
+                        console.log('Admin received message from seller:', e);
                         this.handleNewMessage(e);
                     });
-            @else
+
+                // Admin juga mendengarkan channel user sendiri untuk pesan langsung
                 window.Echo.channel(`user.${this.currentUserId}`)
-                    .listen('.new.message', (e) => {
+                    .listen('.message.sent', (e) => {
+                        console.log('Admin received direct message:', e);
                         this.handleNewMessage(e);
                     });
-            @endif
+            } else {
+                // Seller hanya mendengarkan channel user sendiri
+                window.Echo.channel(`user.${this.currentUserId}`)
+                    .listen('.message.sent', (e) => {
+                        console.log('Seller received message:', e);
+                        this.handleNewMessage(e);
+                    });
+            }
+
+            // Channel untuk update unread count
             window.Echo.channel(`unread-count.${this.currentUserId}`)
                 .listen('.count.updated', (e) => {
+                    console.log('Unread count updated:', e);
                     this.unreadCount = e.count;
                 });
+
+            // Debug connection status
+            window.Echo.connector.pusher.connection.bind('connected', () => {
+                console.log('✅ Connected to Pusher');
+            });
+
+            window.Echo.connector.pusher.connection.bind('disconnected', () => {
+                console.log('❌ Disconnected from Pusher');
+            });
+
+            window.Echo.connector.pusher.connection.bind('error', (err) => {
+                console.error('❌ Pusher connection error:', err);
+            });
         },
+
         handleNewMessage(messageData) {
+            console.log('Processing new message:', messageData);
+            
+            // Jangan tampilkan notifikasi untuk pesan dari user sendiri
             if (messageData.sender_id === this.currentUserId) {
+                console.log('Ignoring message from self');
                 return;
             }
+
+            // Jangan tampilkan notifikasi jika user sedang di halaman chat conversation ini
             if (this.isOnChatPage(messageData.conversation_id)) {
+                console.log('User is on chat page, not showing notification');
                 return;
             }
+
+            console.log('Showing notification for message:', messageData);
+
+            // Update unread count
             this.unreadCount = messageData.total_unread || (this.unreadCount + 1);
+
+            // Update last message info
             this.lastMessage = {
                 sender_name: messageData.sender_name,
                 content: this.truncateMessage(messageData.content),
                 time: this.formatTime(messageData.created_at),
                 conversation_id: messageData.conversation_id
             };
+
+            // Show visual indicators
             this.showNewMessageIndicator();
             this.showToastNotification();
             this.playNotificationSound();
             this.showDesktopNotification();
         },
+
         showNewMessageIndicator() {
             this.hasNewMessage = true;
             setTimeout(() => {
                 this.hasNewMessage = false;
             }, 3000);
         },
+
         showToastNotification() {
             this.toastProgress = 100;
             this.showToast = true;
+            
             if (this.toastTimer) {
                 clearInterval(this.toastTimer);
             }
+
             let duration = 5000; 
             let interval = 50; 
             let step = (100 / (duration / interval));
+
             this.toastTimer = setInterval(() => {
                 this.toastProgress -= step;
                 if (this.toastProgress <= 0) {
@@ -144,6 +200,7 @@ function chatNotification() {
                 }
             }, interval);
         },
+
         hideToast() {
             this.showToast = false;
             if (this.toastTimer) {
@@ -151,28 +208,36 @@ function chatNotification() {
                 this.toastTimer = null;
             }
         },
+
         playNotificationSound() {
             try {
                 const audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 const oscillator1 = audioContext.createOscillator();
                 const gainNode1 = audioContext.createGain();
+
                 oscillator1.connect(gainNode1);
                 gainNode1.connect(audioContext.destination);
+
                 oscillator1.frequency.value = 800;
                 oscillator1.type = 'sine';
                 gainNode1.gain.setValueAtTime(0.1, audioContext.currentTime);
                 gainNode1.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+
                 oscillator1.start(audioContext.currentTime);
                 oscillator1.stop(audioContext.currentTime + 0.2);
+
                 setTimeout(() => {
                     const oscillator2 = audioContext.createOscillator();
                     const gainNode2 = audioContext.createGain();
+
                     oscillator2.connect(gainNode2);
                     gainNode2.connect(audioContext.destination);
+
                     oscillator2.frequency.value = 1000;
                     oscillator2.type = 'sine';
                     gainNode2.gain.setValueAtTime(0.08, audioContext.currentTime);
                     gainNode2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+
                     oscillator2.start(audioContext.currentTime);
                     oscillator2.stop(audioContext.currentTime + 0.2);
                 }, 100);
@@ -180,6 +245,7 @@ function chatNotification() {
                 console.log('Cannot play notification sound:', error);
             }
         },
+
         showDesktopNotification() {
             if (Notification.permission === 'granted') {
                 const notification = new Notification(`Pesan baru dari ${this.lastMessage.sender_name}`, {
@@ -190,11 +256,13 @@ function chatNotification() {
                     requireInteraction: false,
                     silent: false
                 });
+
                 notification.onclick = () => {
                     window.focus();
                     window.location.href = `/chat/${this.lastMessage.conversation_id}`;
                     notification.close();
                 };
+
                 setTimeout(() => {
                     notification.close();
                 }, 5000);
@@ -202,6 +270,7 @@ function chatNotification() {
                 Notification.requestPermission();
             }
         },
+
         async loadInitialUnreadCount() {
             try {
                 const response = await fetch('/chat/unread-count', {
@@ -210,39 +279,48 @@ function chatNotification() {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                     }
                 });
+
                 if (response.ok) {
                     const data = await response.json();
                     this.unreadCount = data.count || 0;
+                    console.log('Initial unread count loaded:', this.unreadCount);
                 }
             } catch (error) {
                 console.error('Error loading unread count:', error);
             }
         },
+
         isOnChatPage(conversationId) {
             const currentPath = window.location.pathname;
             return currentPath.includes('/chat/') && currentPath.includes(conversationId);
         },
+
         truncateMessage(message, length = 50) {
             if (message.length <= length) return message;
             return message.substring(0, length) + '...';
         },
+
         formatTime(timestamp) {
             const date = new Date(timestamp);
             const now = new Date();
             const diff = now - date;
+
             if (diff < 60000) {
                 return 'Baru saja';
             }
+
             if (diff < 3600000) {
                 const minutes = Math.floor(diff / 60000);
                 return `${minutes} menit lalu`;
             }
+
             if (date.toDateString() === now.toDateString()) {
                 return date.toLocaleTimeString('id-ID', { 
                     hour: '2-digit', 
                     minute: '2-digit' 
                 });
             }
+
             return date.toLocaleDateString('id-ID', {
                 day: 'numeric',
                 month: 'short',
@@ -253,6 +331,7 @@ function chatNotification() {
     }
 }
 </script>
+
 <style>
 .line-clamp-2 {
     display: -webkit-box;
