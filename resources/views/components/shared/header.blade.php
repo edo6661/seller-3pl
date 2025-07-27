@@ -1,49 +1,27 @@
-<header class="bg-white shadow-md sticky top-0 z-50 border-b border-neutral-200" x-data="{ mobileMenuOpen: false }">
+<header class="bg-white shadow-md sticky top-0 z-50 border-b border-neutral-200" x-data="{
+    mobileMenuOpen: false,
+    showNotification: false,
+    notificationType: '',
+    notificationMessage: '',
+    showToast(type, message) {
+        this.notificationType = type;
+        this.notificationMessage = message;
+        this.showNotification = true;
+        setTimeout(() => this.showNotification = false, 5000);
+    }
+}"
+    x-init="@if(session('success'))
+    showToast('success', '{{ session('success') }}');
+    @endif
+    @if(session('status'))
+    showToast('success', '{{ session('status') }}');
+    @endif
+    @if(session('error'))
+    showToast('error', '{{ session('error') }}');
+    @endif">
     @auth
         <x-shared.chat-notification :unreadCount="auth()->user()->getTotalUnreadMessages()" />
     @endauth
-    <!-- Success/Error Messages -->
-    @if (session('success'))
-        <div class="fixed bottom-4 right-4 bg-success-50  border-success-200 text-success-700 px-4 py-3 rounded-lg shadow-lg z-50"
-            role="alert">
-            <div class="flex items-center">
-                <i class="fas fa-check-circle text-success-600 mr-3"></i>
-                <span class="font-medium">{{ session('success') }}</span>
-                <button onclick="this.parentElement.parentElement.remove()"
-                    class="ml-4 text-success-600 hover:text-success-800">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-        </div>
-    @endif
-
-    @if (session('status'))
-        <div class="fixed top-4 right-4 bg-success-50 border border-success-200 text-success-700 px-4 py-3 rounded-lg shadow-lg z-50"
-            role="alert">
-            <div class="flex items-center">
-                <i class="fas fa-check-circle text-success-600 mr-3"></i>
-                <span class="font-medium">{{ session('status') }}</span>
-                <button onclick="this.parentElement.parentElement.remove()"
-                    class="ml-4 text-success-600 hover:text-success-800">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-        </div>
-    @endif
-
-    @if (session('error'))
-        <div class="fixed top-4 right-4 bg-error-50 border border-error-200 text-error-700 px-4 py-3 rounded-lg shadow-lg z-50"
-            role="alert">
-            <div class="flex items-center">
-                <i class="fas fa-exclamation-circle text-error-600 mr-3"></i>
-                <span class="font-medium">{{ session('error') }}</span>
-                <button onclick="this.parentElement.parentElement.remove()"
-                    class="ml-4 text-error-600 hover:text-error-800">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-        </div>
-    @endif
 
     <!-- Main Header -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -285,4 +263,55 @@
             @endauth
         </div>
     </div>
+
+    {{-- Toast Notification --}}
+    <div x-show="showNotification" x-transition:enter="transform ease-out duration-300 transition"
+        x-transition:enter-start="translate-y-2 opacity-0 sm:translate-y-0 sm:translate-x-2"
+        x-transition:enter-end="translate-y-0 opacity-100 sm:translate-x-0"
+        x-transition:leave="transition ease-in duration-100" x-transition:leave-start="opacity-100"
+        x-transition:leave-end="opacity-0"
+        class="fixed top-20 right-4 z-50 w-full bg-white border rounded-lg shadow-lg pointer-events-auto ring-1 ring-black ring-opacity-5 overflow-hidden"
+        style="display: none; max-width: 24rem;">
+        <div class="p-4">
+            <div class="flex items-start">
+                <div class="flex-shrink-0">
+                    <div x-show="notificationType === 'success'" class="text-success-600">
+                        <i class="fas fa-check-circle text-xl"></i>
+                    </div>
+                    <div x-show="notificationType === 'error'" class="text-error-600">
+                        <i class="fas fa-exclamation-circle text-xl"></i>
+                    </div>
+                </div>
+                <div class="ml-3 w-0 flex-1 pt-0.5">
+                    <p x-text="notificationMessage" class="text-sm font-medium"
+                        :class="notificationType === 'success' ? 'text-success-800' : 'text-error-800'">
+                    </p>
+                </div>
+                <div class="ml-4 flex-shrink-0 flex">
+                    <button @click="showNotification = false"
+                        class="rounded-md inline-flex text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary-500">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="h-1 w-full" :class="notificationType === 'success' ? 'bg-success-100' : 'bg-error-100'">
+            <div class="h-full animate-pulse"
+                :class="notificationType === 'success' ? 'bg-success-600' : 'bg-error-600'"
+                style="animation: shrink 5s linear;">
+            </div>
+        </div>
+    </div>
+
+    <style>
+        @keyframes shrink {
+            from {
+                width: 100%;
+            }
+
+            to {
+                width: 0%;
+            }
+        }
+    </style>
 </header>
