@@ -79,6 +79,10 @@
                                 class="text-neutral-600 hover:text-primary-600 transition-colors duration-200 font-medium">
                                 <i class="fas fa-truck mr-2"></i>Pickup Requests
                             </a>
+                            <a href="{{ route('chat.index') }}"
+                            class="block text-neutral-600 hover:text-primary-600 transition-colors duration-200 font-medium">
+                                <i class="fas fa-comments mr-2"></i>Chat
+                            </a>
                         </div>
                     @endif
 
@@ -100,6 +104,10 @@
                             <a href="{{ route('seller.pickup-request.index') }}"
                                 class="text-neutral-600 hover:text-primary-600 transition-colors duration-200 font-medium">
                                 <i class="fas fa-truck mr-2"></i>Requests
+                            </a>
+                            <a href="{{ route('chat.start') }}"
+                                class="text-neutral-600 hover:text-primary-600 transition-colors duration-200 font-medium">
+                                <i class="fas fa-comments mr-2"></i>Chat
                             </a>
                         </div>
                     @endif
@@ -189,6 +197,10 @@
                             class="block text-neutral-600 hover:text-primary-600 transition-colors duration-200 font-medium">
                             <i class="fas fa-truck mr-2"></i>Pickup Requests
                         </a>
+                        <a href="{{ route('chat.index') }}"
+                            class="block text-neutral-600 hover:text-primary-600 transition-colors duration-200 font-medium">
+                            <i class="fas fa-comments mr-2"></i>Chat
+                        </a>
                     </div>
                 @endif
 
@@ -210,6 +222,10 @@
                         <a href="{{ route('seller.pickup-request.index') }}"
                             class="block text-neutral-600 hover:text-primary-600 transition-colors duration-200 font-medium">
                             <i class="fas fa-truck mr-2"></i>Requests
+                        </a>
+                         <a href="{{ route('chat.start') }}"
+                            class="text-neutral-600 hover:text-primary-600 transition-colors duration-200 font-medium">
+                            <i class="fas fa-comments mr-2"></i>Chat
                         </a>
                     </div>
                 @endif

@@ -11,11 +11,13 @@ Route::get('/', function () {
     return view('guest.home');
 })->name('guest.home');
 
-
 require __DIR__.'/guest/auth.php';
 
 Route::middleware(['auth'])->group(function () {
     require __DIR__ . '/auth/profile.php';
+    
+    require __DIR__ . '/chat.php';
+    
     Route::middleware(['isAdmin'])->group(function () {
         Route::prefix('/admin')->group(function () {
             Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
@@ -26,6 +28,7 @@ Route::middleware(['auth'])->group(function () {
             require __DIR__ . '/admin/wallet.php';
         });
     });
+    
     Route::prefix('/seller')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('seller.dashboard');
         require __DIR__ . '/seller/wallet.php';

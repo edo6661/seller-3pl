@@ -1,11 +1,15 @@
 <?php
 namespace App\Providers;
 
+use App\Events\MessageSent;
 use App\Events\PasswordResetRequested;
 use App\Events\PaymentStatusChanged;
 use App\Events\UserRegistered;
+use App\Events\UserStoppedTyping;
+use App\Events\UserTyping;
 use App\Events\WithdrawRequestCreated;
 use App\Events\WithdrawRequestStatusChanged;
+use App\Listeners\MessageSentListener;
 use App\Listeners\SendEmailVerificationNotification;
 use App\Listeners\SendPasswordResetNotification;
 use App\Listeners\SendPaymentNotification;
@@ -31,6 +35,11 @@ class EventServiceProvider extends ServiceProvider
         WithdrawRequestStatusChanged::class => [
             SendWithdrawRequestStatusChangedNotification::class,
         ],
+        MessageSent::class => [
+            MessageSentListener::class,
+        ],
+        UserTyping::class => [],
+        UserStoppedTyping::class => [],
     ];
 
     public function boot(): void
