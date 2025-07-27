@@ -1,4 +1,7 @@
 <header class="bg-white shadow-md sticky top-0 z-50 border-b border-neutral-200" x-data="{ mobileMenuOpen: false }">
+    @auth
+        <x-shared.chat-notification :unreadCount="auth()->user()->getTotalUnreadMessages()" />
+    @endauth
     <!-- Success/Error Messages -->
     @if (session('success'))
         <div class="fixed bottom-4 right-4 bg-success-50  border-success-200 text-success-700 px-4 py-3 rounded-lg shadow-lg z-50"
@@ -74,6 +77,7 @@
                 @endguest
 
                 @auth
+                
                     <!-- Admin Navigation -->
                     @if (auth()->user()->isAdmin())
                         <div class="flex items-center space-x-6">

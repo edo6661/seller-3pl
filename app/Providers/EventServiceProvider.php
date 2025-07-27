@@ -38,8 +38,6 @@ class EventServiceProvider extends ServiceProvider
         MessageSent::class => [
             MessageSentListener::class,
         ],
-        UserTyping::class => [],
-        UserStoppedTyping::class => [],
     ];
 
     public function boot(): void

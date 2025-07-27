@@ -3,6 +3,7 @@
 use App\Collection\UserCollection;
 use App\Http\Controllers\Seller\DashboardController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\ChatController;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
@@ -12,6 +13,8 @@ Route::get('/', function () {
 })->name('guest.home');
 
 require __DIR__.'/guest/auth.php';
+Route::get('chat/unread-count', [ChatController::class, 'getUnreadCount'])->name('unread-count');
+
 
 Route::middleware(['auth'])->group(function () {
     require __DIR__ . '/auth/profile.php';

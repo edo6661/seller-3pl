@@ -10,6 +10,7 @@ Route::prefix('chat')->name('chat.')->group(function () {
     Route::post('/{conversation}/messages', [ChatController::class, 'store'])->name('messages.store');
     Route::get('/{conversation}/messages/older', [ChatController::class, 'getOlderMessages'])->name('messages.older');
     Route::post('/{conversation}/mark-read', [ChatController::class, 'markAsRead'])->name('mark-read');
-    Route::post('/{conversation}/typing', [ChatController::class, 'typing'])->name('typing');
-    Route::post('/{conversation}/stop-typing', [ChatController::class, 'stopTyping'])->name('stop-typing');
+    Route::get('/unread-count', [ChatController::class, 'getUnreadCount'])->name('unread-count');
+
+    
 });

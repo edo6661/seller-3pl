@@ -15,7 +15,7 @@
                 @endif
             </div>
             
-            @if($unreadCount > 0)
+            {{-- @if($unreadCount > 0)
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
                     <div class="flex items-center">
                         <i class="fas fa-envelope text-blue-600 mr-2"></i>
@@ -24,7 +24,7 @@
                         </span>
                     </div>
                 </div>
-            @endif
+            @endif --}}
         </div>
 
         <!-- Search -->

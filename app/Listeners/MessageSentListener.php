@@ -3,6 +3,7 @@
 namespace App\Listeners;
 
 use App\Events\MessageSent;
+use App\Events\NewMessageNotification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;
@@ -29,6 +30,15 @@ class MessageSentListener implements ShouldQueue
             'sender_role' => $message->sender->role->value,
             'created_at' => $message->created_at,
         ]);
+
+        // Kirim notifikasi ke receiver
+        $receiver = $conversation->seller_id === $message->sender_id 
+            ? $conversation->admin 
+            : $conversation->seller;
+            
+        if ($receiver) {
+            event(new NewMessageNotification($message, $receiver));
+        }
 
         // Di sini bisa ditambahkan logic lain seperti:
         // - Mengirim email notification jika diperlukan
