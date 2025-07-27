@@ -1,6 +1,20 @@
 {{-- resources/views/admin/buyer-rating/index.blade.php --}}
 <x-layouts.plain-app>
-    <div class="min-h-screen bg-neutral-50 py-xl">
+    <div class="min-h-screen bg-neutral-50 py-xl" x-data="{
+        showDeleteModal: false,
+        deleteForm: null,
+        showDeleteNotification(form) {
+            this.deleteForm = form;
+            this.showDeleteModal = true;
+        },
+        confirmDelete() {
+            if (this.deleteForm) {
+                this.deleteForm.submit();
+            }
+            this.showDeleteModal = false;
+            this.deleteForm = null;
+        }
+    }">
         <div class=" mx-auto px-md sm:px-lg lg:px-xl">
             {{-- Header --}}
             <div class="mb-2xl">
@@ -231,11 +245,11 @@
                                             </a>
                                             <form method="POST"
                                                 action="{{ route('admin.buyer-ratings.destroy', $rating->id) }}"
-                                                class="inline-block"
-                                                onsubmit="return confirm('Apakah Anda yakin ingin menghapus rating buyer ini?')">
+                                                class="inline-block">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit"
+                                                <button type="button"
+                                                    @click="showDeleteNotification($el.closest('form'))"
                                                     class="text-error-600 hover:text-error-900 transition-colors p-1 rounded hover:bg-error-50"
                                                     title="Hapus">
                                                     <i class="fas fa-trash"></i>
@@ -316,49 +330,72 @@
                     </div>
                 @endif
             </div>
+        </div>
 
-            {{-- Flash Messages --}}
-            @if (session('success'))
-                <div class="fixed top-4 right-4 z-50 max-w-sm w-full bg-success-50 border border-success-200 rounded-lg shadow-lg"
-                    x-data="{ show: true }" x-show="show" x-transition x-init="setTimeout(() => show = false, 5000)">
-                    <div class="p-md">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <i class="fas fa-check-circle text-success-600"></i>
-                            </div>
-                            <div class="ml-sm">
-                                <p class="text-sm font-medium text-success-800">{{ session('success') }}</p>
-                            </div>
-                            <div class="ml-auto pl-sm">
-                                <button @click="show = false" class="text-success-600 hover:text-success-800">
-                                    <i class="fas fa-times"></i>
-                                </button>
+        {{-- Delete Confirmation Modal --}}
+        <div x-show="showDeleteModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200"
+            x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+            class="fixed inset-0 z-50 overflow-y-auto" style="display: none;">
+
+            {{-- Backdrop --}}
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="showDeleteModal = false">
+            </div>
+
+            {{-- Modal Content --}}
+            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+
+                <div x-show="showDeleteModal" x-transition:enter="ease-out duration-300"
+                    x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                    x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                    x-transition:leave="ease-in duration-200"
+                    x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                    x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                    class="relative inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:w-full sm:p-6 z-10"
+                    style="max-width: 28rem;">
+                    <div class="sm:flex sm:items-start">
+                        <div
+                            class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-error-100 sm:mx-0 sm:h-10 sm:w-10">
+                            <i class="fas fa-exclamation-triangle text-error-600"></i>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900">
+                                Konfirmasi Hapus
+                            </h3>
+                            <div class="mt-2">
+                                <p class="text-sm text-gray-500">
+                                    Apakah Anda yakin ingin menghapus buyer rating ini? Tindakan ini tidak dapat
+                                    dibatalkan.
+                                </p>
                             </div>
                         </div>
                     </div>
-                </div>
-            @endif
-
-            @if (session('error'))
-                <div class="fixed top-4 right-4 z-50 max-w-sm w-full bg-error-50 border border-error-200 rounded-lg shadow-lg"
-                    x-data="{ show: true }" x-show="show" x-transition x-init="setTimeout(() => show = false, 5000)">
-                    <div class="p-md">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <i class="fas fa-exclamation-circle text-error-600"></i>
-                            </div>
-                            <div class="ml-sm">
-                                <p class="text-sm font-medium text-error-800">{{ session('error') }}</p>
-                            </div>
-                            <div class="ml-auto pl-sm">
-                                <button @click="show = false" class="text-error-600 hover:text-error-800">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                        </div>
+                    <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+                        <button type="button" @click="confirmDelete()"
+                            class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-error-600 text-base font-medium text-white hover:bg-error-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-error-500 sm:ml-3 sm:w-auto sm:text-sm transition-colors">
+                            <i class="fas fa-trash mr-2"></i>
+                            Hapus
+                        </button>
+                        <button type="button" @click="showDeleteModal = false"
+                            class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary-500 sm:mt-0 sm:w-auto sm:text-sm transition-colors">
+                            Batal
+                        </button>
                     </div>
                 </div>
-            @endif
+            </div>
         </div>
     </div>
+
+    <style>
+        @keyframes shrink {
+            from {
+                width: 100%;
+            }
+
+            to {
+                width: 0%;
+            }
+        }
+    </style>
 </x-layouts.plain-app>
