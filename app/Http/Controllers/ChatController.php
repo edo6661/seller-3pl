@@ -206,4 +206,37 @@ class ChatController extends Controller
             return response()->json(['success' => false], 500);
         }
     }
+    public function typing(Conversation $conversation)
+    {
+        try {
+            $user = auth()->user();
+            
+            if (!$this->chatService->canUserAccessConversation($user, $conversation)) {
+                abort(403, 'Anda tidak memiliki akses ke percakapan ini.');
+            }
+            
+            event(new \App\Events\UserTyping($conversation->id, $user));
+            
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false], 500);
+        }
+    }
+
+    public function stopTyping(Conversation $conversation)
+    {
+        try {
+            $user = auth()->user();
+            
+            if (!$this->chatService->canUserAccessConversation($user, $conversation)) {
+                abort(403, 'Anda tidak memiliki akses ke percakapan ini.');
+            }
+            
+            event(new \App\Events\UserStoppedTyping($conversation->id, $user));
+            
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false], 500);
+        }
+    }
 }

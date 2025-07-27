@@ -5,6 +5,8 @@ use App\Events\MessageSent;
 use App\Events\PasswordResetRequested;
 use App\Events\PaymentStatusChanged;
 use App\Events\UserRegistered;
+use App\Events\UserStoppedTyping;
+use App\Events\UserTyping;
 use App\Events\WithdrawRequestCreated;
 use App\Events\WithdrawRequestStatusChanged;
 use App\Listeners\MessageSentListener;
@@ -36,6 +38,8 @@ class EventServiceProvider extends ServiceProvider
         MessageSent::class => [
             MessageSentListener::class,
         ],
+        UserTyping::class => [],
+        UserStoppedTyping::class => [],
     ];
 
     public function boot(): void

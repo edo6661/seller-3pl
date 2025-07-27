@@ -8,3 +8,5 @@ document.addEventListener("DOMContentLoaded", () => {
     window.Alpine = Alpine;
     Alpine.start();
 });
+
+import './echo';
