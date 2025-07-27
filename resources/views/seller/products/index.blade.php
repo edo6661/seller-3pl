@@ -298,17 +298,14 @@
                         alert('Pilih produk yang ingin diexport terlebih dahulu.');
                         return;
                     }
-                    // Create and submit export form
                     const form = document.createElement('form');
                     form.method = 'POST';
                     form.action = '{{ route("seller.products.export-selected") }}';
-                    // Add CSRF token
                     const csrfToken = document.createElement('input');
                     csrfToken.type = 'hidden';
                     csrfToken.name = '_token';
                     csrfToken.value = '{{ csrf_token() }}';
                     form.appendChild(csrfToken);
-                    // Add selected product IDs
                     this.selectedProducts.forEach(productId => {
                         const input = document.createElement('input');
                         input.type = 'hidden';

@@ -1,11 +1,8 @@
 <?php
-
 namespace App\Services;
-
 use App\Models\Product;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
-
 class ProductService
 {
     public function getUserProducts(int $userId): Collection
@@ -14,7 +11,6 @@ class ProductService
             ->orderBy('name')
             ->get();
     }
-
     public function getActiveProducts(int $userId): Collection
     {
         return Product::where('user_id', $userId)
@@ -22,7 +18,6 @@ class ProductService
             ->orderBy('name')
             ->get();
     }
-
     public function getInactiveProducts(int $userId): Collection
     {
         return Product::where('user_id', $userId)
@@ -30,13 +25,10 @@ class ProductService
             ->orderBy('name')
             ->get();
     }
-
     public function getProductById(int $id): ?Product
     {
         return Product::with('user')->find($id);
     }
-
-    // New method for export selected products
     public function getProductsByIds(array $productIds, int $userId): Collection
     {
         return Product::where('user_id', $userId)
@@ -44,20 +36,17 @@ class ProductService
             ->orderBy('name')
             ->get();
     }
-
     public function createProduct(array $data): Product
     {
         $data['is_active'] = $data['is_active'] ?? true;
         return Product::create($data);
     }
-
     public function updateProduct(int $id, array $data): Product
     {
         $product = Product::findOrFail($id);
         $product->update($data);
         return $product;
     }
-
     public function deleteProduct(int $id): bool
     {
         $product = Product::find($id);
@@ -70,14 +59,12 @@ class ProductService
         }
         return false;
     }
-
     public function toggleProductStatus(int $id): Product
     {
         $product = Product::findOrFail($id);
         $product->update(['is_active' => !$product->is_active]);
         return $product;
     }
-
     public function searchProducts(string $search, int $userId): Collection
     {
         return Product::where('user_id', $userId)
@@ -88,28 +75,23 @@ class ProductService
             ->orderBy('name')
             ->get();
     }
-
     public function getProductStats(int $userId): array
     {
         $total = Product::where('user_id', $userId)->count();
         $active = Product::where('user_id', $userId)->active()->count();
         $inactive = $total - $active;
-
         return [
             'total' => $total,
             'active' => $active,
             'inactive' => $inactive
         ];
     }
-
     public function bulkDeleteProducts(array $productIds, int $userId): int
     {
         $deletedCount = 0;
-        
         $products = Product::where('user_id', $userId)
             ->whereIn('id', $productIds)
             ->get();
-
         DB::transaction(function () use ($products, &$deletedCount) {
             foreach ($products as $product) {
                 if ($product->pickupRequestItems()->exists()) {
@@ -122,14 +104,11 @@ class ProductService
                 }
             }
         });
-
         return $deletedCount;
     }
-
     public function bulkToggleProductStatus(array $productIds, string $action, int $userId): int
     {
         $status = $action === 'activate';
-        
         return Product::where('user_id', $userId)
             ->whereIn('id', $productIds)
             ->update(['is_active' => $status]);

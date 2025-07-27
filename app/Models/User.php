@@ -102,4 +102,47 @@ class User extends Authenticatable
     {
         return $this->role->label();
     }
+
+    public function sellerConversations()
+    {
+        return $this->hasMany(Conversation::class, 'seller_id');
+    }
+
+    public function adminConversations()
+    {
+        return $this->hasMany(Conversation::class, 'admin_id');
+    }
+
+    public function sentMessages()
+    {
+        return $this->hasMany(Message::class, 'sender_id');
+    }
+
+    public function getConversationWith(User $otherUser): ?Conversation
+    {
+        if ($this->isAdmin() && $otherUser->isSeller()) {
+            return Conversation::where('admin_id', $this->id)
+                            ->where('seller_id', $otherUser->id)
+                            ->first();
+        }
+        
+        if ($this->isSeller() && $otherUser->isAdmin()) {
+            return Conversation::where('seller_id', $this->id)
+                            ->where('admin_id', $otherUser->id)
+                            ->first();
+        }
+        
+        return null;
+    }
+
+    public function getTotalUnreadMessages(): int
+    {
+        $conversationsQuery = $this->isAdmin() 
+            ? $this->adminConversations() 
+            : $this->sellerConversations();
+            
+        return $conversationsQuery->get()->sum(function ($conversation) {
+            return $conversation->unreadMessagesCount($this->id);
+        });
+    }
 }
