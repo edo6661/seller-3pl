@@ -6,21 +6,21 @@ use App\Http\Controllers\Controller;
 use App\Requests\StoreProductRequest;
 use App\Requests\UpdateProductRequest;
 use App\Services\ProductService;
+use App\Services\ProductExportService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class ProductController extends Controller
 {
     protected ProductService $productService;
+    protected ProductExportService $exportService;
 
-    public function __construct(ProductService $productService)
+    public function __construct(ProductService $productService, ProductExportService $exportService)
     {
         $this->productService = $productService;
+        $this->exportService = $exportService;
     }
 
-    /**
-     * Menampilkan daftar semua produk milik user yang sedang login
-     */
     public function index(Request $request)
     {
         $search = $request->get('search');
@@ -37,17 +37,11 @@ class ProductController extends Controller
         return view('seller.products.index', compact('products', 'stats', 'search'));
     }
 
-    /**
-     * Menampilkan form untuk membuat produk baru
-     */
     public function create()
     {
         return view('seller.products.create');
     }
 
-    /**
-     * Menyimpan produk baru ke database
-     */
     public function store(StoreProductRequest $request)
     {
         try {
@@ -70,9 +64,6 @@ class ProductController extends Controller
         }
     }
 
-    /**
-     * Menampilkan detail produk
-     */
     public function show(int $id)
     {
         $product = $this->productService->getProductById($id);
@@ -84,9 +75,6 @@ class ProductController extends Controller
         return view('seller.products.show', compact('product'));
     }
 
-    /**
-     * Menampilkan form untuk mengedit produk
-     */
     public function edit(int $id)
     {
         $product = $this->productService->getProductById($id);
@@ -98,9 +86,6 @@ class ProductController extends Controller
         return view('seller.products.edit', compact('product'));
     }
 
-    /**
-     * Mengupdate produk di database
-     */
     public function update(UpdateProductRequest $request, int $id)
     {
         try {
@@ -123,9 +108,6 @@ class ProductController extends Controller
         }
     }
 
-    /**
-     * Menghapus produk dari database
-     */
     public function destroy(int $id)
     {
         try {
@@ -153,9 +135,6 @@ class ProductController extends Controller
         }
     }
 
-    /**
-     * Toggle status aktif/nonaktif produk
-     */
     public function toggleStatus(int $id)
     {
         try {
@@ -176,6 +155,122 @@ class ProductController extends Controller
             return redirect()
                 ->back()
                 ->with('error', 'Gagal mengubah status produk. Silakan coba lagi.');
+        }
+    }
+
+    public function bulkDelete(Request $request)
+    {
+        try {
+            $productIds = $request->input('product_ids', []);
+            
+            if (empty($productIds)) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'Tidak ada produk yang dipilih.');
+            }
+
+            $deletedCount = $this->productService->bulkDeleteProducts($productIds, auth()->id());
+            
+            return redirect()
+                ->route('seller.products.index')
+                ->with('success', "{$deletedCount} produk berhasil dihapus!");
+        } catch (\Exception $e) {
+            Log::error('Gagal menghapus produk secara bulk: ' . $e->getMessage(), [
+                'user_id' => auth()->id(),
+                'product_ids' => $request->input('product_ids', []),
+            ]);
+            return redirect()
+                ->back()
+                ->with('error', 'Gagal menghapus produk. Silakan coba lagi.');
+        }
+    }
+
+    public function bulkToggleStatus(Request $request)
+    {
+        try {
+            $productIds = $request->input('product_ids', []);
+            $action = $request->input('action');
+            
+            if (empty($productIds)) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'Tidak ada produk yang dipilih.');
+            }
+
+            if (!in_array($action, ['activate', 'deactivate'])) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'Aksi tidak valid.');
+            }
+
+            $updatedCount = $this->productService->bulkToggleProductStatus($productIds, $action, auth()->id());
+            
+            $statusText = $action === 'activate' ? 'diaktifkan' : 'dinonaktifkan';
+            
+            return redirect()
+                ->route('seller.products.index')
+                ->with('success', "{$updatedCount} produk berhasil {$statusText}!");
+        } catch (\Exception $e) {
+            Log::error('Gagal mengubah status produk secara bulk: ' . $e->getMessage(), [
+                'user_id' => auth()->id(),
+                'product_ids' => $request->input('product_ids', []),
+                'action' => $request->input('action'),
+            ]);
+            return redirect()
+                ->back()
+                ->with('error', 'Gagal mengubah status produk. Silakan coba lagi.');
+        }
+    }
+
+    // Export methods
+    public function export(Request $request)
+    {
+        try {
+            $search = $request->get('search');
+            $userId = auth()->id();
+            
+            if ($search) {
+                $products = $this->productService->searchProducts($search, $userId);
+            } else {
+                $products = $this->productService->getUserProducts($userId);
+            }
+
+            return $this->exportService->exportToExcel($products, auth()->user()->name);
+        } catch (\Exception $e) {
+            Log::error('Gagal export produk: ' . $e->getMessage(), [
+                'user_id' => auth()->id(),
+                'search' => $search,
+            ]);
+            
+            return redirect()
+                ->back()
+                ->with('error', 'Gagal mengexport data produk. Silakan coba lagi.');
+        }
+    }
+
+    public function exportSelected(Request $request)
+    {
+        try {
+            $productIds = $request->input('product_ids', []);
+            
+            if (empty($productIds)) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'Tidak ada produk yang dipilih untuk diexport.');
+            }
+
+            $products = $this->productService->getProductsByIds($productIds, auth()->id());
+            
+            return $this->exportService->exportToExcel($products, auth()->user()->name);
+        } catch (\Exception $e) {
+            Log::error('Gagal export produk terpilih: ' . $e->getMessage(), [
+                'user_id' => auth()->id(),
+                'product_ids' => $request->input('product_ids', []),
+            ]);
+            
+            return redirect()
+                ->back()
+                ->with('error', 'Gagal mengexport produk yang dipilih. Silakan coba lagi.');
         }
     }
 }

@@ -11,6 +11,7 @@ use App\Services\NotificationService;
 use App\Services\PasswordResetService;
 use App\Services\PickupRequestService;
 use App\Services\PickupService;
+use App\Services\ProductExportService;
 use App\Services\ProductService;
 use App\Services\ProfileService;
 use App\Services\UserService;
@@ -41,6 +42,7 @@ class ServiceProvider extends BaseServiceProvider
         WithdrawService::class => WithdrawService::class,
         ApiAuthService::class => ApiAuthService::class,
         AdminDashboardService::class => AdminDashboardService::class,
+        ProductExportService::class => ProductExportService::class,
     ];
 
     /**
@@ -103,6 +105,7 @@ class ServiceProvider extends BaseServiceProvider
             WithdrawService::class,
             ApiAuthService::class,
             AdminDashboardService::class,
+            ProductExportService::class,
             
         ];
     }

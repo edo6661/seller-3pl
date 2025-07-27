@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Product;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 
 class ProductService
 {
@@ -35,6 +36,15 @@ class ProductService
         return Product::with('user')->find($id);
     }
 
+    // New method for export selected products
+    public function getProductsByIds(array $productIds, int $userId): Collection
+    {
+        return Product::where('user_id', $userId)
+            ->whereIn('id', $productIds)
+            ->orderBy('name')
+            ->get();
+    }
+
     public function createProduct(array $data): Product
     {
         $data['is_active'] = $data['is_active'] ?? true;
@@ -52,9 +62,7 @@ class ProductService
     {
         $product = Product::find($id);
         if ($product) {
-            // Check if product is used in pickup requests
             if ($product->pickupRequestItems()->exists()) {
-                // Don't delete, just deactivate
                 $product->update(['is_active' => false]);
                 return true;
             }
@@ -94,4 +102,36 @@ class ProductService
         ];
     }
 
+    public function bulkDeleteProducts(array $productIds, int $userId): int
+    {
+        $deletedCount = 0;
+        
+        $products = Product::where('user_id', $userId)
+            ->whereIn('id', $productIds)
+            ->get();
+
+        DB::transaction(function () use ($products, &$deletedCount) {
+            foreach ($products as $product) {
+                if ($product->pickupRequestItems()->exists()) {
+                    $product->update(['is_active' => false]);
+                    $deletedCount++;
+                } else {
+                    if ($product->delete()) {
+                        $deletedCount++;
+                    }
+                }
+            }
+        });
+
+        return $deletedCount;
+    }
+
+    public function bulkToggleProductStatus(array $productIds, string $action, int $userId): int
+    {
+        $status = $action === 'activate';
+        
+        return Product::where('user_id', $userId)
+            ->whereIn('id', $productIds)
+            ->update(['is_active' => $status]);
+    }
 }
