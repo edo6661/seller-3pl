@@ -1,7 +1,7 @@
 <header class="bg-white shadow-md sticky top-0 z-50 border-b border-neutral-200" x-data="{ mobileMenuOpen: false }">
     <!-- Success/Error Messages -->
     @if (session('success'))
-        <div class="fixed top-4 right-4 bg-success-50 border border-success-200 text-success-700 px-4 py-3 rounded-lg shadow-lg z-50"
+        <div class="fixed bottom-4 right-4 bg-success-50  border-success-200 text-success-700 px-4 py-3 rounded-lg shadow-lg z-50"
             role="alert">
             <div class="flex items-center">
                 <i class="fas fa-check-circle text-success-600 mr-3"></i>

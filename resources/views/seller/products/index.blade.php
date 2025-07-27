@@ -140,10 +140,10 @@
                                                 @csrf
                                                 @method('PATCH')
                                                 <button type="submit"
-                                                    class="text-warning-600 hover:text-warning-800 transition"
+                                                    class="text-red-600 hover:text-warning-800 transition"
                                                     x-data="{ tooltip: '{{ $product->is_active ? 'Nonaktifkan' : 'Aktifkan' }}' }" x-tooltip="tooltip">
                                                     <i
-                                                        class="fas {{ $product->is_active ? 'fa-toggle-on' : 'fa-toggle-off' }}"></i>
+                                                        class="fas {{ $product->is_active ? 'fa-toggle-on text-green-600' : 'fa-toggle-off' }}"></i>
                                                 </button>
                                             </form>
 
