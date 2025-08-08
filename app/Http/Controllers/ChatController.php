@@ -231,4 +231,140 @@ class ChatController extends Controller
             ], 500);
         }
     }
+    public function getConversationsData(Request $request)
+    {
+        try {
+            $user = auth()->user();
+            $search = $request->get('search');
+            
+            if ($search) {
+                $conversations = $this->chatService->searchConversations($user, $search);
+            } else {
+                $conversations = $this->chatService->getConversationsForUser($user);
+            }
+            
+            $totalUnread = $this->chatService->getUnreadMessageCount($user);
+            
+            // Format data untuk widget
+            $conversationsData = $conversations->map(function ($conversation) use ($user) {
+                $otherParticipant = $conversation->getOtherParticipant($user);
+                $unreadCount = $conversation->unreadMessagesCount($user->id);
+                $latestMessage = $conversation->latestMessage;
+                
+                return [
+                    'id' => $conversation->id,
+                    'other_participant_name' => $otherParticipant->name,
+                    'other_participant_role' => $otherParticipant->role_label,
+                    'other_participant_avatar' => $otherParticipant->avatar,
+                    'last_message_at' => $conversation->last_message_at,
+                    'last_message_preview' => $latestMessage 
+                        ? ($latestMessage->sender_id === $user->id ? 'Anda: ' : '') . Str::limit($latestMessage->content, 40)
+                        : 'Belum ada pesan',
+                    'unread_count' => $unreadCount,
+                ];
+            });
+            
+            return response()->json([
+                'success' => true,
+                'conversations' => $conversationsData,
+                'total_unread' => $totalUnread,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Gagal memuat data conversations: ' . $e->getMessage(), [
+                'user_id' => auth()->id(),
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memuat data conversations.',
+            ], 500);
+        }
+    }
+
+    // Method untuk mendapatkan messages dalam format JSON untuk widget
+    public function getMessagesData(Conversation $conversation)
+    {
+        try {
+            $user = auth()->user();
+            
+            if (!$this->chatService->canUserAccessConversation($user, $conversation)) {
+                abort(403, 'Anda tidak memiliki akses ke percakapan ini.');
+            }
+            
+            $messages = $this->chatService->getMessagesForConversation($conversation);
+            
+            // Check if there are older messages
+            $totalMessages = $conversation->messages()->count();
+            $hasOlder = $totalMessages > $messages->count();
+            
+            $messagesData = $messages->map(function ($message) {
+                return [
+                    'id' => $message->id,
+                    'content' => $message->content,
+                    'sender_id' => $message->sender_id,
+                    'sender_name' => $message->sender->name,
+                    'created_at' => $message->created_at->toISOString(),
+                    'read_at' => $message->read_at,
+                ];
+            });
+            
+            return response()->json([
+                'success' => true,
+                'messages' => $messagesData,
+                'has_older' => $hasOlder,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Gagal memuat messages: ' . $e->getMessage(), [
+                'user_id' => auth()->id(),
+                'conversation_id' => $conversation->id,
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memuat messages.',
+            ], 500);
+        }
+    }
+
+    // Method untuk start chat (return JSON untuk widget)
+    public function startChatJson()
+    {
+        try {
+            $user = auth()->user();
+            
+            if (!$user->isSeller()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Hanya seller yang dapat memulai chat dengan admin.',
+                ], 403);
+            }
+            
+            $admin = $this->chatService->getAdminUser();
+            $conversation = $this->chatService->findOrCreateConversation($user, $admin);
+            
+            $otherParticipant = $conversation->getOtherParticipant($user);
+            
+            return response()->json([
+                'success' => true,
+                'conversation' => [
+                    'id' => $conversation->id,
+                    'other_participant_name' => $otherParticipant->name,
+                    'other_participant_role' => $otherParticipant->role_label,
+                    'other_participant_avatar' => $otherParticipant->avatar,
+                    'last_message_at' => $conversation->last_message_at,
+                    'last_message_preview' => 'Belum ada pesan',
+                    'unread_count' => 0,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Gagal memulai chat: ' . $e->getMessage(), [
+                'user_id' => auth()->id(),
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memulai chat dengan admin.',
+            ], 500);
+        }
+    }
 }

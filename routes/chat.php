@@ -12,5 +12,8 @@ Route::prefix('chat')->name('chat.')->group(function () {
     Route::post('/{conversation}/mark-read', [ChatController::class, 'markAsRead'])->name('mark-read');
     Route::get('/unread-count', [ChatController::class, 'getUnreadCount'])->name('unread-count');
 
+    Route::get('/conversations-data', [ChatController::class, 'getConversationsData'])->name('conversations.data');
+    Route::get('/{conversation}/messages-data', [ChatController::class, 'getMessagesData'])->name('messages.data');
+    Route::get('/start-json', [ChatController::class, 'startChatJson'])->name('start.json');
     
 });
