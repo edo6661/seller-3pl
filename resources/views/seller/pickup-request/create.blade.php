@@ -587,7 +587,6 @@
                         const script = document.createElement('script');
                         
                         script.src = `https://maps.googleapis.com/maps/api/js?key={{ config('services.google.maps_api_key') }}&libraries=places&callback=initMapsCallback`;
-                        // script.src = `https://maps.googleapis.com/maps/api/js?key=&libraries=places&callback=initMapsCallback`;
 
                         script.defer = true;
                         document.head.appendChild(script);

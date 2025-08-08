@@ -19,14 +19,12 @@
     @if(session('error'))
     showToast('error', '{{ session('error') }}');
     @endif">
-    @auth
+    {{-- @auth
         <x-shared.chat-notification :unreadCount="auth()->user()->getTotalUnreadMessages()" />
-    @endauth
+    @endauth --}}
 
-    <!-- Main Header -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-16">
-            <!-- Logo -->
             <div class="flex items-center">
                 <a href="{{ route('guest.home') }}" class="flex items-center space-x-2">
                     <div
@@ -37,7 +35,6 @@
                 </a>
             </div>
 
-            <!-- Desktop Navigation -->
             <nav class="hidden md:flex items-center space-x-8">
                 @guest
                     <a href="{{ route('guest.auth.login') }}"
@@ -56,7 +53,6 @@
 
                 @auth
                 
-                    <!-- Admin Navigation -->
                     @if (auth()->user()->isAdmin())
                         <div class="flex items-center space-x-6">
                             <a href="{{ route('admin.dashboard') }}"
@@ -90,7 +86,6 @@
                         </div>
                     @endif
 
-                    <!-- Seller Navigation -->
                     @if (auth()->user()->isSeller())
                         <div class="flex items-center space-x-6">
                             <a href="{{ route('seller.dashboard') }}"
@@ -116,7 +111,6 @@
                         </div>
                     @endif
 
-                    <!-- User Menu -->
                     <div class="relative" x-data="{ userMenuOpen: false }">
                         <button @click="userMenuOpen = !userMenuOpen"
                             class="flex items-center space-x-2 text-neutral-600 hover:text-primary-600 transition-colors duration-200">
@@ -147,14 +141,12 @@
                 @endauth
             </nav>
 
-            <!-- Mobile Menu Button -->
             <button @click="mobileMenuOpen = !mobileMenuOpen"
                 class="md:hidden text-neutral-600 hover:text-primary-600 transition-colors duration-200">
                 <i class="fas fa-bars text-xl"></i>
             </button>
         </div>
 
-        <!-- Mobile Menu -->
         <div x-show="mobileMenuOpen" x-transition class="md:hidden border-t border-neutral-200 py-4">
             @guest
                 <div class="space-y-4">
@@ -174,7 +166,6 @@
             @endguest
 
             @auth
-                <!-- Mobile Admin Navigation -->
                 @if (auth()->user()->isAdmin())
                     <div class="space-y-4">
                         <a href="{{ route('admin.dashboard') }}"
@@ -208,7 +199,6 @@
                     </div>
                 @endif
 
-                <!-- Mobile Seller Navigation -->
                 @if (auth()->user()->isSeller())
                     <div class="space-y-4">
                         <a href="{{ route('seller.dashboard') }}"
@@ -234,7 +224,6 @@
                     </div>
                 @endif
 
-                <!-- Mobile User Menu -->
                 <div class="border-t border-neutral-200 pt-4 mt-4">
                     <div class="flex items-center space-x-3 mb-4">
                         <div
