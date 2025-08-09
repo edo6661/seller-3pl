@@ -2,7 +2,6 @@
     <x-slot name="title">Detail Pickup Request - {{ $pickupRequest->pickup_code }}</x-slot>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!-- Header -->
         <div class="mb-8">
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
@@ -28,7 +27,6 @@
             </div>
         </div>
 
-        <!-- Status Badge -->
         <div class="mb-8">
             @php
                 $statusColors = [
@@ -94,9 +92,7 @@
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Main Content -->
             <div class="lg:col-span-2 space-y-6">
-                <!-- Pickup Details -->
                 <div class="bg-white rounded-xl shadow-md overflow-hidden">
                     <div class="px-6 py-4 bg-neutral-50 border-b border-neutral-200">
                         <h3 class="text-lg font-semibold text-neutral-900 flex items-center gap-2">
@@ -129,14 +125,14 @@
                                     Alamat Tujuan
                                 </h4>
                                 <div class="bg-secondary-50 rounded-lg p-4 border border-secondary-100">
-                                    <p class="font-medium text-neutral-900">{{ $pickupRequest->recipient_name }}</p>
+                                    <p class="font-medium text-neutral-900">{{ $pickupRequest->recipientAddress->name }}</p>
                                     <p class="text-sm text-neutral-600 mt-1">
                                         <i class="fas fa-phone-alt text-secondary-400 mr-1"></i>
-                                        {{ $pickupRequest->recipient_phone }}
+                                        {{ $pickupRequest->recipientAddress->phone }}
                                     </p>
                                     <p class="text-sm text-neutral-600 mt-2 flex items-start">
                                         <i class="fas fa-map-pin text-secondary-400 mr-2 mt-1"></i>
-                                        {{ $pickupRequest->full_recipient_address }}
+                                        {{ $pickupRequest->recipientAddress->full_address }}
                                     </p>
                                 </div>
                             </div>
@@ -144,7 +140,6 @@
                     </div>
                 </div>
 
-                <!-- Items List -->
                 <div class="bg-white rounded-xl shadow-md overflow-hidden">
                     <div class="px-6 py-4 bg-neutral-50 border-b border-neutral-200">
                         <h3 class="text-lg font-semibold text-neutral-900 flex items-center gap-2">
@@ -206,7 +201,6 @@
                     </div>
                 </div>
 
-                <!-- Timeline -->
                 <div class="bg-white rounded-xl shadow-md overflow-hidden">
                     <div class="px-6 py-4 bg-neutral-50 border-b border-neutral-200">
                         <h3 class="text-lg font-semibold text-neutral-900 flex items-center gap-2">
@@ -302,9 +296,7 @@
                 </div>
             </div>
 
-            <!-- Sidebar -->
             <div class="space-y-6">
-                <!-- Cost Summary -->
                 <div class="bg-white rounded-xl shadow-md overflow-hidden">
                     <div class="px-6 py-4 bg-neutral-50 border-b border-neutral-200">
                         <h3 class="text-lg font-semibold text-neutral-900 flex items-center gap-2">
@@ -342,7 +334,6 @@
                     </div>
                 </div>
 
-                <!-- Payment Method -->
                 <div class="bg-white rounded-xl shadow-md overflow-hidden">
                     <div class="px-6 py-4 bg-neutral-50 border-b border-neutral-200">
                         <h3 class="text-lg font-semibold text-neutral-900 flex items-center gap-2">
@@ -381,7 +372,6 @@
                     </div>
                 </div>
 
-                <!-- Actions -->
                 @if ($pickupRequest->canBeCancelled())
                     <div class="bg-white rounded-xl shadow-md overflow-hidden">
                         <div class="px-6 py-4 bg-neutral-50 border-b border-neutral-200">
@@ -439,7 +429,6 @@
                     </div>
                 @endif
 
-                <!-- Tracking Info -->
                 @if ($pickupRequest->courier_tracking_number)
                     <div class="bg-white rounded-xl shadow-md overflow-hidden">
                         <div class="px-6 py-4 bg-neutral-50 border-b border-neutral-200">
@@ -465,7 +454,6 @@
                     </div>
                 @endif
 
-                <!-- Notes -->
                 @if ($pickupRequest->notes)
                     <div class="bg-white rounded-xl shadow-md overflow-hidden">
                         <div class="px-6 py-4 bg-neutral-50 border-b border-neutral-200">

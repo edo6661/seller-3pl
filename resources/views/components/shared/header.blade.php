@@ -108,6 +108,10 @@
                                 class="text-neutral-600 hover:text-primary-600 transition-colors duration-200 font-medium">
                                 <i class="fas fa-comments mr-2"></i>Chat
                             </a>
+                            <a href="{{ route('seller.addresses.index') }}"
+                                class="text-neutral-600 hover:text-primary-600 transition-colors duration-200 font-medium">
+                                <i class="fas fa-map-marker-alt mr-2"></i>Addresses
+                            </a>
                         </div>
                     @endif
 
@@ -122,7 +126,7 @@
                             <i class="fas fa-chevron-down text-xs"></i>
                         </button>
 
-                        <div x-show="userMenuOpen" @click.away="userMenuOpen = false" x-transition
+                        <div x-show="userMenuOpen" x-cloak @click.away="userMenuOpen = false" x-transition
                             class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-neutral-200 py-2">
                             <a href="{{ route('profile.index') }}"
                                 class="block px-4 py-2 text-neutral-700 hover:bg-neutral-50 transition-colors duration-200">
@@ -147,7 +151,7 @@
             </button>
         </div>
 
-        <div x-show="mobileMenuOpen" x-transition class="md:hidden border-t border-neutral-200 py-4">
+        <div x-cloak x-show="mobileMenuOpen" x-transition class="md:hidden border-t border-neutral-200 py-4">
             @guest
                 <div class="space-y-4">
                     <a href="{{ route('guest.auth.login') }}"
@@ -254,7 +258,7 @@
     </div>
 
     {{-- Toast Notification --}}
-    <div x-show="showNotification" x-transition:enter="transform ease-out duration-300 transition"
+    <div x-cloak x-show="showNotification" x-transition:enter="transform ease-out duration-300 transition"
         x-transition:enter-start="translate-y-2 opacity-0 sm:translate-y-0 sm:translate-x-2"
         x-transition:enter-end="translate-y-0 opacity-100 sm:translate-x-0"
         x-transition:leave="transition ease-in duration-100" x-transition:leave-start="opacity-100"

@@ -10,14 +10,7 @@ class PickupRequest extends Model
     protected $fillable = [
         'pickup_code',
         'user_id',
-        'recipient_name',
-        'recipient_phone',
-        'recipient_city',
-        'recipient_province',
-        'recipient_postal_code',
-        'recipient_address',
-        'recipient_latitude',
-        'recipient_longitude',
+        'address_id', 
         'pickup_name',
         'pickup_phone',
         'pickup_city',
@@ -26,7 +19,6 @@ class PickupRequest extends Model
         'pickup_address',
         'pickup_latitude',
         'pickup_longitude',
-        'pickup_scheduled_at',
         'payment_method',
         'shipping_cost',
         'service_fee',
@@ -39,9 +31,10 @@ class PickupRequest extends Model
         'courier_response',
         'notes',
         'requested_at',
+        'pickup_scheduled_at',
         'picked_up_at',
         'delivered_at',
-        'cod_collected_at'
+        'cod_collected_at',
     ];
 
     protected $casts = [
@@ -202,4 +195,9 @@ class PickupRequest extends Model
             }
         });
     }
+    public function recipientAddress()
+    {
+        return $this->belongsTo(UserAddress::class, 'address_id');
+    }
+  
 }

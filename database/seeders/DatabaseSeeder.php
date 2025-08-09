@@ -16,13 +16,12 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             SellerProfileSeeder::class,
             ProductSeeder::class,
-            PickupRequestSeeder::class,
-            PickupRequestItemSeeder::class,
             BuyerRatingSeeder::class,
             NotificationSeeder::class,
             WalletSeeder::class,
             WalletTransactionSeeder::class,
             WithdrawRequestSeeder::class,
+            UserAddressSeeder::class,
         ]);
         
         $this->command->info('All seeders completed successfully!');

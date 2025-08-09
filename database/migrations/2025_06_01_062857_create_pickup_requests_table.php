@@ -15,16 +15,9 @@ return new class extends Migration
             $table->id();
             $table->string('pickup_code')->unique();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            
-            $table->string('recipient_name');
-            $table->string('recipient_phone');
-            $table->string('recipient_city');
-            $table->string('recipient_province');
-            $table->string('recipient_postal_code');
-            $table->text('recipient_address');
-            $table->decimal('recipient_latitude', 10, 8)->nullable();
-            $table->decimal('recipient_longitude', 11, 8)->nullable();
-            
+            $table->foreignId('address_id')
+              ->constrained('user_addresses')
+              ->onDelete('cascade');
             $table->string('pickup_name');
             $table->string('pickup_phone');
             $table->string('pickup_city');

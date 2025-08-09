@@ -37,5 +37,6 @@ Route::middleware(['auth'])->group(function () {
         require __DIR__ . '/seller/wallet.php';
         require __DIR__ . '/seller/products.php';
         require __DIR__ . '/seller/pickup_request.php';
+        require __DIR__ . '/seller/addresses.php';
     });
 });

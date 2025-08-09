@@ -47,7 +47,7 @@ class PickupRequestService
 
     public function getPickupRequestById(int $id): ?PickupRequest
     {
-        return PickupRequest::with(['items.product', 'user'])->find($id);
+        return PickupRequest::with(['items.product', 'user','recipientAddress'])->find($id);
     }
     public function createPickupRequest(array $data): PickupRequest
     {
@@ -79,14 +79,7 @@ class PickupRequestService
             
             $pickupData = [
                 'user_id' => $data['user_id'],
-                'recipient_name' => $data['recipient_name'],
-                'recipient_phone' => $data['recipient_phone'],
-                'recipient_city' => $data['recipient_city'],
-                'recipient_province' => $data['recipient_province'],
-                'recipient_postal_code' => $data['recipient_postal_code'],
-                'recipient_address' => $data['recipient_address'],
-                'recipient_latitude' => $data['recipient_latitude'] ?? 0,
-                'recipient_longitude' => $data['recipient_longitude'] ?? 0,
+                'address_id' => $data['address_id'], 
                 'pickup_name' => $data['pickup_name'],
                 'pickup_phone' => $data['pickup_phone'],
                 'pickup_city' => $data['pickup_city'],
@@ -106,6 +99,7 @@ class PickupRequestService
                 'courier_service' => $data['courier_service'] ?? null,
                 'notes' => $data['notes'] ?? null,
             ];
+            
             $pickupRequest = PickupRequest::create($pickupData);
             
             foreach ($data['items'] as $item) {
@@ -132,7 +126,7 @@ class PickupRequestService
                 );
             }
             
-            return $pickupRequest->load(['items.product']);
+            return $pickupRequest->load(['items.product', 'recipientAddress']);
         });
     }
 

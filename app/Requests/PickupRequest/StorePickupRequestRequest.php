@@ -14,12 +14,9 @@ class StorePickupRequestRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'recipient_name' => 'required|string|max:255',
-            'recipient_phone' => 'required|string|max:20',
-            'recipient_city' => 'required|string|max:100',
-            'recipient_province' => 'required|string|max:100',
-            'recipient_postal_code' => 'required|string|max:10',
-            'recipient_address' => 'required|string|max:500',
+            'address_id' => 'required|exists:user_addresses,id',
+            'pickup_latitude' => 'nullable|numeric',
+            'pickup_longitude' => 'nullable|numeric',
             'pickup_name' => 'required|string|max:255',
             'pickup_phone' => 'required|string|max:20',
             'pickup_city' => 'required|string|max:100',

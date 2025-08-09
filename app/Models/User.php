@@ -76,14 +76,20 @@ class User extends Authenticatable
     {
         return $this->hasMany(Notification::class);
     }
+    public function addresses()
+    {
+        return $this->hasMany(UserAddress::class);
+    }
 
+    public function defaultAddress()
+    {
+        return $this->hasOne(UserAddress::class)->where('is_default', true);
+    }
     
     public function scopeSellers($query)
     {
         return $query->where('role', 'seller');
     }
-
-    
     
     public function isSeller()
     {
