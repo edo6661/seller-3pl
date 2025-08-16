@@ -8,7 +8,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-3xl font-bold text-neutral-900">Tambah Alamat Baru</h1>
-                    <p class="mt-2 text-neutral-600">Tambahkan alamat dengan bantuan peta untuk keperluan pickup request</p>
+                    <p class="mt-2 text-neutral-600">Tambahkan alamat  untuk keperluan pickup request</p>
                 </div>
                 <a href="{{ route('seller.addresses.index') }}"
                     class="inline-flex items-center px-4 py-2 bg-secondary text-white rounded-lg hover:bg-secondary-600 transition-colors shadow-sm">

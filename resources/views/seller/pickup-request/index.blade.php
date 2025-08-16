@@ -169,10 +169,10 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm font-medium text-neutral-900">
-                                            {{ $pickupRequest->pickupAddress->name }}
+                                            {{ $pickupRequest->pickupAddress->name ?? 'N/A' }}
                                         </div>
                                         <div class="text-xs text-neutral-500 mt-1">
-                                            <i class="fas fa-phone mr-1"></i> {{ $pickupRequest->pickupAddress->phone }}
+                                            <i class="fas fa-phone mr-1"></i> {{ $pickupRequest->pickupAddress->phone ?? 'N/A' }}
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">

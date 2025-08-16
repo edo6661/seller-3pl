@@ -182,4 +182,23 @@ class PickupRequestController extends Controller
         $recentPickupRequests = $this->pickupRequestService->getUserPickupRequests($userId)->take(5);
         return view('seller.pickup-request.dashboard', compact('stats', 'revenue', 'monthlyStats', 'recentPickupRequests'));
     }
+    public function startDelivery($id)
+    {
+        $pickupRequest = $this->pickupRequestService->getPickupRequestById($id);
+        
+        if (!$pickupRequest || $pickupRequest->user_id !== Auth::id()) {
+            abort(404);
+        }
+        
+        if (!$pickupRequest->isDropOffType() || $pickupRequest->status !== 'confirmed') {
+            return back()->with('error', 'Request ini tidak dapat dimulai pengirimannya');
+        }
+        
+        try {
+            $this->pickupRequestService->markAsInTransit($id);
+            return back()->with('success', 'Pengiriman berhasil dimulai');
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
 }

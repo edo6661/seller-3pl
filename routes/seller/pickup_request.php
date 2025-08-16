@@ -15,4 +15,5 @@ Route::prefix('pickup-request')->name('seller.pickup-request.')->group(function 
     Route::post('/{id}/confirm', [PickupRequestController::class, 'confirm'])->name('confirm');
     Route::post('/{id}/schedule', [PickupRequestController::class, 'schedulePickup'])->name('schedule');
     Route::post('/check-wallet-balance', [PickupRequestController::class, 'checkWalletBalance'])->name('check-wallet-balance');
+    Route::post('/{id}/start-delivery', [PickupRequestController::class, 'startDelivery'])->name('start-delivery');
 });

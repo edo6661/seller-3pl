@@ -1,11 +1,13 @@
 <?php
 namespace App\Models;
+use App\Enums\DeliveryType;
 use Illuminate\Database\Eloquent\Model;
 class PickupRequest extends Model
 {
     protected $fillable = [
         'pickup_code',
         'user_id',
+        'delivery_type',
         'address_id', 
         'recipient_name',
         'recipient_phone',
@@ -33,8 +35,6 @@ class PickupRequest extends Model
         'cod_collected_at',
     ];
     protected $casts = [
-        'pickup_latitude' => 'decimal:8',
-        'pickup_longitude' => 'decimal:8',
         'recipient_latitude' => 'decimal:8',
         'recipient_longitude' => 'decimal:8',
         'shipping_cost' => 'decimal:2',
@@ -48,6 +48,7 @@ class PickupRequest extends Model
         'picked_up_at' => 'datetime',
         'delivered_at' => 'datetime',
         'cod_collected_at' => 'datetime',
+        'delivery_type' => DeliveryType::class,
     ];
     public function user()
     {
@@ -97,6 +98,14 @@ class PickupRequest extends Model
     {
         return $query->where('status', 'cancelled');
     }
+    public function scopePickupType($query)
+    {
+        return $query->where('delivery_type', 'pickup');
+    }
+    public function scopeDropOffType($query)
+    {
+        return $query->where('delivery_type', 'drop_off');
+    }
     public function scopeCodPayment($query)
     {
         return $query->where('payment_method', 'cod');
@@ -105,17 +114,21 @@ class PickupRequest extends Model
     {
         return $query->where('payment_method', 'wallet');
     }
-    public static function generatePickupCode()
+    public function isPickupType()
     {
-        return 'PU' . now()->format('ymd') . str_pad(static::whereDate('created_at', today())->count() + 1, 4, '0', STR_PAD_LEFT);
+        return $this->delivery_type == DeliveryType::PICKUP;
+    }
+    public function isDropOffType()
+    {
+        return $this->delivery_type == DeliveryType::DROP_OFF;
     }
     public function isCodPayment()
     {
-        return $this->payment_method === 'cod';
+        return $this->payment_method == 'cod';
     }
     public function isWalletPayment()
     {
-        return $this->payment_method === 'wallet';
+        return $this->payment_method == 'wallet';
     }
     public function canBeCancelled()
     {
@@ -123,15 +136,23 @@ class PickupRequest extends Model
     }
     public function statusAlreadyCancelled()
     {
-        return $this->status === 'cancelled';
+        return $this->status == 'cancelled';
     }
     public function isCompleted()
     {
-        return $this->status === 'delivered';
+        return $this->status == 'delivered';
     }
     public function isFailed()
     {
         return in_array($this->status, ['failed', 'cancelled']);
+    }
+    public function canBeScheduled()
+    {
+        return $this->isPickupType() && $this->status == 'confirmed';
+    }
+    public function canBePickedUp()
+    {
+        return $this->isPickupType() && in_array($this->status, ['pickup_scheduled', 'confirmed']);
     }
     public function getFullRecipientAddressAttribute()
     {
@@ -139,14 +160,23 @@ class PickupRequest extends Model
     }
     public function getFullPickupAddressAttribute()
     {
-        return "{$this->pickup_address}, {$this->pickup_city}, {$this->pickup_province} {$this->pickup_postal_code}";
+        if (!$this->isPickupType() || !$this->pickupAddress) {
+            return null;
+        }
+        $address = $this->pickupAddress;
+        return "{$address->address}, {$address->city}, {$address->province} {$address->postal_code}";
+    }
+    public static function generatePickupCode()
+    {
+        $prefix = 'PU'; 
+        return $prefix . now()->format('ymd') . str_pad(static::whereDate('created_at', today())->count() + 1, 4, '0', STR_PAD_LEFT);
     }
     public function updateBuyerRating()
     {
         $buyerRating = BuyerRating::findOrCreateByPhone($this->recipient_phone, $this->recipient_name);
-        $isSuccessful = $this->status === 'delivered';
-        $isCancelled = $this->status === 'cancelled';
-        $isFailed = $this->status === 'failed';
+        $isSuccessful = $this->status == 'delivered';
+        $isCancelled = $this->status == 'cancelled';
+        $isFailed = $this->status == 'failed';
         $buyerRating->updateStats($isSuccessful, $isCancelled, $isFailed);
     }
     protected static function boot()
@@ -156,6 +186,16 @@ class PickupRequest extends Model
             $pickupRequest->pickup_code = static::generatePickupCode();
             $pickupRequest->requested_at = now();
         });
+        static::updating(function ($pickupRequest) {
+            if ($pickupRequest->isDropOffType()) {
+                $pickupRequest->address_id = null;
+                $pickupRequest->pickup_scheduled_at = null;
+                $pickupRequest->picked_up_at = null;
+                if (in_array($pickupRequest->status, ['pickup_scheduled', 'picked_up'])) {
+                    $pickupRequest->status = 'in_transit'; 
+                }
+            }
+        });
         static::updated(function ($pickupRequest) {
             if ($pickupRequest->isDirty('status') && in_array($pickupRequest->status, ['delivered', 'failed', 'cancelled'])) {
                 $pickupRequest->updateBuyerRating();
@@ -163,4 +203,3 @@ class PickupRequest extends Model
         });
     }
 }
-?>

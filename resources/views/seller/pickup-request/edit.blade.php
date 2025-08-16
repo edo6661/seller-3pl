@@ -6,7 +6,7 @@
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
                     <h1 class="text-3xl font-bold text-neutral-900">Edit Pickup Request</h1>
-                    <p class="mt-2 text-neutral-600">Edit permintaan pickup <strong>{{ $pickupRequest->pickup_code }}</strong> dengan bantuan peta</p>
+                    <p class="mt-2 text-neutral-600">Edit permintaan pickup <strong>{{ $pickupRequest->pickup_code }}</strong> </p>
                 </div>
                 <a href="{{ route('seller.pickup-request.show', $pickupRequest->id) }}"
                     class="inline-flex items-center px-4 py-2 bg-secondary text-white rounded-lg hover:bg-secondary-600 transition-colors shadow-sm">
@@ -38,91 +38,121 @@
             @csrf
             @method('PUT')
 
-            <!-- Informasi Lokasi Pickup -->
             <div class="bg-white rounded-xl shadow-md p-6 border border-neutral-200">
                 <div class="flex items-center mb-4">
-                    <div class="bg-primary-100 p-2 rounded-lg mr-3">
-                        <i class="fas fa-truck-pickup text-primary-600"></i>
+                    <div class="bg-blue-100 p-2 rounded-lg mr-3">
+                        <i class="fas fa-shipping-fast text-blue-600"></i>
                     </div>
-                    <h3 class="text-lg font-semibold text-neutral-900">Informasi Lokasi Pickup</h3>
+                    <h3 class="text-lg font-semibold text-neutral-900">Metode Pengiriman</h3>
                 </div>
-                <div class="space-y-4">
-                    <!-- Pilih Address untuk PICKUP -->
-                    <div>
-                        <label for="address_id" class="block text-sm font-medium text-neutral-700 mb-2">
-                            <i class="fas fa-map-marker-alt mr-1"></i>
-                            Pilih Alamat Pickup
-                        </label>
-                        <select name="address_id" id="address_id" 
-                                class="block w-full rounded-lg border-neutral-300 focus:border-primary-500 focus:ring-primary-500 shadow-sm"
-                                required x-model="selectedAddressId" @change="loadSelectedPickupAddress">
-                            <option value="">-- Pilih Alamat --</option>
-                            @foreach($addresses as $address)
-                                <option value="{{ $address->id }}" 
-                                        data-name="{{ $address->name }}"
-                                        data-phone="{{ $address->phone }}"
-                                        data-city="{{ $address->city }}"
-                                        data-province="{{ $address->province }}"
-                                        data-postal_code="{{ $address->postal_code }}"
-                                        data-address="{{ $address->address }}"
-                                        data-latitude="{{ $address->latitude }}"
-                                        data-longitude="{{ $address->longitude }}"
-                                        {{ old('address_id', $pickupRequest->address_id) == $address->id ? 'selected' : '' }}>
-                                    {{ $address->label }} - {{ $address->name }}
-                                    @if($address->is_default)
-                                        <span class="text-primary-600">(Default)</span>
-                                    @endif
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('address_id')
-                            <p class="mt-1 text-sm text-error-600">{{ $message }}</p>
-                        @enderror
-                    </div>
+                <div class="flex space-x-4">
+                    <label class="flex items-center p-4 border rounded-lg cursor-pointer flex-1" :class="deliveryType === 'pickup' ? 'border-primary-500 bg-primary-50' : 'border-neutral-300'">
+                        <input type="radio" name="delivery_type" value="pickup" x-model="deliveryType" class="form-radio text-primary-600 focus:ring-primary-500">
+                        <span class="ml-3 text-sm font-medium text-neutral-800">
+                            <i class="fas fa-truck-pickup mr-2"></i>Di-pickup oleh Kurir
+                        </span>
+                    </label>
+                    <label class="flex items-center p-4 border rounded-lg cursor-pointer flex-1" :class="deliveryType === 'drop_off' ? 'border-primary-500 bg-primary-50' : 'border-neutral-300'">
+                        <input type="radio" name="delivery_type" value="drop_off" x-model="deliveryType" class="form-radio text-primary-600 focus:ring-primary-500">
+                        <span class="ml-3 text-sm font-medium text-neutral-800">
+                            <i class="fas fa-store mr-2"></i>Saya Antar ke Gerai
+                        </span>
+                    </label>
+                </div>
+                @error('delivery_type')
+                    <p class="mt-2 text-sm text-error-600">{{ $message }}</p>
+                @enderror
+            </div>
 
-                    <!-- Tombol Kelola Address -->
-                    <div class="flex gap-2">
-                        <a href="{{ route('seller.addresses.create') }}" 
-                           class="inline-flex items-center px-3 py-2 bg-success-600 text-white rounded-md hover:bg-success-700 transition-colors text-sm">
-                            <i class="fas fa-plus mr-1"></i>
-                            Tambah Alamat Baru
-                        </a>
-                        <a href="{{ route('seller.addresses.index') }}" 
-                           class="inline-flex items-center px-3 py-2 bg-secondary-600 text-white rounded-md hover:bg-secondary-700 transition-colors text-sm">
-                            <i class="fas fa-cog mr-1"></i>
-                            Kelola Alamat
-                        </a>
+            <div x-show="deliveryType === 'pickup'" x-transition>
+                <div class="bg-white rounded-xl shadow-md p-6 border border-neutral-200">
+                    <div class="flex items-center mb-4">
+                        <div class="bg-primary-100 p-2 rounded-lg mr-3">
+                            <i class="fas fa-truck-pickup text-primary-600"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold text-neutral-900">Informasi Lokasi Pickup</h3>
                     </div>
+                    <div class="space-y-4">
+                        <!-- Pilih Address untuk PICKUP -->
+                        <div>
+                            <label for="address_id" class="block text-sm font-medium text-neutral-700 mb-2">
+                                <i class="fas fa-map-marker-alt mr-1"></i>
+                                Pilih Alamat Pickup
+                            </label>
+                            <select name="address_id" id="address_id" 
+                                    class="block w-full rounded-lg border-neutral-300 focus:border-primary-500 focus:ring-primary-500 shadow-sm"
+                                    required x-model="selectedAddressId" @change="loadSelectedPickupAddress">
+                                <option value="">-- Pilih Alamat --</option>
+                                @foreach($addresses as $address)
+                                    <option value="{{ $address->id }}" 
+                                            data-name="{{ $address->name }}"
+                                            data-phone="{{ $address->phone }}"
+                                            data-city="{{ $address->city }}"
+                                            data-province="{{ $address->province }}"
+                                            data-postal_code="{{ $address->postal_code }}"
+                                            data-address="{{ $address->address }}"
+                                            data-latitude="{{ $address->latitude }}"
+                                            data-longitude="{{ $address->longitude }}"
+                                            {{ old('address_id', $pickupRequest->address_id) == $address->id ? 'selected' : '' }}>
+                                        {{ $address->label }} - {{ $address->name }}
+                                        @if($address->is_default)
+                                            <span class="text-primary-600">(Default)</span>
+                                        @endif
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('address_id')
+                                <p class="mt-1 text-sm text-error-600">{{ $message }}</p>
+                            @enderror
+                        </div>
 
-                    <!-- Preview Address Pickup yang Dipilih -->
-                    <div x-show="selectedAddressId" class="p-4 bg-blue-50 rounded-lg border">
-                        <h4 class="font-medium text-blue-900 mb-2">Preview Alamat Pickup:</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-blue-600">
-                            <div>
-                                <strong>Nama:</strong> <span x-text="pickupPreviewData.name"></span>
-                            </div>
-                            <div>
-                                <strong>Telepon:</strong> <span x-text="pickupPreviewData.phone"></span>
-                            </div>
-                            <div>
-                                <strong>Kota:</strong> <span x-text="pickupPreviewData.city"></span>
-                            </div>
-                            <div>
-                                <strong>Provinsi:</strong> <span x-text="pickupPreviewData.province"></span>
-                            </div>
-                            <div class="md:col-span-2">
-                                <strong>Alamat:</strong> <span x-text="pickupPreviewData.address"></span>
+                        <!-- Tombol Kelola Address -->
+                        <div class="flex gap-2">
+                            <a href="{{ route('seller.addresses.create') }}" 
+                            class="inline-flex items-center px-3 py-2 bg-success-600 text-white rounded-md hover:bg-success-700 transition-colors text-sm">
+                                <i class="fas fa-plus mr-1"></i>
+                                Tambah Alamat Baru
+                            </a>
+                            <a href="{{ route('seller.addresses.index') }}" 
+                            class="inline-flex items-center px-3 py-2 bg-secondary-600 text-white rounded-md hover:bg-secondary-700 transition-colors text-sm">
+                                <i class="fas fa-cog mr-1"></i>
+                                Kelola Alamat
+                            </a>
+                        </div>
+
+                        <!-- Preview Address Pickup yang Dipilih -->
+                        <div x-show="selectedAddressId" class="p-4 bg-blue-50 rounded-lg border">
+                            <h4 class="font-medium text-blue-900 mb-2">Preview Alamat Pickup:</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-blue-600">
+                                <div>
+                                    <strong>Nama:</strong> <span x-text="pickupPreviewData.name"></span>
+                                </div>
+                                <div>
+                                    <strong>Telepon:</strong> <span x-text="pickupPreviewData.phone"></span>
+                                </div>
+                                <div>
+                                    <strong>Kota:</strong> <span x-text="pickupPreviewData.city"></span>
+                                </div>
+                                <div>
+                                    <strong>Provinsi:</strong> <span x-text="pickupPreviewData.province"></span>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <strong>Alamat:</strong> <span x-text="pickupPreviewData.address"></span>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Map untuk Pickup -->
-                    <div x-show="selectedAddressId" class="mt-4">
-                        <label class="block text-sm font-medium text-neutral-700 mb-2">Lokasi Pickup di Peta:</label>
-                        <div id="pickup-map" class="w-full h-64 rounded-lg border border-gray-300"></div>
+                        <!-- Map untuk Pickup -->
+                        <div x-show="selectedAddressId" class="mt-4">
+                            <label class="block text-sm font-medium text-neutral-700 mb-2">Lokasi Pickup di Peta:</label>
+                            <div id="pickup-map" class="w-full h-64 rounded-lg border border-gray-300"></div>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            <!-- Informasi Lokasi Pickup -->
+            
 
             <!-- Informasi Penerima -->
             <div class="bg-white rounded-xl shadow-md p-6 border border-neutral-200">
@@ -493,6 +523,8 @@
     <script>
         function pickupRequestForm() {
             return {
+                deliveryType: @json(old('delivery_type', $pickupRequest->delivery_type ?? 'pickup')),
+
                 recipientSearchQuery: '',
                 selectedAddressId: @json(old('address_id', $pickupRequest->address_id)),
                 pickupPreviewData: {

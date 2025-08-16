@@ -240,15 +240,15 @@
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm font-medium text-neutral-900">
                                             <i class="fas fa-user-check text-success mr-1"></i>
-                                            {{ $pickupRequest->pickupAddress->name }}
+                                            {{ $pickupRequest->pickupAddress->name ?? 'N/A' }}
                                         </div>
                                         <div class="text-sm text-neutral-600">
                                             <i class="fas fa-phone text-neutral-400 mr-1"></i>
-                                            {{ $pickupRequest->pickupAddress->phone }}
+                                            {{ $pickupRequest->pickupAddress->phone ?? 'N/A' }}
                                         </div>
                                         <div class="text-xs text-neutral-500">
                                             <i class="fas fa-map-marker-alt text-neutral-400 mr-1"></i>
-                                            {{ $pickupRequest->pickupAddress->city }}
+                                            {{ $pickupRequest->pickupAddress->city ?? 'N/A' }}
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">

@@ -14,7 +14,8 @@ class UpdatePickupRequestRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'address_id' => 'required|exists:user_addresses,id',
+            'address_id' => 'required_if:delivery_type,pickup|nullable|exists:user_addresses,id',
+            'delivery_type' => ['required', Rule::in(['pickup', 'drop_off'])],
             'recipient_name' => 'required|string|max:255',
             'recipient_phone' => 'required|string|max:20',
             'recipient_city' => 'required|string|max:100',
@@ -36,6 +37,8 @@ class UpdatePickupRequestRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'delivery_type.required' => 'Metode pengiriman wajib dipilih.',
+            'delivery_type.in' => 'Metode pengiriman tidak valid.',
             'recipient_name.required' => 'Nama penerima wajib diisi.',
             'recipient_name.string' => 'Nama penerima harus berupa teks.',
             'recipient_name.max' => 'Nama penerima maksimal 255 karakter.',

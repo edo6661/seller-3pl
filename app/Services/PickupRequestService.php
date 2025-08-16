@@ -15,33 +15,6 @@ class PickupRequestService
     {
         $this->walletService = $walletService;
     }
-    public function getUserPickupRequests(int $userId): Collection
-    {
-        return PickupRequest::where('user_id', $userId)
-            ->with(['items.product'])
-            ->orderBy('created_at', 'desc')
-            ->get();
-    }
-    public function getPendingPickupRequests(int $userId): Collection
-    {
-        return PickupRequest::where('user_id', $userId)
-            ->pending()
-            ->with(['items.product'])
-            ->orderBy('created_at', 'desc')
-            ->get();
-    }
-    public function getConfirmedPickupRequests(int $userId): Collection
-    {
-        return PickupRequest::where('user_id', $userId)
-            ->confirmed()
-            ->with(['items.product'])
-            ->orderBy('created_at', 'desc')
-            ->get();
-    }
-    public function getPickupRequestById(int $id): ?PickupRequest
-    {
-        return PickupRequest::with(['items.product', 'user','pickupAddress'])->find($id);
-    }
     public function createPickupRequest(array $data): PickupRequest
     {
         return DB::transaction(function () use ($data) {
@@ -56,16 +29,14 @@ class PickupRequestService
             }
             $totalAmount = $productTotal + $data['shipping_cost'] + ($data['service_fee'] ?? 0);
             if ($data['payment_method'] === 'wallet') {
-                $wallet = $this->walletService->getOrCreateWallet(
-                    auth()->user()
-                );
+                $wallet = $this->walletService->getOrCreateWallet(auth()->user());
                 if (!$wallet->hasSufficientBalance($totalAmount)) {
                     throw new \Exception('Saldo wallet tidak mencukupi. Saldo Anda: ' . $wallet->getFormattedAvailableBalanceAttribute() . ', Total yang dibutuhkan: Rp ' . number_format($totalAmount, 0, ',', '.'));
                 }
             }
             $pickupData = [
                 'user_id' => $data['user_id'],
-                'address_id' => $data['address_id'], 
+                'delivery_type' => $data['delivery_type'],
                 'recipient_name' => $data['recipient_name'],
                 'recipient_phone' => $data['recipient_phone'],
                 'recipient_city' => $data['recipient_city'],
@@ -84,6 +55,12 @@ class PickupRequestService
                 'courier_service' => $data['courier_service'] ?? null,
                 'notes' => $data['notes'] ?? null,
             ];
+            if ($data['delivery_type'] === 'pickup') {
+                $pickupData['address_id'] = $data['address_id'] ?? null;
+            } else {
+                $pickupData['address_id'] = null;
+                $pickupData['pickup_scheduled_at'] = null;
+            }
             $pickupRequest = PickupRequest::create($pickupData);
             foreach ($data['items'] as $item) {
                 $product = Product::findOrFail($item['product_id']);
@@ -107,14 +84,83 @@ class PickupRequestService
             return $pickupRequest->load(['items.product', 'pickupAddress']);
         });
     }
+    public function confirmPickupRequest(int $id): PickupRequest
+    {
+        $pickupRequest = PickupRequest::findOrFail($id);
+        if ($pickupRequest->status !== 'pending') {
+            throw new \Exception('Hanya pickup request dengan status pending yang dapat dikonfirmasi');
+        }
+        $pickupRequest->update(['status' => 'confirmed']);
+        return $pickupRequest;
+    }
+    public function schedulePickup(int $id, string $scheduledAt): PickupRequest
+    {
+        $pickupRequest = PickupRequest::findOrFail($id);
+        if (!$pickupRequest->isPickupType()) {
+            throw new \Exception('Hanya delivery type pickup yang dapat dijadwalkan');
+        }
+        if (!$pickupRequest->canBeScheduled()) {
+            throw new \Exception('Pickup request harus dikonfirmasi terlebih dahulu dan bertipe pickup');
+        }
+        $pickupRequest->update([
+            'status' => 'pickup_scheduled',
+            'pickup_scheduled_at' => $scheduledAt
+        ]);
+        return $pickupRequest;
+    }
+    public function markAsPickedUp(int $id, array $courierData = []): PickupRequest
+    {
+        $pickupRequest = PickupRequest::findOrFail($id);
+        if (!$pickupRequest->isPickupType()) {
+            throw new \Exception('Hanya delivery type pickup yang dapat di-pickup');
+        }
+        if (!$pickupRequest->canBePickedUp()) {
+            throw new \Exception('Status pickup request tidak memungkinkan untuk di-pickup');
+        }
+        $updateData = [
+            'status' => 'picked_up',
+            'picked_up_at' => now()
+        ];
+        if (!empty($courierData)) {
+            $updateData['courier_tracking_number'] = $courierData['tracking_number'] ?? null;
+            $updateData['courier_response'] = $courierData['response'] ?? null;
+        }
+        $pickupRequest->update($updateData);
+        return $pickupRequest;
+    }
+    public function markAsInTransit(int $id): PickupRequest
+    {
+        $pickupRequest = PickupRequest::findOrFail($id);
+        if ($pickupRequest->isPickupType() && $pickupRequest->status !== 'picked_up') {
+            throw new \Exception('Pickup request bertipe pickup harus sudah diambil terlebih dahulu');
+        }
+        if ($pickupRequest->isDropOffType() && !in_array($pickupRequest->status, ['confirmed', 'pending'])) {
+            throw new \Exception('Drop off request harus dikonfirmasi terlebih dahulu');
+        }
+        $pickupRequest->update(['status' => 'confirmed']);
+        return $pickupRequest;
+    }
+    public function markAsDelivered(int $id): PickupRequest
+    {
+        $pickupRequest = PickupRequest::findOrFail($id);
+        $updateData = [
+            'status' => 'delivered',
+            'delivered_at' => now()
+        ];
+        if ($pickupRequest->payment_method === 'cod') {
+            $updateData['cod_collected_at'] = now();
+        }
+        $pickupRequest->update($updateData);
+        return $pickupRequest;
+    }
     public function updatePickupRequest(int $id, array $data): PickupRequest
     {
         return DB::transaction(function () use ($id, $data) {
             $pickupRequest = PickupRequest::findOrFail($id);
             $updateData = [
-                'address_id' => $data['address_id'],
+                'delivery_type' => $data['delivery_type'],
                 'recipient_name' => $data['recipient_name'],
-                'recipient_phone' => $data['recipient_phone'], 
+                'recipient_phone' => $data['recipient_phone'],
                 'recipient_city' => $data['recipient_city'],
                 'recipient_province' => $data['recipient_province'],
                 'recipient_postal_code' => $data['recipient_postal_code'],
@@ -127,6 +173,9 @@ class PickupRequestService
                 'courier_service' => $data['courier_service'] ?? null,
                 'notes' => $data['notes'] ?? null,
             ];
+            if ($pickupRequest->isPickupType()) {
+                $updateData['address_id'] = $data['address_id'] ?? null;
+            }
             $pickupRequest->update($updateData);
             if (isset($data['items'])) {
                 $pickupRequest->items()->delete();
@@ -153,10 +202,21 @@ class PickupRequestService
             return $pickupRequest->load(['items.product', 'pickupAddress']);
         });
     }
+    public function getUserPickupRequests(int $userId): Collection
+    {
+        return PickupRequest::where('user_id', $userId)
+            ->with(['items.product', 'pickupAddress'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
+    public function getPickupRequestById(int $id): ?PickupRequest
+    {
+        return PickupRequest::with(['items.product', 'user', 'pickupAddress'])->find($id);
+    }
     public function cancelPickupRequest(int $id): PickupRequest
     {
         $pickupRequest = PickupRequest::findOrFail($id);
-        if($pickupRequest->statusAlreadyCancelled()) {
+        if ($pickupRequest->statusAlreadyCancelled()) {
             throw new \Exception('Pickup request sudah dibatalkan sebelumnya');
         }
         if (!$pickupRequest->canBeCancelled()) {
@@ -164,93 +224,6 @@ class PickupRequestService
         }
         $pickupRequest->update(['status' => 'cancelled']);
         return $pickupRequest;
-    }
-    public function confirmPickupRequest(int $id): PickupRequest
-    {
-        $pickupRequest = PickupRequest::findOrFail($id);
-        if ($pickupRequest->status !== 'pending') {
-            throw new \Exception('Hanya pickup request dengan status pending yang dapat dikonfirmasi');
-        }
-        $pickupRequest->update(['status' => 'confirmed']);
-        return $pickupRequest;
-    }
-    public function schedulePickup(int $id, string $scheduledAt): PickupRequest
-    {
-        $pickupRequest = PickupRequest::findOrFail($id);
-        if ($pickupRequest->status !== 'confirmed') {
-            throw new \Exception('Pickup request harus dikonfirmasi terlebih dahulu');
-        }
-        $pickupRequest->update([
-            'status' => 'pickup_scheduled',
-            'pickup_scheduled_at' => $scheduledAt
-        ]);
-        return $pickupRequest;
-    }
-    public function markAsPickedUp(int $id, array $courierData = []): PickupRequest
-    {
-        $pickupRequest = PickupRequest::findOrFail($id);
-        $updateData = [
-            'status' => 'picked_up',
-            'picked_up_at' => now()
-        ];
-        if (!empty($courierData)) {
-            $updateData['courier_tracking_number'] = $courierData['tracking_number'] ?? null;
-            $updateData['courier_response'] = $courierData['response'] ?? null;
-        }
-        $pickupRequest->update($updateData);
-        return $pickupRequest;
-    }
-    public function markAsInTransit(int $id): PickupRequest
-    {
-        $pickupRequest = PickupRequest::findOrFail($id);
-        if ($pickupRequest->status !== 'picked_up') {
-            throw new \Exception('Pickup request harus sudah diambil terlebih dahulu');
-        }
-        $pickupRequest->update(['status' => 'in_transit']);
-        return $pickupRequest;
-    }
-    public function markAsDelivered(int $id): PickupRequest
-    {
-        $pickupRequest = PickupRequest::findOrFail($id);
-        $updateData = [
-            'status' => 'delivered',
-            'delivered_at' => now()
-        ];
-        if ($pickupRequest->payment_method === 'cod') {
-            $updateData['cod_collected_at'] = now();
-        }
-        $pickupRequest->update($updateData);
-        return $pickupRequest;
-    }
-    public function markAsFailed(int $id, string $reason = null): PickupRequest
-    {
-        $pickupRequest = PickupRequest::findOrFail($id);
-        $pickupRequest->update([
-            'status' => 'failed',
-            'notes' => $reason ? ($pickupRequest->notes . ' | Failed: ' . $reason) : $pickupRequest->notes
-        ]);
-        return $pickupRequest;
-    }
-    public function getPickupRequestsByStatus(int $userId, string $status): Collection
-    {
-        return PickupRequest::where('user_id', $userId)
-            ->where('status', $status)
-            ->with(['items.product'])
-            ->orderBy('created_at', 'desc')
-            ->get();
-    }
-    public function searchPickupRequests(string $search, int $userId): Collection
-    {
-        return PickupRequest::where('user_id', $userId)
-            ->where(function ($query) use ($search) {
-                $query->where('pickup_code', 'like', "%{$search}%")
-                    ->orWhere('recipient_name', 'like', "%{$search}%")
-                    ->orWhere('recipient_phone', 'like', "%{$search}%")
-                    ->orWhere('courier_tracking_number', 'like', "%{$search}%");
-            })
-            ->with(['items.product'])
-            ->orderBy('created_at', 'desc')
-            ->get();
     }
     public function getPickupRequestStats(int $userId): array
     {
@@ -291,6 +264,27 @@ class PickupRequestService
             'total_amount' => $totalAmount,
             'total_orders' => $delivered->count(),
         ];
+    }
+    public function searchPickupRequests(string $search, int $userId): Collection
+    {
+        return PickupRequest::where('user_id', $userId)
+            ->where(function ($query) use ($search) {
+                $query->where('pickup_code', 'like', "%{$search}%")
+                    ->orWhere('recipient_name', 'like', "%{$search}%")
+                    ->orWhere('recipient_phone', 'like', "%{$search}%")
+                    ->orWhere('courier_tracking_number', 'like', "%{$search}%");
+            })
+            ->with(['items.product', 'pickupAddress'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
+    public function getPickupRequestsByStatus(int $userId, string $status): Collection
+    {
+        return PickupRequest::where('user_id', $userId)
+            ->where('status', $status)
+            ->with(['items.product', 'pickupAddress'])
+            ->orderBy('created_at', 'desc')
+            ->get();
     }
     public function getMonthlyStats(int $userId, int $year = null): array
     {
