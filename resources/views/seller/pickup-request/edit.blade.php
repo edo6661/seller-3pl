@@ -403,17 +403,28 @@
                         @enderror
                     </div>
                     <div>
-                        <label for="payment_method" class="block text-sm font-medium text-neutral-700 mb-1">Metode
-                            Pembayaran</label>
+                        <label for="payment_method" class="block text-sm font-medium text-neutral-700 mb-1">Metode Pembayaran</label>
                         <select name="payment_method" id="payment_method"
-                            class="block w-full rounded-lg border-neutral-300 focus:border-primary-500 focus:ring-primary-500 shadow-sm"
-                            required>
+                                class="block w-full rounded-lg border-neutral-300 focus:border-primary-500 focus:ring-primary-500 shadow-sm"
+                                required>
                             <option value="">Pilih Metode</option>
-                            <option value="wallet" {{ old('payment_method', $pickupRequest->payment_method) === 'wallet' ? 'selected' : '' }}>Wallet
+                            <option value="wallet" {{ old('payment_method', $pickupRequest->payment_method) === 'wallet' ? 'selected' : '' }}>
+                                Wallet
                             </option>
-                            <option value="cod" {{ old('payment_method', $pickupRequest->payment_method) === 'cod' ? 'selected' : '' }}>COD
+                            
+                            <option value="cod" 
+                                    {{ old('payment_method', $pickupRequest->payment_method) === 'cod' ? 'selected' : '' }} 
+                                    @disabled(!auth()->user()->canRequestCodPickup())>
+                                COD @if(!auth()->user()->canRequestCodPickup()) (Akun Belum Terverifikasi) @endif
                             </option>
                         </select>
+                        
+                        @if(!auth()->user()->canRequestCodPickup())
+                            <p class="mt-1 text-xs text-neutral-500">
+                                Fitur COD hanya tersedia untuk seller yang profilnya telah diverifikasi oleh admin.
+                            </p>
+                        @endif
+
                         @error('payment_method')
                             <p class="mt-1 text-sm text-error-600">{{ $message }}</p>
                         @enderror
