@@ -2,7 +2,10 @@
 
 namespace App\Models;
 
+
+use App\Enums\SellerVerificationStatus;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SellerProfile extends Model
@@ -16,13 +19,20 @@ class SellerProfile extends Model
         'postal_code',
         'latitude',
         'longitude',
+        'ktp_image_path',         
+        'passbook_image_path',    
+        'verification_status',    
+        'verification_notes',     
+
         'is_profile_complete'
     ];
 
     protected $casts = [
         'latitude' => 'decimal:8',
         'longitude' => 'decimal:8',
-        'is_profile_complete' => 'boolean'
+        'is_profile_complete' => 'boolean',
+        'verification_status' => SellerVerificationStatus::class, 
+
     ];
 
     /**
@@ -95,5 +105,31 @@ class SellerProfile extends Model
     public function scopeWithCoordinates($query)
     {
         return $query->whereNotNull('latitude')->whereNotNull('longitude');
+    }
+     public function isVerified(): bool
+    {
+        return $this->verification_status === SellerVerificationStatus::VERIFIED;
+    }
+
+    /**
+     * Accessor untuk mendapatkan URL gambar KTP.
+     */
+    public function getKtpImageUrlAttribute(): ?string
+    {
+        if ($this->ktp_image_path && Storage::disk('r2')->exists($this->ktp_image_path)) {
+            return Storage::disk('r2')->temporaryUrl($this->ktp_image_path, now()->addMinutes(15));
+        }
+        return null;
+    }
+
+    /**
+     * Accessor untuk mendapatkan URL gambar buku tabungan.
+     */
+    public function getPassbookImageUrlAttribute(): ?string
+    {
+        if ($this->passbook_image_path && Storage::disk('r2')->exists($this->passbook_image_path)) {
+            return Storage::disk('r2')->temporaryUrl($this->passbook_image_path, now()->addMinutes(15));
+        }
+        return null;
     }
 }

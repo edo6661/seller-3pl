@@ -106,8 +106,60 @@
                             </div>
                         </div>
                     </div>
+                     <div class="border-t border-gray-200 px-4 py-5 sm:p-6">
+                        <h4 class="text-md font-semibold text-gray-800 mb-4">Dokumen Verifikasi</h4>
+                        @if($profileData['seller_profile']->verification_status &&
+                            $profileData['seller_profile']->ktp_image_path != null &&
+                            $profileData['seller_profile']->passbook_image_path != null
+                        )
+                        <div class="mb-6 rounded-md bg-{{ $profileData['seller_profile']->verification_status->color() }}-50 p-4">
+                            <div class="flex">
+                                <div class="ml-3">
+                                    <p class="text-sm font-medium text-{{ $profileData['seller_profile']->verification_status->color() }}-800">
+                                        Status Verifikasi: {{ $profileData['seller_profile']->verification_status->label() }}
+                                    </p>
+                                    @if($profileData['seller_profile']->verification_status == \App\Enums\SellerVerificationStatus::REJECTED && $profileData['seller_profile']->verification_notes)
+                                    <div class="mt-2 text-sm text-{{ $profileData['seller_profile']->verification_status->color() }}-700">
+                                        <p><strong>Catatan dari Admin:</strong> {{ $profileData['seller_profile']->verification_notes }}</p>
+                                    </div>
+                                    @elseif($profileData['seller_profile']->verification_status == \App\Enums\SellerVerificationStatus::PENDING 
+                                    )
+                                    <div class="mt-2 text-sm text-{{ $profileData['seller_profile']->verification_status->color() }}-700">
+                                        <p>Dokumen Anda sedang dalam proses peninjauan oleh tim kami.</p>
+                                    </div>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+
+                        <div class="grid grid-cols-1 gap-y-6 sm:grid-cols-2 sm:gap-x-6">
+                            {{-- Input Foto KTP --}}
+                            <div>
+                                <label for="ktp_image" class="block text-sm font-medium text-gray-700">Foto KTP</label>
+                                <input type="file" name="ktp_image" id="ktp_image" class="mt-2 block w-full text-sm text-slate-500 file:mr-4 file:rounded-full file:border-0 file:bg-violet-50 file:py-2 file:px-4 file:text-sm file:font-semibold file:text-violet-700 hover:file:bg-violet-100"/>
+                                @error('ktp_image')<p class="mt-2 text-sm text-red-600">{{ $message }}</p>@enderror
+                                <div class="mt-4">
+                                    <img id="ktp-preview" src="{{ $profileData['seller_profile']->ktp_image_url ?? 'https://ui-avatars.com/api/?name=KTP' }}" alt="Pratinjau KTP" class="h-auto w-full max-w-3xl rounded-md border object-cover">
+                                </div>
+                            </div>
+
+                            {{-- Input Foto Buku Tabungan --}}
+                            <div>
+                                <label for="passbook_image" class="block text-sm font-medium text-gray-700">Foto Buku Tabungan</label>
+                                <input type="file" name="passbook_image" id="passbook_image" class="mt-2 block w-full text-sm text-slate-500 file:mr-4 file:rounded-full file:border-0 file:bg-violet-50 file:py-2 file:px-4 file:text-sm file:font-semibold file:text-violet-700 hover:file:bg-violet-100"/>
+                                @error('passbook_image')<p class="mt-2 text-sm text-red-600">{{ $message }}</p>@enderror
+                                <div class="mt-4">
+                                    <img id="passbook-preview" src="{{ $profileData['seller_profile']->passbook_image_url ?? 'https://ui-avatars.com/api/?name=Buku+Tabungan' }}" alt="Pratinjau Buku Tabungan" class="h-auto w-full max-w-3xl rounded-md border object-cover">
+                                </div>
+                            </div>
+                        </div>
+                        <p class="mt-4 text-xs text-gray-500">Unggah ulang dokumen jika Anda ingin memperbarui atau jika dokumen sebelumnya ditolak.</p>
+                    </div>
+                </div>
                 </div>
                 @endif
+               
                 <div class="mt-8 flex justify-end gap-x-3">
                     <a href="{{ route('profile.index') }}" class="rounded-md bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
                         Batal
@@ -119,12 +171,31 @@
             </form>
         </div>
     </div>
-    <script>
-        document.getElementById('avatar').addEventListener('change', function(event) {
-            const [file] = event.target.files;
-            if (file) {
-                document.getElementById('avatar-preview').src = URL.createObjectURL(file);
+     <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            function setupImagePreview(inputId, previewId) {
+                const inputElement = document.getElementById(inputId);
+                const previewElement = document.getElementById(previewId);
+
+                if (!inputElement || !previewElement) {
+                    console.error(`Elemen tidak ditemukan untuk: ${inputId} atau ${previewId}`);
+                    return;
+                }
+
+                inputElement.addEventListener('change', function(event) {
+                    const [file] = event.target.files;
+                    if (file) {
+                        previewElement.src = URL.createObjectURL(file);
+                        previewElement.onload = () => {
+                            URL.revokeObjectURL(previewElement.src); // Bebaskan memori
+                        }
+                    }
+                });
             }
+
+            setupImagePreview('avatar', 'avatar-preview');
+            setupImagePreview('ktp_image', 'ktp-preview');
+            setupImagePreview('passbook_image', 'passbook-preview');
         });
     </script>
 </x-layouts.plain-app>

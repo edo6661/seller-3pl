@@ -1,10 +1,12 @@
 <?php
 namespace App\Services;
+use App\Enums\SellerVerificationStatus;
 use App\Models\User;
 use App\Models\SellerProfile;
 use App\Enums\UserRole;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage; 
 class ProfileService
 {
@@ -57,6 +59,7 @@ class ProfileService
                 $user->update($userFields);
             }
             if ($user->isSeller()) {
+                $profile = $this->getOrCreateSellerProfile($userId);
                 $profileFields = [];
                 if (isset($data['address'])) $profileFields['address'] = $data['address'];
                 if (isset($data['city'])) $profileFields['city'] = $data['city'];
@@ -64,8 +67,18 @@ class ProfileService
                 if (isset($data['postal_code'])) $profileFields['postal_code'] = $data['postal_code'];
                 if (isset($data['latitude'])) $profileFields['latitude'] = $data['latitude'];
                 if (isset($data['longitude'])) $profileFields['longitude'] = $data['longitude'];
+                if (isset($data['ktp_image'])) {
+                    $profileFields['ktp_image_path'] = $this->uploadVerificationDocument($profile, $data['ktp_image'], 'ktp');
+                }
+                if (isset($data['passbook_image'])) {
+                    $profileFields['passbook_image_path'] = $this->uploadVerificationDocument($profile, $data['passbook_image'], 'passbook');
+                }
+                if (isset($data['ktp_image']) || isset($data['passbook_image'])) {
+                    $profileFields['verification_status'] = SellerVerificationStatus::PENDING; 
+                    $profileFields['verification_notes'] = null;
+                }
                 if (!empty($profileFields)) {
-                    $this->updateOrCreateSellerProfile($userId, $profileFields);
+                    $profile->update($profileFields);
                 }
             }
             DB::commit();
@@ -202,4 +215,14 @@ class ProfileService
         }
         return $errors;
     }
+     private function uploadVerificationDocument(SellerProfile $profile, UploadedFile $file, string $type): string
+        {
+            $user = $profile->user;
+            $pathAttribute = $type . '_image_path';
+            if ($profile->{$pathAttribute} && Storage::disk('r2')->exists($profile->{$pathAttribute})) {
+                Storage::disk('r2')->delete($profile->{$pathAttribute});
+            }
+            $filePath = $file->store('seller_documents/' . $user->id, 'r2');
+            return $filePath;
+        }
 }

@@ -77,6 +77,12 @@ class ProfileController extends Controller
                 $avatarPath = $this->profileService->uploadAvatar($userId, $request->file('avatar'));
                 $data['avatar'] = $avatarPath;
             }
+            if ($request->hasFile('ktp_image')) {
+                $data['ktp_image'] = $request->file('ktp_image');
+            }
+            if ($request->hasFile('passbook_image')) {
+                $data['passbook_image'] = $request->file('passbook_image');
+            }
             
             $this->profileService->updateProfile($userId, $data);
             

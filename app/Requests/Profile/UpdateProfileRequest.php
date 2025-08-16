@@ -1,9 +1,7 @@
 <?php
-
 namespace App\Requests\Profile;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-
 class UpdateProfileRequest extends FormRequest
 {
     /**
@@ -13,7 +11,6 @@ class UpdateProfileRequest extends FormRequest
     {
         return true;
     }
-
     /**
      * Get the validation rules that apply to the request.
      */
@@ -21,9 +18,7 @@ class UpdateProfileRequest extends FormRequest
     {
         $userId = auth()->id();
         $user = auth()->user();
-        
         $rules = [
-            // User fields (available for both admin and seller)
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($userId)],
             'phone' => ['nullable', 'string', 'max:20'],
@@ -31,8 +26,6 @@ class UpdateProfileRequest extends FormRequest
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
             'password_confirmation' => ['nullable', 'string', 'min:8'],
         ];
-        
-        // Add seller profile fields if user is seller
         if ($user && $user->isSeller()) {
             $sellerRules = [
                 'address' => ['nullable', 'string', 'max:500'],
@@ -41,14 +34,14 @@ class UpdateProfileRequest extends FormRequest
                 'postal_code' => ['nullable', 'string', 'max:10'],
                 'latitude' => ['nullable', 'numeric', 'between:-90,90'],
                 'longitude' => ['nullable', 'numeric', 'between:-180,180'],
+                'ktp_image' => ['nullable', 'image', 'mimes:jpeg,png,jpg', 'max:2048'],
+                'passbook_image' => ['nullable', 'image', 'mimes:jpeg,png,jpg', 'max:2048'],
+
             ];
-            
             $rules = array_merge($rules, $sellerRules);
         }
-        
         return $rules;
     }
-
     /**
      * Get custom messages for validator errors.
      */
@@ -76,7 +69,6 @@ class UpdateProfileRequest extends FormRequest
             'longitude.between' => 'Longitude harus antara -180 dan 180.',
         ];
     }
-
     /**
      * Get custom attributes for validator errors.
      */
@@ -97,25 +89,19 @@ class UpdateProfileRequest extends FormRequest
             'longitude' => 'longitude',
         ];
     }
-
     /**
      * Prepare the data for validation.
      */
     protected function prepareForValidation(): void
     {
-        // Remove password field if empty
         if (empty($this->password)) {
             $this->request->remove('password');
             $this->request->remove('password_confirmation');
         }
-        
-        // Clean phone number
         if ($this->has('phone') && !empty($this->phone)) {
             $phone = preg_replace('/[^0-9+]/', '', $this->phone);
             $this->merge(['phone' => $phone]);
         }
-        
-        // Clean postal code
         if ($this->has('postal_code') && !empty($this->postal_code)) {
             $postalCode = preg_replace('/[^0-9]/', '', $this->postal_code);
             $this->merge(['postal_code' => $postalCode]);
