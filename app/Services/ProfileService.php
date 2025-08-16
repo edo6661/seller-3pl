@@ -225,4 +225,22 @@ class ProfileService
             $filePath = $file->store('seller_documents/' . $user->id, 'r2');
             return $filePath;
         }
-}
+        public function resubmitDocuments(int $userId, array $data): bool
+        {
+            $user = User::findOrFail($userId);
+            $profile = $user->sellerProfile;
+            if (!$profile) {
+                return false;
+            }
+            $profileFields = [];
+            if (isset($data['ktp_image'])) {
+                $profileFields['ktp_image_path'] = $this->uploadVerificationDocument($profile, $data['ktp_image'], 'ktp');
+            }
+            if (isset($data['passbook_image'])) {
+                $profileFields['passbook_image_path'] = $this->uploadVerificationDocument($profile, $data['passbook_image'], 'passbook');
+            }
+            $profileFields['verification_status'] = SellerVerificationStatus::PENDING;
+            $profileFields['verification_notes'] = null; 
+            return $profile->update($profileFields);
+        }
+    }

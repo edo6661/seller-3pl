@@ -1,5 +1,7 @@
 <?php
 namespace App\Services;
+
+use App\Enums\SellerVerificationStatus;
 use App\Models\User;
 use App\Enums\UserRole;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -46,4 +48,26 @@ class UserService
     {
         return User::with(['sellerProfile', 'wallet', 'products'])->find($id);
     }
+    public function approveVerification(User $user): bool
+    {
+        if ($user->isSeller() && $user->sellerProfile) {
+            $user->sellerProfile->update(attributes: [
+                'verification_status' => SellerVerificationStatus::VERIFIED,
+                'verification_notes' => null,
+            ]);
+            return true;
+        }
+        return false;
+    }
+    public function rejectVerification(User $user, string $notes): bool
+        {
+            if ($user->isSeller() && $user->sellerProfile) {
+                $user->sellerProfile->update([
+                    'verification_status' => SellerVerificationStatus::REJECTED,
+                    'verification_notes' => $notes,
+                ]);
+                return true;
+            }
+            return false;
+        }
 }

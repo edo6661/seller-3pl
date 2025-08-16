@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\SellerVerificationStatus;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\UpdateProfileRequest;
 use App\Requests\Profile\ChangePasswordRequest;
-use App\Requests\Profile\UpdateProfileRequest as ProfileUpdateProfileRequest;
+use App\Requests\Profile\ResubmitVerificationRequest as ProfileResubmitVerificationRequest;
+use App\Requests\Profile\UpdateProfileRequest;
 use App\Services\ProfileService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -66,7 +67,7 @@ class ProfileController extends Controller
     /**
      * Update the user's profile
      */
-    public function update(ProfileUpdateProfileRequest $request)
+    public function update(UpdateProfileRequest $request)
     {
         try {
             $userId = auth()->id();
@@ -208,5 +209,26 @@ class ProfileController extends Controller
                 ->with('error', $e->getMessage() ?: 'Gagal mengubah password. Silakan coba lagi.');
         }
     }
+    public function resubmitVerificationForm()
+    {
+        $user = auth()->user();
 
+        // Pastikan hanya seller yang ditolak yang bisa akses halaman ini
+        if (!$user->isSeller() || $user->sellerProfile->verification_status !== SellerVerificationStatus::REJECTED) {
+            abort(403, 'Akses ditolak.');
+        }
+
+        $profileData = $this->profileService->getUserProfile($user->id);
+        return view('profile.resubmit_verification', compact('profileData'));
+    }
+
+    /**
+     * Memproses pengajuan ulang verifikasi.
+     */
+    public function processResubmission(ProfileResubmitVerificationRequest $request)
+    {
+        $this->profileService->resubmitDocuments(auth()->id(), $request->validated());
+
+        return redirect()->route('profile.index')->with('success', 'Dokumen berhasil diajukan ulang dan akan segera ditinjau oleh admin.');
+    }
 }

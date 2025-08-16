@@ -1,8 +1,12 @@
 <x-layouts.plain-app>
     <x-slot name="title">Kelola Pengguna</x-slot>
-
-    <div class="container mx-auto px-4 py-6">
-        <!-- Header Section with Gradient Background -->
+    <div class="container mx-auto px-4 py-6" 
+        x-data="{ 
+            showImageModal: false, 
+            showRejectModal: false, 
+            modalImageUrl: '', 
+            rejectActionUrl: '' 
+        }">
         <div class="bg-gradient-to-r from-primary-50 to-secondary-50 rounded-xl p-6 mb-8 border border-primary-100">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
                 <div>
@@ -11,10 +15,7 @@
                 </div>
             </div>
         </div>
-
-        <!-- Stats Cards with Colorful Backgrounds -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
-            <!-- Total Users Card -->
             <div
                 class="bg-gradient-to-br from-secondary-50 to-white rounded-xl shadow-xs p-5 border border-secondary-100 hover:shadow-sm transition-all duration-300">
                 <div class="flex items-center">
@@ -27,8 +28,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Sellers Card -->
             <div
                 class="bg-gradient-to-br from-success-50 to-white rounded-xl shadow-xs p-5 border border-success-100 hover:shadow-sm transition-all duration-300">
                 <div class="flex items-center">
@@ -41,8 +40,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Admins Card -->
             <div
                 class="bg-gradient-to-br from-primary-50 to-white rounded-xl shadow-xs p-5 border border-primary-100 hover:shadow-sm transition-all duration-300">
                 <div class="flex items-center">
@@ -55,8 +52,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Verified Users Card -->
             <div
                 class="bg-gradient-to-br from-warning-50 to-white rounded-xl shadow-xs p-5 border border-warning-100 hover:shadow-sm transition-all duration-300">
                 <div class="flex items-center">
@@ -70,12 +65,9 @@
                 </div>
             </div>
         </div>
-
-        <!-- Action Bar with Subtle Background -->
         <div
             class="bg-gradient-to-r from-neutral-50 to-neutral-50 rounded-xl shadow-xs p-5 border border-neutral-200 mb-6">
             <div class="flex flex-col lg:flex-row justify-between items-center gap-4">
-                <!-- Search Bar -->
                 <div class="w-full lg:w-auto lg:flex-1 ">
                     <form action="{{ route('admin.users.index') }}" method="GET" class="relative">
                         <input type="hidden" name="role" value="{{ $role }}">
@@ -90,10 +82,7 @@
                         </div>
                     </form>
                 </div>
-
-                <!-- Filters -->
                 <div class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
-                    <!-- Role Filter -->
                     <form action="{{ route('admin.users.index') }}" method="GET" class="inline">
                         <input type="hidden" name="search" value="{{ $search }}">
                         <input type="hidden" name="status" value="{{ $status }}">
@@ -104,8 +93,6 @@
                             <option value="admin" {{ $role === 'admin' ? 'selected' : '' }}>Admin</option>
                         </select>
                     </form>
-
-                    <!-- Status Filter -->
                     <form action="{{ route('admin.users.index') }}" method="GET" class="inline">
                         <input type="hidden" name="search" value="{{ $search }}">
                         <input type="hidden" name="role" value="{{ $role }}">
@@ -118,8 +105,6 @@
                                 Terverifikasi</option>
                         </select>
                     </form>
-
-                    <!-- Clear Filters -->
                     @if ($search || $role || $status)
                         <a href="{{ route('admin.users.index') }}"
                             class="bg-white hover:bg-neutral-50 text-neutral-700 font-medium py-2.5 px-4 rounded-lg transition duration-200 flex items-center justify-center text-sm border border-neutral-200">
@@ -130,8 +115,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- Users Table with Alternating Row Colors -->
         <div class="bg-white rounded-xl shadow-xs overflow-hidden border border-neutral-200">
             @if ($users->count() > 0)
                 <div class="overflow-x-auto">
@@ -153,27 +136,22 @@
                                 <th scope="col"
                                     class="px-6 py-3 text-left text-xs font-medium text-neutral-600 uppercase tracking-wider">
                                     Bergabung</th>
+                                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-neutral-600 uppercase tracking-wider">
+                                    Aksi
+                                </th>
+
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-neutral-100">
                             @foreach ($users as $user)
                                 <tr
                                     class="{{ $loop->odd ? 'bg-neutral-50' : 'bg-white' }} hover:bg-primary-50 transition-colors duration-150">
-                                    <!-- User Column -->
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
                                             <div class="flex-shrink-0 h-10 w-10">
-                                                @if ($user->avatar)
                                                     <img class="h-10 w-10 rounded-full object-cover"
-                                                        src="{{ Storage::url($user->avatar) }}"
+                                                        src="{{ $user->avatar_url }}"
                                                         alt="{{ $user->name }}">
-                                                @else
-                                                    <div
-                                                        class="h-10 w-10 rounded-full bg-neutral-100 flex items-center justify-center">
-                                                        <span
-                                                            class="text-sm font-medium text-neutral-600">{{ substr($user->name, 0, 1) }}</span>
-                                                    </div>
-                                                @endif
                                             </div>
                                             <div class="ml-4">
                                                 <div class="text-sm font-semibold text-neutral-800">
@@ -183,8 +161,6 @@
                                             </div>
                                         </div>
                                     </td>
-
-                                    <!-- Contact Column -->
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm text-neutral-800">{{ $user->email }}</div>
                                         <div class="text-xs text-neutral-500 mt-1">
@@ -195,45 +171,73 @@
                                             @endif
                                         </div>
                                     </td>
-
-                                    <!-- Role Column -->
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <span
                                             class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $user->role->value === 'admin' ? 'bg-primary-100 text-primary-800' : 'bg-secondary-100 text-secondary-800' }}">
                                             {{ $user->role_label }}
                                         </span>
                                     </td>
-
-                                    <!-- Status Column -->
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex flex-col gap-1.5">
-                                            <span
-                                                class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $user->isEmailVerified() ? 'bg-success-100 text-success-800' : 'bg-error-100 text-error-800' }}">
-                                                {{ $user->isEmailVerified() ? 'Terverifikasi' : 'Belum Terverifikasi' }}
-                                            </span>
-                                            @if ($user->isSeller() && $user->sellerProfile)
-                                                <span
-                                                    class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $user->isProfileComplete() ? 'bg-success-100 text-success-800' : 'bg-warning-100 text-warning-800' }}">
-                                                    {{ $user->isProfileComplete() ? 'Profil Lengkap' : 'Profil Belum Lengkap' }}
+                                        {{-- MODIFIKASI STATUS VERIFIKASI SELLER --}}
+                                        @if ($user->isSeller() && $user->sellerProfile)
+                                            <div class="flex items-center gap-2 mb-2">
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium 
+                                                    bg-{{ $user->sellerProfile->verification_status->color() }}-100 
+                                                    text-{{ $user->sellerProfile->verification_status->color() }}-800">
+                                                    {{ $user->sellerProfile->verification_status->label() }}
                                                 </span>
-                                            @endif
-                                        </div>
+                                            </div>
+                                            {{-- Tombol lihat dokumen --}}
+                                            <div class="flex items-center gap-1.5">
+                                                @if($user->sellerProfile->ktp_image_url)
+                                                    <button @click="showImageModal = true; modalImageUrl = '{{ $user->sellerProfile->ktp_image_url }}'"
+                                                            class="text-xs text-primary-600 hover:underline">Lihat KTP</button>
+                                                @endif
+                                                @if($user->sellerProfile->passbook_image_url)
+                                                    <span class="text-xs text-neutral-400">|</span>
+                                                    <button @click="showImageModal = true; modalImageUrl = '{{ $user->sellerProfile->passbook_image_url }}'"
+                                                            class="text-xs text-primary-600 hover:underline">Lihat Rekening</button>
+                                                @endif
+                                            </div>
+                                        @else
+                                            {{-- Status verifikasi email (jika bukan seller) --}}
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $user->isEmailVerified() ? 'bg-success-100 text-success-800' : 'bg-error-100 text-error-800' }}">
+                                                Email {{ $user->isEmailVerified() ? 'Terverifikasi' : 'Belum' }}
+                                            </span>
+                                        @endif
                                     </td>
-
-                                    <!-- Join Date Column -->
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-600">
                                         {{ $user->created_at->format('d M Y') }}
                                         <div class="text-xs text-neutral-400 mt-1">
                                             {{ $user->created_at->diffForHumans() }}
                                         </div>
                                     </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                                        @if ($user->isSeller() && $user->sellerProfile && $user->sellerProfile->verification_status === \App\Enums\SellerVerificationStatus::PENDING)
+                                            <div class="flex items-center justify-center gap-2">
+                                                {{-- Tombol Setujui --}}
+                                                <form action="{{ route('admin.users.approve', $user) }}" method="POST" onsubmit="return confirm('Anda yakin ingin menyetujui verifikasi seller ini?');">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <button type="submit" class="text-success-600 hover:text-success-900" title="Setujui">
+                                                        <i class="fas fa-check-circle"></i>
+                                                    </button>
+                                                </form>
+                                                {{-- Tombol Tolak --}}
+                                                <button @click="showRejectModal = true; rejectActionUrl = '{{ route('admin.users.reject', $user) }}'"
+                                                        class="text-error-600 hover:text-error-900" title="Tolak">
+                                                    <i class="fas fa-times-circle"></i>
+                                                </button>
+                                            </div>
+                                        @else
+                                            <span class="text-neutral-400">-</span>
+                                        @endif
+                                    </td>
                                 </tr>
                             @endforeach
                         </tbody>
                     </table>
                 </div>
-
-                <!-- Pagination -->
                 <div class="bg-neutral-50 px-4 py-3 border-t border-neutral-200 sm:px-6 rounded-b-xl">
                     {{ $users->links() }}
                 </div>
@@ -255,6 +259,47 @@
                     </p>
                 </div>
             @endif
+        </div>
+        <div x-show="showImageModal" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+             class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" @click.away="showImageModal = false"
+             x-on:keydown.escape.window="showImageModal = false"
+             x-cloak
+             >
+            <div class="bg-white rounded-lg shadow-xl max-w-3xl w-full" @click.stop x-on:click.outside="showImageModal = false">
+                <img :src="modalImageUrl" alt="Detail Dokumen" class="w-full max-h-[80vh] rounded-t-lg">
+                <div class="p-4 text-right">
+                    <button @click="showImageModal = false" class="px-4 py-2 bg-neutral-200 text-neutral-800 rounded-lg hover:bg-neutral-300">Tutup</button>
+                </div>
+            </div>
+        </div>
+
+        {{-- MODAL UNTUK MENOLAK VERIFIKASI --}}
+        <div x-show="showRejectModal" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+             class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" @click.away="showRejectModal = false"
+             x-on:keydown.escape.window="showRejectModal = false"
+             x-cloak
+             >
+            <div class="bg-white rounded-lg shadow-xl max-w-3xl w-full" @click.stop x-on:click.outside="showRejectModal = false">
+                <form :action="rejectActionUrl" method="POST">
+                    @csrf
+                    @method('PATCH')
+                    <div class="p-6">
+                        <h3 class="text-lg font-medium text-neutral-900">Tolak Verifikasi</h3>
+                        <p class="mt-1 text-sm text-neutral-600">Berikan alasan penolakan. Alasan ini akan dapat dilihat oleh seller.</p>
+                        <div class="mt-4">
+                            <textarea name="notes" rows="4" required class="block w-full rounded-lg border-neutral-300 focus:border-primary-500 focus:ring-primary-500 shadow-sm" placeholder="Contoh: Foto KTP buram, nama di rekening berbeda, dll."></textarea>
+                        </div>
+                    </div>
+                    <div class="bg-neutral-50 px-6 py-3 flex justify-end gap-3 rounded-b-lg">
+                        <button type="button" @click="showRejectModal = false" class="px-4 py-2 bg-white text-neutral-800 rounded-lg border hover:bg-neutral-100">Batal</button>
+                        <button type="submit" class="px-4 py-2 bg-error-600 text-white rounded-lg hover:bg-error-700">Tolak Verifikasi</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 </x-layouts.plain-app>
