@@ -18,14 +18,14 @@ return new class extends Migration
             $table->foreignId('address_id')
               ->constrained('user_addresses')
               ->onDelete('cascade');
-            $table->string('pickup_name');
-            $table->string('pickup_phone');
-            $table->string('pickup_city');
-            $table->string('pickup_province');
-            $table->string('pickup_postal_code');
-            $table->text('pickup_address');
-            $table->decimal('pickup_latitude', 10, 8)->nullable();
-            $table->decimal('pickup_longitude', 11, 8)->nullable();
+            $table->string('recipient_name');
+            $table->string('recipient_phone');
+            $table->string('recipient_city');
+            $table->string('recipient_province');
+            $table->string('recipient_postal_code');
+            $table->text('recipient_address');
+            $table->decimal('recipient_latitude', 10, 8)->nullable();
+            $table->decimal('recipient_longitude', 11, 8)->nullable();
             
             $table->enum('payment_method', ['balance', 'wallet']);
             $table->decimal('shipping_cost', 15, 2)->default(0);

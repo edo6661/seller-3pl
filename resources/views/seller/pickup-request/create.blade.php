@@ -34,24 +34,26 @@
         <form method="POST" action="{{ route('seller.pickup-request.store') }}" class="space-y-6"
               x-data="pickupRequestForm()" x-init="initGoogleMaps()">
             @csrf
+            
+            <!-- Informasi Alamat Pickup -->
             <div class="bg-white rounded-xl shadow-md p-6 border border-neutral-200">
                 <div class="flex items-center mb-4">
-                    <div class="bg-primary-100 p-2 rounded-lg mr-3">
-                        <i class="fas fa-user text-primary-600"></i>
+                    <div class="bg-secondary-100 p-2 rounded-lg mr-3">
+                        <i class="fas fa-truck-pickup text-secondary-600"></i>
                     </div>
-                    <h3 class="text-lg font-semibold text-neutral-900">Informasi Penerima</h3>
+                    <h3 class="text-lg font-semibold text-neutral-900">Alamat Pickup</h3>
                 </div>
                 <div class="space-y-4">
-                    <!-- Pilih Address -->
+                    <!-- Pilih Address untuk Pickup -->
                     <div>
                         <label for="address_id" class="block text-sm font-medium text-neutral-700 mb-2">
                             <i class="fas fa-map-marker-alt mr-1"></i>
-                            Pilih Alamat Penerima
+                            Pilih Alamat Pickup
                         </label>
                         <select name="address_id" id="address_id" 
                                 class="block w-full rounded-lg border-neutral-300 focus:border-primary-500 focus:ring-primary-500 shadow-sm"
-                                required x-model="selectedAddressId" @change="loadSelectedAddress">
-                            <option value="">-- Pilih Alamat --</option>
+                                required x-model="selectedAddressId" @change="loadSelectedPickupAddress">
+                            <option value="">-- Pilih Alamat Pickup --</option>
                             @foreach($addresses as $address)
                                 <option value="{{ $address->id }}" 
                                         data-name="{{ $address->name }}"
@@ -74,6 +76,7 @@
                             <p class="mt-1 text-sm text-error-600">{{ $message }}</p>
                         @enderror
                     </div>
+                    
                     <!-- Tombol Kelola Address -->
                     <div class="flex gap-2">
                         <a href="{{ route('seller.addresses.create') }}" 
@@ -87,187 +90,167 @@
                             Kelola Alamat
                         </a>
                     </div>
-                    <!-- Preview Address yang Dipilih -->
-                    <div x-show="selectedAddressId" class="p-4 bg-gray-50 rounded-lg border">
-                        <h4 class="font-medium text-gray-900 mb-2">Preview Alamat Penerima:</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
+                    
+                    <!-- Preview Alamat Pickup yang Dipilih -->
+                    <div x-show="selectedAddressId" class="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                        <h4 class="font-medium text-blue-900 mb-2">Preview Alamat Pickup:</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-blue-700">
                             <div>
-                                <strong>Nama:</strong> <span x-text="previewData.name"></span>
+                                <strong>Nama:</strong> <span x-text="pickupPreviewData.name"></span>
                             </div>
                             <div>
-                                <strong>Telepon:</strong> <span x-text="previewData.phone"></span>
+                                <strong>Telepon:</strong> <span x-text="pickupPreviewData.phone"></span>
                             </div>
                             <div>
-                                <strong>Kota:</strong> <span x-text="previewData.city"></span>
+                                <strong>Kota:</strong> <span x-text="pickupPreviewData.city"></span>
                             </div>
                             <div>
-                                <strong>Provinsi:</strong> <span x-text="previewData.province"></span>
+                                <strong>Provinsi:</strong> <span x-text="pickupPreviewData.province"></span>
                             </div>
                             <div class="md:col-span-2">
-                                <strong>Alamat:</strong> <span x-text="previewData.address"></span>
+                                <strong>Alamat:</strong> <span x-text="pickupPreviewData.address"></span>
                             </div>
                         </div>
                     </div>
+                    
+                    <!-- Map untuk Pickup -->
                     <div x-show="selectedAddressId" class="mt-4">
-                        <label class="block text-sm font-medium text-neutral-700 mb-2">Lokasi di Peta:</label>
-                        <div id="recipient-map" class="w-full h-64 rounded-lg border border-gray-300"></div>
+                        <label class="block text-sm font-medium text-neutral-700 mb-2">Lokasi Pickup di Peta:</label>
+                        <div id="pickup-map" class="w-full h-64 rounded-lg border border-gray-300"></div>
                     </div>
                 </div>
             </div>
-            <!-- Informasi Pickup -->
+
+            <!-- Informasi Penerima (Manual Input) -->
             <div class="bg-white rounded-xl shadow-md p-6 border border-neutral-200">
                 <div class="flex items-center mb-4">
-                    <div class="bg-secondary-100 p-2 rounded-lg mr-3">
-                        <i class="fas fa-truck-pickup text-secondary-600"></i>
+                    <div class="bg-primary-100 p-2 rounded-lg mr-3">
+                        <i class="fas fa-user text-primary-600"></i>
                     </div>
-                    <h3 class="text-lg font-semibold text-neutral-900">Informasi Lokasi Pickup</h3>
+                    <h3 class="text-lg font-semibold text-neutral-900">Informasi Penerima</h3>
                 </div>
+                
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <!-- Form Fields -->
+                    <!-- Form Fields untuk Recipient -->
                     <div class="space-y-4">
-                        <!-- Search Address -->
+                        <!-- Search Address Recipient -->
                         <div>
                             <label class="block text-sm font-medium text-neutral-700 mb-2">
                                 <i class="fas fa-search mr-1"></i>
-                                Cari Alamat Pickup
+                                Cari Alamat Penerima
                             </label>
                             <input type="text" 
-                                   id="pickup-address-search"
-                                   x-model="pickupSearchQuery"
-                                   placeholder="Mulai ketik alamat pickup..."
+                                   id="recipient-address-search"
+                                   x-model="recipientSearchQuery"
+                                   placeholder="Mulai ketik alamat penerima..."
                                    class="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500">
                         </div>
+                        
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label for="pickup_name" class="block text-sm font-medium text-neutral-700 mb-1">Nama Pengirim</label>
-                                <input type="text" name="pickup_name" id="pickup_name"
-                                       x-model="formData.pickup_name"
-                                       value="{{ old('pickup_name') }}"
+                                <label for="recipient_name" class="block text-sm font-medium text-neutral-700 mb-1">Nama Penerima</label>
+                                <input type="text" name="recipient_name" id="recipient_name"
+                                       x-model="formData.recipient_name"
+                                       value="{{ old('recipient_name') }}"
                                        class="block w-full rounded-lg border-neutral-300 focus:border-primary-500 focus:ring-primary-500 shadow-sm"
                                        required>
-                                @error('pickup_name')
+                                @error('recipient_name')
                                     <p class="mt-1 text-sm text-error-600">{{ $message }}</p>
                                 @enderror
                             </div>
                             <div>
-                                <label for="pickup_phone" class="block text-sm font-medium text-neutral-700 mb-1">Nomor Telepon</label>
-                                <input type="text" name="pickup_phone" id="pickup_phone"
-                                       x-model="formData.pickup_phone"
-                                       value="{{ old('pickup_phone') }}"
+                                <label for="recipient_phone" class="block text-sm font-medium text-neutral-700 mb-1">Nomor Telepon</label>
+                                <input type="text" name="recipient_phone" id="recipient_phone"
+                                       x-model="formData.recipient_phone"
+                                       value="{{ old('recipient_phone') }}"
                                        class="block w-full rounded-lg border-neutral-300 focus:border-primary-500 focus:ring-primary-500 shadow-sm"
                                        required>
-                                @error('pickup_phone')
+                                @error('recipient_phone')
                                     <p class="mt-1 text-sm text-error-600">{{ $message }}</p>
                                 @enderror
                             </div>
                         </div>
+                        
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label for="pickup_city" class="block text-sm font-medium text-neutral-700 mb-1">Kota</label>
-                                <input type="text" name="pickup_city" id="pickup_city"
-                                       x-model="formData.pickup_city"
-                                       value="{{ old('pickup_city') }}"
+                                <label for="recipient_city" class="block text-sm font-medium text-neutral-700 mb-1">Kota</label>
+                                <input type="text" name="recipient_city" id="recipient_city"
+                                       x-model="formData.recipient_city"
+                                       value="{{ old('recipient_city') }}"
                                        class="block w-full rounded-lg border-neutral-300 focus:border-primary-500 focus:ring-primary-500 shadow-sm"
                                        required>
-                                @error('pickup_city')
+                                @error('recipient_city')
                                     <p class="mt-1 text-sm text-error-600">{{ $message }}</p>
                                 @enderror
                             </div>
                             <div>
-                                <label for="pickup_province" class="block text-sm font-medium text-neutral-700 mb-1">Provinsi</label>
-                                <input type="text" name="pickup_province" id="pickup_province"
-                                       x-model="formData.pickup_province"
-                                       value="{{ old('pickup_province') }}"
+                                <label for="recipient_province" class="block text-sm font-medium text-neutral-700 mb-1">Provinsi</label>
+                                <input type="text" name="recipient_province" id="recipient_province"
+                                       x-model="formData.recipient_province"
+                                       value="{{ old('recipient_province') }}"
                                        class="block w-full rounded-lg border-neutral-300 focus:border-primary-500 focus:ring-primary-500 shadow-sm"
                                        required>
-                                @error('pickup_province')
+                                @error('recipient_province')
                                     <p class="mt-1 text-sm text-error-600">{{ $message }}</p>
                                 @enderror
                             </div>
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label for="pickup_postal_code" class="block text-sm font-medium text-neutral-700 mb-1">Kode Pos</label>
-                                <input type="text" name="pickup_postal_code" id="pickup_postal_code"
-                                       x-model="formData.pickup_postal_code"
-                                       value="{{ old('pickup_postal_code') }}"
-                                       class="block w-full rounded-lg border-neutral-300 focus:border-primary-500 focus:ring-primary-500 shadow-sm"
-                                       required>
-                                @error('pickup_postal_code')
-                                    <p class="mt-1 text-sm text-error-600">{{ $message }}</p>
-                                @enderror
-                            </div>
-                            <div>
-                                <label for="pickup_country" class="block text-sm font-medium text-neutral-700 mb-1">Negara</label>
-                                <input type="text" name="pickup_country" id="pickup_country"
-                                       x-model="formData.pickup_country"
-                                       value="{{ old('pickup_country', 'Indonesia') }}"
-                                       class="block w-full rounded-lg border-neutral-300 focus:border-primary-500 focus:ring-primary-500 shadow-sm"
-                                       required>
-                                @error('pickup_country')
-                                    <p class="mt-1 text-sm text-error-600">{{ $message }}</p>
-                                @enderror
-                            </div>
-                        </div>
+                        
                         <div>
-                            <label for="pickup_address" class="block text-sm font-medium text-neutral-700 mb-1">Alamat Pickup</label>
-                            <textarea name="pickup_address" id="pickup_address"
-                                      x-model="formData.pickup_address"
-                                      rows="3"
-                                      placeholder="Akan terisi otomatis dari pencarian atau peta"
-                                      class="block w-full rounded-lg border-neutral-300 focus:border-primary-500 focus:ring-primary-500 shadow-sm"
-                                      required>{{ old('pickup_address') }}</textarea>
-                            @error('pickup_address')
+                            <label for="recipient_postal_code" class="block text-sm font-medium text-neutral-700 mb-1">Kode Pos</label>
+                            <input type="text" name="recipient_postal_code" id="recipient_postal_code"
+                                   x-model="formData.recipient_postal_code"
+                                   value="{{ old('recipient_postal_code') }}"
+                                   class="block w-full rounded-lg border-neutral-300 focus:border-primary-500 focus:ring-primary-500 shadow-sm"
+                                   required>
+                            @error('recipient_postal_code')
                                 <p class="mt-1 text-sm text-error-600">{{ $message }}</p>
                             @enderror
                         </div>
-                        <!-- Hidden Coordinates -->
-                        <input type="hidden" name="pickup_latitude" x-model="formData.pickup_latitude">
-                        <input type="hidden" name="pickup_longitude" x-model="formData.pickup_longitude">
-                        <!-- Coordinates Display (Optional) -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-neutral-700 mb-1">Latitude</label>
-                                <input type="number" 
-                                       x-model="formData.pickup_latitude"
-                                       step="any"
-                                       class="block w-full rounded-lg border-neutral-300 bg-gray-50"
-                                       readonly>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-neutral-700 mb-1">Longitude</label>
-                                <input type="number" 
-                                       x-model="formData.pickup_longitude"
-                                       step="any"
-                                       class="block w-full rounded-lg border-neutral-300 bg-gray-50"
-                                       readonly>
-                            </div>
+                        
+                        <div>
+                            <label for="recipient_address" class="block text-sm font-medium text-neutral-700 mb-1">Alamat Penerima</label>
+                            <textarea name="recipient_address" id="recipient_address"
+                                      x-model="formData.recipient_address"
+                                      rows="3"
+                                      placeholder="Akan terisi otomatis dari pencarian atau peta"
+                                      class="block w-full rounded-lg border-neutral-300 focus:border-primary-500 focus:ring-primary-500 shadow-sm"
+                                      required>{{ old('recipient_address') }}</textarea>
+                            @error('recipient_address')
+                                <p class="mt-1 text-sm text-error-600">{{ $message }}</p>
+                            @enderror
                         </div>
+                        
+                        <!-- Hidden Coordinates -->
+                        <input type="hidden" name="recipient_latitude" x-model="formData.recipient_latitude">
+                        <input type="hidden" name="recipient_longitude" x-model="formData.recipient_longitude">
                     </div>
-                    <!-- Map -->
+                    
+                    <!-- Map untuk Recipient -->
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-sm font-medium text-neutral-700 mb-2">Lokasi Pickup</label>
-                            <div id="pickup-map" class="w-full h-80 rounded-lg border border-gray-300"></div>
+                            <label class="block text-sm font-medium text-neutral-700 mb-2">Lokasi Penerima</label>
+                            <div id="recipient-map" class="w-full h-80 rounded-lg border border-gray-300"></div>
                         </div>
-                        <div x-show="pickupStatus" 
+                        <div x-show="recipientStatus" 
                              class="p-3 rounded-md transition-all" 
-                             :class="pickupStatus === 'success' ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'"
+                             :class="recipientStatus === 'success' ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'"
                              x-transition>
                             <div class="flex">
                                 <div class="flex-shrink-0">
-                                    <i :class="pickupStatus === 'success' ? 'fas fa-check-circle text-green-400' : 'fas fa-exclamation-triangle text-red-400'"></i>
+                                    <i :class="recipientStatus === 'success' ? 'fas fa-check-circle text-green-400' : 'fas fa-exclamation-triangle text-red-400'"></i>
                                 </div>
                                 <div class="ml-3">
                                     <p class="text-sm font-medium" 
-                                       :class="pickupStatus === 'success' ? 'text-green-800' : 'text-red-800'" 
-                                       x-text="pickupMessage"></p>
+                                       :class="recipientStatus === 'success' ? 'text-green-800' : 'text-red-800'" 
+                                       x-text="recipientMessage"></p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+
             <!-- Produk -->
             <div class="bg-white rounded-xl shadow-md p-6 border border-neutral-200">
                 <div class="flex items-center mb-4">
@@ -312,6 +295,7 @@
                     <i class="fas fa-plus mr-2"></i> Tambah Produk
                 </button>
             </div>
+            
             <!-- Informasi Pengiriman dan Pembayaran -->
             <div class="bg-white rounded-xl shadow-md p-6 border border-neutral-200">
                 <div class="flex items-center mb-4">
@@ -429,39 +413,34 @@
             </div>
         </form>
     </div>
+
     <script>
         function pickupRequestForm() {
             return {
                 recipientSearchQuery: '',
-                pickupSearchQuery: '',
                 selectedAddressId: @json(old('address_id', '')),
-                previewData: {
+                
+                
+                pickupPreviewData: {
                     name: '',
                     phone: '',
                     city: '',
                     province: '',
                     address: ''
                 },
+                
+                
                 formData: {
                     recipient_name: @json(old('recipient_name', '')),
                     recipient_phone: @json(old('recipient_phone', '')),
                     recipient_city: @json(old('recipient_city', '')),
                     recipient_province: @json(old('recipient_province', '')),
                     recipient_postal_code: @json(old('recipient_postal_code', '')),
-                    recipient_country: @json(old('recipient_country', 'Indonesia')),
                     recipient_address: @json(old('recipient_address', '')),
-                    recipient_latitude: {{ old('recipient_latitude', -6.2088) }},
-                    recipient_longitude: {{ old('recipient_longitude', 106.8456) }},
-                    pickup_name: @json(old('pickup_name', '')),
-                    pickup_phone: @json(old('pickup_phone', '')),
-                    pickup_city: @json(old('pickup_city', '')),
-                    pickup_province: @json(old('pickup_province', '')),
-                    pickup_postal_code: @json(old('pickup_postal_code', '')),
-                    pickup_country: @json(old('pickup_country', 'Indonesia')),
-                    pickup_address: @json(old('pickup_address', '')),
-                    pickup_latitude: {{ old('pickup_latitude', -6.2088) }},
-                    pickup_longitude: {{ old('pickup_longitude', 106.8456) }}
+                    recipient_latitude: @json(old('recipient_latitude', -6.2088)),
+                    recipient_longitude: @json(old('recipient_longitude', 106.8456))
                 },
+                
                 recipientStatus: '',
                 recipientMessage: '',
                 pickupStatus: '',
@@ -471,14 +450,19 @@
                 recipientMarker: null,
                 pickupMarker: null,
                 recipientAutocomplete: null,
-                pickupAutocomplete: null,
                 geocoder: null,
+                
                 initGoogleMaps() {
+                    
+                    if (this.selectedAddressId) {
+                        this.loadSelectedPickupAddress();
+                    }
+                    
                     if (typeof google !== 'undefined' && google.maps && google.maps.places) {
                         this.setupMapsAndAutocomplete();
                     } else {
                         const script = document.createElement('script');
-                        script.src = `https://maps.googleapis.com/maps/api/js?key={{ config('services.google.maps_api_key') }}&libraries=places&callback=initMapsCallback`;
+                        script.src = `https://maps.googleapis.com/maps/api/js?key={{ config('services.google.maps_api_key') }}&libraries=places&callback=initMapsCallback`;                        
                         script.defer = true;
                         document.head.appendChild(script);
                         window.initMapsCallback = () => {
@@ -486,11 +470,19 @@
                         };
                     }
                 },
+                
                 setupMapsAndAutocomplete() {
                     this.geocoder = new google.maps.Geocoder();
                     this.setupRecipientMap();
                     this.setupPickupMap();
+                    
+                    
+                    if (this.formData.recipient_latitude !== -6.2088 || this.formData.recipient_longitude !== 106.8456) {
+                        this.updateRecipientMapPosition();
+                    }
                 },
+                
+                
                 setupRecipientMap() {
                     const initialPosition = {
                         lat: parseFloat(this.formData.recipient_latitude),
@@ -511,44 +503,64 @@
                         title: 'Lokasi Penerima'
                     });
 
+                    
+                    const recipientInput = document.getElementById('recipient-address-search');
+                    this.recipientAutocomplete = new google.maps.places.Autocomplete(recipientInput, {
+                        types: ['address'],
+                        componentRestrictions: { country: 'id' }
+                    });
+                    
+                    this.recipientAutocomplete.addListener('place_changed', () => {
+                        this.handleRecipientPlaceChanged();
+                    });
+
                     this.recipientMarker.addListener('dragend', (event) => {
                         this.setRecipientCoordinates(event.latLng);
                         this.reverseGeocodeRecipient(event.latLng);
                     });
+                    
+                    this.recipientMap.addListener('click', (event) => {
+                        this.recipientMarker.setPosition(event.latLng);
+                        this.setRecipientCoordinates(event.latLng);
+                        this.reverseGeocodeRecipient(event.latLng);
+                    });
                 },
+                
+                
                 setupPickupMap() {
                     const initialPosition = {
-                        lat: parseFloat(this.formData.pickup_latitude),
-                        lng: parseFloat(this.formData.pickup_longitude)
+                        lat: -6.2088,
+                        lng: 106.8456
                     };
+                    
                     this.pickupMap = new google.maps.Map(document.getElementById('pickup-map'), {
                         center: initialPosition,
                         zoom: 15,
                         mapTypeControl: false,
                         streetViewControl: false
                     });
+
                     this.pickupMarker = new google.maps.Marker({
                         position: initialPosition,
                         map: this.pickupMap,
-                        draggable: true,
+                        draggable: false, 
                         title: 'Lokasi Pickup'
                     });
-                    const pickupInput = document.getElementById('pickup-address-search');
-                    this.pickupAutocomplete = new google.maps.places.Autocomplete(pickupInput, {
-                        types: ['address'],
-                        componentRestrictions: { country: 'id' }
-                    });
-                    this.pickupAutocomplete.addListener('place_changed', () => {
-                        this.handlePickupPlaceChanged();
-                    });
-                    this.pickupMarker.addListener('dragend', (event) => {
-                        this.handlePickupMarkerDrag(event);
-                    });
-                    this.pickupMap.addListener('click', (event) => {
-                        this.pickupMarker.setPosition(event.latLng);
-                        this.handlePickupMarkerDrag(event);
-                    });
                 },
+                
+                
+                updateRecipientMapPosition() {
+                    if (this.recipientMap && this.recipientMarker) {
+                        const position = {
+                            lat: parseFloat(this.formData.recipient_latitude),
+                            lng: parseFloat(this.formData.recipient_longitude)
+                        };
+                        this.recipientMap.setCenter(position);
+                        this.recipientMap.setZoom(17);
+                        this.recipientMarker.setPosition(position);
+                    }
+                },
+                
                 handleRecipientPlaceChanged() {
                     const place = this.recipientAutocomplete.getPlace();
                     if (!place.geometry || !place.geometry.location) {
@@ -562,27 +574,7 @@
                     this.setRecipientCoordinates(place.geometry.location);
                     this.showRecipientStatus('success', 'Alamat penerima berhasil ditemukan dan diisi otomatis.');
                 },
-                handlePickupPlaceChanged() {
-                    const place = this.pickupAutocomplete.getPlace();
-                    if (!place.geometry || !place.geometry.location) {
-                        this.showPickupStatus('error', 'Lokasi tidak ditemukan. Silakan coba lagi.');
-                        return;
-                    }
-                    this.pickupMap.setCenter(place.geometry.location);
-                    this.pickupMap.setZoom(17);
-                    this.pickupMarker.setPosition(place.geometry.location);
-                    this.fillPickupAddressComponents(place);
-                    this.setPickupCoordinates(place.geometry.location);
-                    this.showPickupStatus('success', 'Alamat pickup berhasil ditemukan dan diisi otomatis.');
-                },
-                handleRecipientMarkerDrag(event) {
-                    this.setRecipientCoordinates(event.latLng);
-                    this.reverseGeocodeRecipient(event.latLng);
-                },
-                handlePickupMarkerDrag(event) {
-                    this.setPickupCoordinates(event.latLng);
-                    this.reverseGeocodePickup(event.latLng);
-                },
+                
                 reverseGeocodeRecipient(location) {
                     this.geocoder.geocode({ 'location': location }, (results, status) => {
                         if (status === 'OK' && results[0]) {
@@ -594,17 +586,7 @@
                         }
                     });
                 },
-                reverseGeocodePickup(location) {
-                    this.geocoder.geocode({ 'location': location }, (results, status) => {
-                        if (status === 'OK' && results[0]) {
-                            this.fillPickupAddressComponents(results[0]);
-                            this.pickupSearchQuery = results[0].formatted_address;
-                            this.showPickupStatus('success', 'Alamat pickup diperbarui dari lokasi di peta.');
-                        } else {
-                            this.showPickupStatus('error', 'Gagal mendapatkan alamat dari lokasi.');
-                        }
-                    });
-                },
+                
                 fillRecipientAddressComponents(place) {
                     if (place.formatted_address) {
                         this.formData.recipient_address = place.formatted_address;
@@ -620,35 +602,12 @@
                             state = component.long_name;
                         } else if (types.includes('postal_code')) {
                             this.formData.recipient_postal_code = component.long_name;
-                        } else if (types.includes('country')) {
-                            this.formData.recipient_country = component.long_name;
                         }
                     });
                     this.formData.recipient_city = city.replace(/Kota |Kabupaten /g, '');
                     this.formData.recipient_province = state;
                 },
-                fillPickupAddressComponents(place) {
-                    if (place.formatted_address) {
-                        this.formData.pickup_address = place.formatted_address;
-                    }
-                    const components = place.address_components;
-                    let city = '';
-                    let state = '';
-                    components.forEach(component => {
-                        const types = component.types;
-                        if (types.includes('administrative_area_level_2')) {
-                            city = component.long_name;
-                        } else if (types.includes('administrative_area_level_1')) {
-                            state = component.long_name;
-                        } else if (types.includes('postal_code')) {
-                            this.formData.pickup_postal_code = component.long_name;
-                        } else if (types.includes('country')) {
-                            this.formData.pickup_country = component.long_name;
-                        }
-                    });
-                    this.formData.pickup_city = city.replace(/Kota |Kabupaten /g, '');
-                    this.formData.pickup_province = state;
-                },
+                
                 setRecipientCoordinates(location) {
                     if (typeof location.lat === 'function') {
                         this.formData.recipient_latitude = location.lat();
@@ -658,11 +617,7 @@
                         this.formData.recipient_longitude = location.lng;
                     }
                 },
-
-                setPickupCoordinates(location) {
-                    this.formData.pickup_latitude = location.lat();
-                    this.formData.pickup_longitude = location.lng();
-                },
+                
                 showRecipientStatus(status, message) {
                     this.recipientStatus = status;
                     this.recipientMessage = message;
@@ -671,36 +626,31 @@
                         this.recipientMessage = '';
                     }, 5000);
                 },
-                showPickupStatus(status, message) {
-                    this.pickupStatus = status;
-                    this.pickupMessage = message;
-                    setTimeout(() => {
-                        this.pickupStatus = '';
-                        this.pickupMessage = '';
-                    }, 5000);
-                },
-                loadSelectedAddress() {
+                
+                
+                loadSelectedPickupAddress() {
                     const select = document.getElementById('address_id');
                     const selectedOption = select.options[select.selectedIndex];
                     if (selectedOption && selectedOption.value) {
-                        this.previewData = {
+                        this.pickupPreviewData = {
                             name: selectedOption.dataset.name || '',
                             phone: selectedOption.dataset.phone || '',
                             city: selectedOption.dataset.city || '',
                             province: selectedOption.dataset.province || '',
                             address: selectedOption.dataset.address || ''
                         };
+                        
                         const latitude = parseFloat(selectedOption.dataset.latitude);
                         const longitude = parseFloat(selectedOption.dataset.longitude);
-                        if (!isNaN(latitude) && !isNaN(longitude) && this.recipientMap) {
+                        
+                        if (!isNaN(latitude) && !isNaN(longitude) && this.pickupMap) {
                             const position = { lat: latitude, lng: longitude };
-                            this.recipientMap.setCenter(position);
-                            this.recipientMap.setZoom(17);
-                            this.recipientMarker.setPosition(position);
-                            this.setRecipientCoordinates(position); 
+                            this.pickupMap.setCenter(position);
+                            this.pickupMap.setZoom(17);
+                            this.pickupMarker.setPosition(position);
                         }
                     } else {
-                        this.previewData = {
+                        this.pickupPreviewData = {
                             name: '',
                             phone: '',
                             city: '',
@@ -711,8 +661,85 @@
                 },
             }
         }
+
+        
         let productIndex = 1;
         const currentWalletBalance = {{ $wallet->available_balance }};
+
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            const oldItems = @json(old('items', []));
+            
+            if (oldItems && oldItems.length > 0) {
+                const container = document.getElementById('product-container');
+                const productOptions = {!! json_encode(
+                    $products->map(function ($product) {
+                        return [
+                            'id' => $product->id,
+                            'name' => $product->name,
+                            'price' => $product->price,
+                            'weight_per_pcs' => $product->weight_per_pcs ?? 0,
+                        ];
+                    }),
+                ) !!};
+                
+                
+                const firstProductSelect = container.querySelector('select[name="items[0][product_id]"]');
+                const firstQuantityInput = container.querySelector('input[name="items[0][quantity]"]');
+                
+                if (oldItems[0] && firstProductSelect && firstQuantityInput) {
+                    
+                    firstProductSelect.value = oldItems[0].product_id || '';
+                    
+                    firstQuantityInput.value = oldItems[0].quantity || 1;
+                }
+                
+                
+                const existingItems = container.querySelectorAll('.product-item');
+                for (let i = 1; i < existingItems.length; i++) {
+                    existingItems[i].remove();
+                }
+                
+                
+                for (let i = 1; i < oldItems.length; i++) {
+                    let optionsHtml = '<option value="">Pilih Produk</option>';
+                    productOptions.forEach(function(product) {
+                        const formattedPrice = new Intl.NumberFormat('id-ID').format(product.price);
+                        const selected = oldItems[i].product_id == product.id ? 'selected' : '';
+                        optionsHtml += `<option value="${product.id}" data-price="${product.price}" data-weight="${product.weight_per_pcs}" ${selected}>${product.name} - Rp ${formattedPrice}</option>`;
+                    });
+                    
+                    const newProductItem = `
+                        <div class="product-item grid grid-cols-1 md:grid-cols-3 gap-4 items-end mb-4">
+                            <div>
+                                <label class="block text-sm font-medium text-neutral-700 mb-1">Produk</label>
+                                <select name="items[${i}][product_id]" class="block w-full rounded-lg border-neutral-300 focus:border-primary-500 focus:ring-primary-500 shadow-sm" required>
+                                    ${optionsHtml}
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-neutral-700 mb-1">Jumlah</label>
+                                <input type="number" name="items[${i}][quantity]" min="1" value="${oldItems[i].quantity || 1}" 
+                                    class="block w-full rounded-lg border-neutral-300 focus:border-primary-500 focus:ring-primary-500 shadow-sm" required>
+                            </div>
+                            <div>
+                                <button type="button" class="remove-product px-3 py-2 bg-error-600 text-white rounded-lg hover:bg-error-700 transition-colors shadow-sm">
+                                    <i class="fas fa-trash mr-1"></i> Hapus
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    container.insertAdjacentHTML('beforeend', newProductItem);
+                    productIndex++;
+                }
+                updateRemoveButtons();
+            }
+            
+            calculateTotal();
+        });
+
+        
         function calculateTotal() {
             let productTotal = 0;
             document.querySelectorAll('.product-item').forEach(function(item) {
@@ -728,11 +755,11 @@
             const shippingCost = parseFloat(document.getElementById('shipping_cost').value) || 0;
             const serviceFee = parseFloat(document.getElementById('service_fee').value) || 0;
             const totalAmount = productTotal + shippingCost + serviceFee;
-            document.getElementById('total-amount').textContent = 'Rp ' + new Intl.NumberFormat('id-ID').format(
-            totalAmount);
+            document.getElementById('total-amount').textContent = 'Rp ' + new Intl.NumberFormat('id-ID').format(totalAmount);
             checkWalletBalance(totalAmount);
             return totalAmount;
         }
+
         function checkWalletBalance(totalAmount) {
             const paymentMethod = document.getElementById('payment_method').value;
             const walletWarning = document.getElementById('wallet-warning');
@@ -758,6 +785,7 @@
                 submitButton.classList.remove('opacity-50', 'cursor-not-allowed');
             }
         }
+
         document.addEventListener('change', function(e) {
             if (e.target.matches('select[name*="[product_id]"]') ||
                 e.target.matches('input[name*="[quantity]"]') ||
@@ -767,6 +795,7 @@
                 calculateTotal();
             }
         });
+
         document.addEventListener('input', function(e) {
             if (e.target.matches('input[name*="[quantity]"]') ||
                 e.target.id === 'shipping_cost' ||
@@ -774,6 +803,7 @@
                 calculateTotal();
             }
         });
+
         document.getElementById('add-product').addEventListener('click', function() {
             const container = document.getElementById('product-container');
             const productOptions = {!! json_encode(
@@ -789,8 +819,7 @@
             let optionsHtml = '<option value="">Pilih Produk</option>';
             productOptions.forEach(function(product) {
                 const formattedPrice = new Intl.NumberFormat('id-ID').format(product.price);
-                optionsHtml +=
-                    `<option value="${product.id}" data-price="${product.price}" data-weight="${product.weight_per_pcs}">${product.name} - Rp ${formattedPrice}</option>`;
+                optionsHtml += `<option value="${product.id}" data-price="${product.price}" data-weight="${product.weight_per_pcs}">${product.name} - Rp ${formattedPrice}</option>`;
             });
             const newProductItem = `
                 <div class="product-item grid grid-cols-1 md:grid-cols-3 gap-4 items-end mb-4">
@@ -817,6 +846,7 @@
             updateRemoveButtons();
             calculateTotal();
         });
+
         document.addEventListener('click', function(e) {
             if (e.target.classList.contains('remove-product')) {
                 e.target.closest('.product-item').remove();
@@ -824,6 +854,7 @@
                 calculateTotal();
             }
         });
+
         function updateRemoveButtons() {
             const productItems = document.querySelectorAll('.product-item');
             const removeButtons = document.querySelectorAll('.remove-product');
@@ -837,8 +868,5 @@
                 });
             }
         }
-        document.addEventListener('DOMContentLoaded', function() {
-            calculateTotal();
-        });
     </script>
 </x-layouts.plain-app>

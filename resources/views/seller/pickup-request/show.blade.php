@@ -1,5 +1,5 @@
 <x-layouts.plain-app>
-    <x-slot name="title">Detail Pickup Request - {{ $pickupRequest->pickup_code }}</x-slot>
+    <x-slot name="title">Detail Pickup Request - {{ $pickupRequest->recipient_code }}</x-slot>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div class="mb-8">
@@ -7,7 +7,7 @@
                 <div>
                     <h1 class="text-3xl font-bold text-neutral-900">Detail Pickup Request</h1>
                     <p class="mt-2 text-neutral-600">Kode: <span
-                            class="font-mono bg-neutral-100 px-2 py-1 rounded">{{ $pickupRequest->pickup_code }}</span>
+                            class="font-mono bg-neutral-100 px-2 py-1 rounded">{{ $pickupRequest->recipient_code }}</span>
                     </p>
                 </div>
                 <div class="flex flex-wrap gap-2">
@@ -32,7 +32,7 @@
                 $statusColors = [
                     'pending' => 'bg-warning-100 text-warning-800 border-warning-200',
                     'confirmed' => 'bg-secondary-100 text-secondary-800 border-secondary-200',
-                    'pickup_scheduled' => 'bg-primary-100 text-primary-800 border-primary-200',
+                    'recipient_scheduled' => 'bg-primary-100 text-primary-800 border-primary-200',
                     'picked_up' => 'bg-primary-200 text-primary-800 border-primary-300',
                     'in_transit' => 'bg-primary-300 text-primary-900 border-primary-400',
                     'delivered' => 'bg-success-100 text-success-800 border-success-200',
@@ -42,7 +42,7 @@
                 $statusLabels = [
                     'pending' => 'Menunggu Konfirmasi',
                     'confirmed' => 'Dikonfirmasi',
-                    'pickup_scheduled' => 'Dijadwalkan',
+                    'recipient_scheduled' => 'Dijadwalkan',
                     'picked_up' => 'Sudah Diambil',
                     'in_transit' => 'Dalam Perjalanan',
                     'delivered' => 'Terkirim',
@@ -62,7 +62,7 @@
                             <i class="fas fa-check-circle"></i>
                         @break
 
-                        @case('pickup_scheduled')
+                        @case('recipient_scheduled')
                             <i class="fas fa-calendar-check"></i>
                         @break
 
@@ -105,34 +105,34 @@
                             <div class="space-y-3">
                                 <h4 class="text-sm font-medium text-neutral-700 flex items-center gap-1">
                                     <i class="fas fa-home text-primary-400"></i>
-                                    Alamat Pickup
+                                    Alamat Penerima
                                 </h4>
                                 <div class="bg-primary-50 rounded-lg p-4 border border-primary-100">
-                                    <p class="font-medium text-neutral-900">{{ $pickupRequest->pickup_name }}</p>
+                                    <p class="font-medium text-neutral-900">{{ $pickupRequest->recipient_name }}</p>
                                     <p class="text-sm text-neutral-600 mt-1">
                                         <i class="fas fa-phone-alt text-primary-400 mr-1"></i>
-                                        {{ $pickupRequest->pickup_phone }}
+                                        {{ $pickupRequest->recipient_phone }}
                                     </p>
                                     <p class="text-sm text-neutral-600 mt-2 flex items-start">
                                         <i class="fas fa-map-pin text-primary-400 mr-2 mt-1"></i>
-                                        {{ $pickupRequest->full_pickup_address }}
+                                        {{ $pickupRequest->full_recipient_address }}
                                     </p>
                                 </div>
                             </div>
                             <div class="space-y-3">
                                 <h4 class="text-sm font-medium text-neutral-700 flex items-center gap-1">
                                     <i class="fas fa-truck text-secondary-400"></i>
-                                    Alamat Tujuan
+                                    Alamat Pickup
                                 </h4>
                                 <div class="bg-secondary-50 rounded-lg p-4 border border-secondary-100">
-                                    <p class="font-medium text-neutral-900">{{ $pickupRequest->recipientAddress->name }}</p>
+                                    <p class="font-medium text-neutral-900">{{ $pickupRequest->pickupAddress->name }}</p>
                                     <p class="text-sm text-neutral-600 mt-1">
                                         <i class="fas fa-phone-alt text-secondary-400 mr-1"></i>
-                                        {{ $pickupRequest->recipientAddress->phone }}
+                                        {{ $pickupRequest->pickupAddress->phone }}
                                     </p>
                                     <p class="text-sm text-neutral-600 mt-2 flex items-start">
                                         <i class="fas fa-map-pin text-secondary-400 mr-2 mt-1"></i>
-                                        {{ $pickupRequest->recipientAddress->full_address }}
+                                        {{ $pickupRequest->pickupAddress->full_address }}
                                     </p>
                                 </div>
                             </div>
@@ -229,7 +229,7 @@
                                     </div>
                                 </li>
 
-                                @if ($pickupRequest->pickup_scheduled_at)
+                                @if ($pickupRequest->recipient_scheduled_at)
                                     <li>
                                         <div class="relative pb-8">
                                             <div class="relative flex items-start">
@@ -242,7 +242,7 @@
                                                     </div>
                                                     <div class="text-sm text-neutral-500 mt-1">
                                                         <i class="far fa-clock mr-1"></i>
-                                                        {{ $pickupRequest->pickup_scheduled_at->format('d M Y H:i') }}
+                                                        {{ $pickupRequest->recipient_scheduled_at->format('d M Y H:i') }}
                                                     </div>
                                                 </div>
                                             </div>
@@ -402,7 +402,7 @@
                                     <div class="mb-3">
                                         <label class="block text-sm font-medium text-neutral-700 mb-1">Jadwal
                                             Pickup</label>
-                                        <input type="datetime-local" name="pickup_scheduled_at" required
+                                        <input type="datetime-local" name="recipient_scheduled_at" required
                                             class="w-full rounded-lg border-neutral-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 text-sm"
                                             min="{{ now()->addMinutes(30)->format('Y-m-d\TH:i') }}">
                                     </div>
