@@ -48,7 +48,7 @@ class ProfileController extends Controller
             $userId = auth()->id();
             $profileData = $this->profileService->getUserProfile($userId);
             
-            // For sellers, ensure seller profile exists
+            
             if (auth()->user()->isSeller()) {
                 $this->profileService->getOrCreateSellerProfile($userId);
             }
@@ -72,7 +72,7 @@ class ProfileController extends Controller
             $userId = auth()->id();
             $data = $request->validated();
             
-            // Handle avatar upload
+            
             if ($request->hasFile('avatar')) {
                 $avatarPath = $this->profileService->uploadAvatar($userId, $request->file('avatar'));
                 $data['avatar'] = $avatarPath;

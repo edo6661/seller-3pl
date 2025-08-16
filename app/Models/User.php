@@ -6,6 +6,7 @@ use App\Enums\UserRole;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Support\Facades\Storage; 
 
 class User extends Authenticatable
 {
@@ -151,4 +152,12 @@ class User extends Authenticatable
             return $conversation->unreadMessagesCount($this->id);
         });
     }
+     public function getAvatarUrlAttribute(): string
+        {
+            if ($this->avatar && Storage::disk('r2')->exists($this->avatar)) {
+                return Storage::disk('r2')->temporaryUrl($this->avatar, now()->addMinutes(15));
+            }
+
+            return 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&color=7F9CF5&background=EBF4FF';
+        }
 }

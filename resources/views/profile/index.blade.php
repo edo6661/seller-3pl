@@ -1,27 +1,22 @@
 <x-layouts.plain-app>
     <x-slot:title>Profil Saya</x-slot:title>
-
     <div class="bg-gray-50 py-12">
         <div class="container mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-            
-            
             <div class="overflow-hidden rounded-lg bg-white shadow-md">
                 <div class="p-6 md:flex md:items-center md:justify-between">
                     <div class="flex-1 md:flex md:items-center">
-                        {{-- Avatar Pengguna --}}
                         <div class="flex-shrink-0">
-                            <img class="h-24 w-24 rounded-full object-cover" 
-                                 src="{{ $profileData['user']->avatar ? asset('storage/' . $profileData['user']->avatar) : 'https://ui-avatars.com/api/?name=' . urlencode($profileData['user']->name) . '&color=7F9CF5&background=EBF4FF' }}" 
-                                 alt="Avatar {{ $profileData['user']->name }}">
+                            <img class="h-24 w-24 rounded-full object-cover"
+                                src="{{ $profileData['user']->avatar_url }}"
+                                alt="Avatar {{ $profileData['user']->name }}">
+
                         </div>
                         <div class="mt-4 md:mt-0 md:ml-6">
-                            {{-- Nama dan Role --}}
                             <h1 class="text-2xl font-bold text-gray-900">{{ $profileData['user']->name }}</h1>
                             <p class="mt-1 text-sm font-medium text-gray-500">{{ $profileData['user']->getRoleLabelAttribute() }}</p>
                         </div>
                     </div>
                                         <div class="mt-6 flex-shrink-0 md:mt-0 md:ml-4">
-                        {{-- Tombol Aksi --}}
                         <div class="flex flex-col sm:flex-row gap-3">
                             <a href="{{ route('profile.edit', ['id' => $profileData['user']->id]) }}" class="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                                 Edit Profil
@@ -37,8 +32,6 @@
                         </div>
                     </div>
                 </div>
-
-                {{-- Progress Bar Kelengkapan Profil --}}
                 <div class="border-t border-gray-200 px-6 py-5">
                     <h3 class="text-lg font-medium leading-6 text-gray-900">Kelengkapan Profil</h3>
                     <div class="mt-4">
@@ -57,11 +50,8 @@
                         </div>
                     </div>
                 </div>
-
-                {{-- Detail Informasi --}}
                 <div class="border-t border-gray-200 px-4 py-5 sm:p-0">
                     <dl class="sm:divide-y sm:divide-gray-200">
-                        {{-- Informasi Akun Dasar --}}
                         <div class="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:py-5 sm:px-6">
                             <dt class="text-sm font-medium text-gray-500">Nama Lengkap</dt>
                             <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">{{ $profileData['user_fields']['name'] }}</dd>
@@ -74,8 +64,6 @@
                             <dt class="text-sm font-medium text-gray-500">Nomor Telepon</dt>
                             <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">{{ $profileData['user_fields']['phone'] ?? '-' }}</dd>
                         </div>
-
-                        {{-- Informasi Tambahan untuk Seller --}}
                         @if ($profileData['user']->isSeller())
                             <div class="py-3 sm:py-5 sm:px-6">
                                 <h3 class="text-md font-semibold text-gray-800">Informasi Penjual</h3>

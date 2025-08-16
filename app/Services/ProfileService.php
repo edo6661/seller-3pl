@@ -1,13 +1,11 @@
 <?php
-
 namespace App\Services;
-
 use App\Models\User;
 use App\Models\SellerProfile;
 use App\Enums\UserRole;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-
+use Illuminate\Support\Facades\Storage; 
 class ProfileService
 {
     /**
@@ -16,7 +14,6 @@ class ProfileService
     public function getUserProfile(int $userId): array
     {
         $user = User::with('sellerProfile')->findOrFail($userId);
-        
         $profileData = [
             'user' => $user,
             'user_fields' => [
@@ -26,8 +23,6 @@ class ProfileService
                 'avatar' => $user->avatar,
             ]
         ];
-        
-        // If seller, include seller profile data
         if ($user->isSeller()) {
             $sellerProfile = $user->sellerProfile;
             $profileData['seller_profile'] = $sellerProfile;
@@ -40,10 +35,8 @@ class ProfileService
                 'longitude' => $sellerProfile->longitude,
             ] : [];
         }
-        
         return $profileData;
     }
-
     /**
      * Update user profile based on role
      */
@@ -51,10 +44,7 @@ class ProfileService
     {
         try {
             DB::beginTransaction();
-            
             $user = User::findOrFail($userId);
-            
-            // Extract user fields
             $userFields = [];
             if (isset($data['name'])) $userFields['name'] = $data['name'];
             if (isset($data['email'])) $userFields['email'] = $data['email'];
@@ -63,13 +53,9 @@ class ProfileService
             if (isset($data['password']) && !empty($data['password'])) {
                 $userFields['password'] = Hash::make($data['password']);
             }
-            
-            // Update user fields
             if (!empty($userFields)) {
                 $user->update($userFields);
             }
-            
-            // If seller, also update seller profile
             if ($user->isSeller()) {
                 $profileFields = [];
                 if (isset($data['address'])) $profileFields['address'] = $data['address'];
@@ -78,34 +64,27 @@ class ProfileService
                 if (isset($data['postal_code'])) $profileFields['postal_code'] = $data['postal_code'];
                 if (isset($data['latitude'])) $profileFields['latitude'] = $data['latitude'];
                 if (isset($data['longitude'])) $profileFields['longitude'] = $data['longitude'];
-                
                 if (!empty($profileFields)) {
                     $this->updateOrCreateSellerProfile($userId, $profileFields);
                 }
             }
-            
             DB::commit();
             return true;
-            
         } catch (\Exception $e) {
             DB::rollback();
             throw $e;
         }
     }
-
     /**
      * Get or create seller profile
      */
     public function getOrCreateSellerProfile(int $userId): ?SellerProfile
     {
         $user = User::findOrFail($userId);
-        
         if (!$user->isSeller()) {
             return null;
         }
-        
         $profile = SellerProfile::where('user_id', $userId)->first();
-        
         if (!$profile) {
             $profile = SellerProfile::create([
                 'user_id' => $userId,
@@ -115,10 +94,8 @@ class ProfileService
                 'postal_code' => '',
             ]);
         }
-        
         return $profile;
     }
-
     /**
      * Update or create seller profile
      */
@@ -129,7 +106,6 @@ class ProfileService
             $data
         );
     }
-
     /**
      * Check if user has seller profile
      */
@@ -137,7 +113,6 @@ class ProfileService
     {
         return SellerProfile::where('user_id', $userId)->exists();
     }
-
     /**
      * Check if seller profile is complete
      */
@@ -146,7 +121,6 @@ class ProfileService
         $profile = SellerProfile::where('user_id', $userId)->first();
         return $profile ? $profile->is_profile_complete : false;
     }
-
     /**
      * Update coordinates for seller profile
      */
@@ -159,44 +133,31 @@ class ProfileService
         ]);
         return $profile;
     }
-
     /**
      * Upload avatar
      */
     public function uploadAvatar(int $userId, $avatarFile): string
     {
         $user = User::findOrFail($userId);
-        
-        // Delete old avatar if exists
-        if ($user->avatar && file_exists(public_path('storage/' . $user->avatar))) {
-            unlink(public_path('storage/' . $user->avatar));
+        if ($user->avatar) {
+            Storage::disk('r2')->delete($user->avatar);
         }
-        
-        // Store new avatar
-        $avatarPath = $avatarFile->store('avatars', 'public');
-        
-        // Update user avatar
+        $avatarPath = $avatarFile->store('avatars', 'r2');
         $user->update(['avatar' => $avatarPath]);
-        
         return $avatarPath;
     }
-
     /**
      * Get profile completion percentage
      */
     public function getProfileCompletionPercentage(int $userId): int
     {
         $user = User::with('sellerProfile')->findOrFail($userId);
-        $totalFields = $user->isSeller() ? 8 : 4; // User fields + seller profile fields
+        $totalFields = $user->isSeller() ? 8 : 4; 
         $completedFields = 0;
-        
-        // Check user fields
         if (!empty($user->name)) $completedFields++;
         if (!empty($user->email)) $completedFields++;
         if (!empty($user->phone)) $completedFields++;
         if (!empty($user->avatar)) $completedFields++;
-        
-        // Check seller profile fields if seller
         if ($user->isSeller() && $user->sellerProfile) {
             $profile = $user->sellerProfile;
             if (!empty($profile->address)) $completedFields++;
@@ -204,55 +165,41 @@ class ProfileService
             if (!empty($profile->province)) $completedFields++;
         if (!empty($profile->postal_code)) $completedFields++;
         }
-        
         return round(($completedFields / $totalFields) * 100);
     }
         public function changePassword(int $userId, string $currentPassword, string $newPassword): bool
     {
         try {
             $user = User::findOrFail($userId);
-            
-            // Verify current password
             if (!Hash::check($currentPassword, $user->password)) {
                 throw new \Exception('Password saat ini tidak sesuai.');
             }
-            
-            // Update password
             $user->update([
                 'password' => Hash::make($newPassword)
             ]);
-            
             return true;
-            
         } catch (\Exception $e) {
             throw $e;
         }
     }
-
     /**
      * Validate password strength
      */
     public function validatePasswordStrength(string $password): array
     {
         $errors = [];
-        
         if (strlen($password) < 8) {
             $errors[] = 'Password minimal 8 karakter.';
         }
-        
         if (!preg_match('/[A-Z]/', $password)) {
             $errors[] = 'Password harus mengandung minimal 1 huruf besar.';
         }
-        
         if (!preg_match('/[a-z]/', $password)) {
             $errors[] = 'Password harus mengandung minimal 1 huruf kecil.';
         }
-        
         if (!preg_match('/[0-9]/', $password)) {
             $errors[] = 'Password harus mengandung minimal 1 angka.';
         }
-        
         return $errors;
     }
-    
 }
