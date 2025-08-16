@@ -1,9 +1,7 @@
 <x-layouts.plain-app>
     <x-slot name="title">Tambah Produk</x-slot>
-
     <div class="container mx-auto px-4 py-8">
         <div class="max-w-3xl mx-auto">
-            <!-- Header with subtle background -->
             <div class="mb-8 p-5 bg-primary-50 rounded-xl">
                 <h1 class="text-2xl font-bold text-neutral-900 mb-2 flex items-center">
                     <i class="fas fa-cube text-primary-600 mr-3"></i>
@@ -11,15 +9,10 @@
                 </h1>
                 <p class="text-neutral-600">Lengkapi informasi produk yang akan Anda jual</p>
             </div>
-
-            <!-- Form with card styling -->
             <div class="bg-white rounded-xl shadow-xl overflow-hidden border border-neutral-100">
                 <form action="{{ route('seller.products.store') }}" method="POST" class="p-8 space-y-8">
                     @csrf
-
-                    <!-- Form sections with subtle separation -->
                     <div class="space-y-6">
-                        <!-- Nama Produk -->
                         <div class="space-y-2">
                             <label for="name" class="block text-sm font-semibold text-neutral-700">
                                 Nama Produk <span class="text-error-500">*</span>
@@ -56,8 +49,6 @@
                                 </p>
                             @enderror
                         </div>
-
-                        <!-- Deskripsi -->
                         <div class="space-y-2">
                             <label for="description" class="block text-sm font-semibold text-neutral-700">
                                 Deskripsi Produk
@@ -76,8 +67,6 @@
                                 </p>
                             @enderror
                         </div>
-
-                        <!-- Berat per Pcs -->
                         <div class="space-y-2">
                             <label for="weight_per_pcs" class="block text-sm font-semibold text-neutral-700">
                                 Berat per Pcs (kg) <span class="text-error-500">*</span>
@@ -97,12 +86,12 @@
                                 </p>
                             @enderror
                         </div>
-
-                        <!-- Status Aktif -->
                         <div class="pt-4 space-y-2">
                             <div class="flex items-center p-3 bg-neutral-50 rounded-lg">
+                                <input type="hidden" name="is_active" value="0">
+                                
                                 <input type="checkbox" id="is_active" name="is_active" value="1"
-                                    {{ old('is_active', true) ? 'checked' : '' }}
+                                    {{ old('is_active', 1) ? 'checked' : '' }}
                                     class="h-5 w-5 text-primary-600 focus:ring-primary-500 border-neutral-300 rounded transition">
                                 <label for="is_active" class="ml-3 block text-sm font-medium text-neutral-700">
                                     Aktifkan produk
@@ -118,9 +107,6 @@
                                 </p>
                             @enderror
                         </div>
-                    </div>
-
-                    <!-- Action Buttons -->
                     <div class="flex flex-col sm:flex-row justify-end gap-3 pt-8 border-t border-neutral-100">
                         <a href="{{ route('seller.products.index') }}"
                             class="px-6 py-3 border border-neutral-300 rounded-lg text-sm font-semibold text-neutral-700 bg-white hover:bg-neutral-50 transition-all duration-200 shadow-sm hover:shadow-md text-center">

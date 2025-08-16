@@ -18,7 +18,7 @@ class UpdateProductRequest extends FormRequest
             'description' => 'nullable|string|max:1000',
             'weight_per_pcs' => 'sometimes|required|numeric|min:0',
             'price' => 'sometimes|required|numeric|min:0',
-            'is_active' => 'boolean'
+            'is_active' => 'sometimes|in:0,1'  
         ];
     }
 
@@ -38,5 +38,15 @@ class UpdateProductRequest extends FormRequest
             'price.min' => 'Harga tidak boleh kurang dari 0.',
             'is_active.boolean' => 'Status aktif harus berupa true atau false.'
         ];
+    }
+    public function validated($key = null, $default = null)
+    {
+        $validated = parent::validated($key, $default);
+        
+        if (isset($validated['is_active'])) {
+            $validated['is_active'] = (bool) $validated['is_active'];
+        }
+        
+        return $validated;
     }
 }
