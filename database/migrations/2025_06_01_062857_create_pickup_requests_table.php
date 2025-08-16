@@ -27,7 +27,7 @@ return new class extends Migration
             $table->decimal('recipient_latitude', 10, 8)->nullable();
             $table->decimal('recipient_longitude', 11, 8)->nullable();
             
-            $table->enum('payment_method', ['balance', 'wallet']);
+            $table->enum('payment_method', ['wallet','cod']);
             $table->decimal('shipping_cost', 15, 2)->default(0);
             $table->decimal('service_fee', 15, 2)->default(0);
             $table->decimal('product_total', 15, 2)->default(0);

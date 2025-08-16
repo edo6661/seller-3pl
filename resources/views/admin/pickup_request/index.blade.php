@@ -137,8 +137,8 @@
                             <select name="payment_method"
                                 class="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors">
                                 <option value="">Semua Payment</option>
-                                <option value="balance" {{ $request->payment_method === 'balance' ? 'selected' : '' }}>
-                                    Balance</option>
+                                <option value="balance" {{ $request->payment_method === 'cod' ? 'selected' : '' }}>
+                                    Cod</option>
                                 <option value="wallet" {{ $request->payment_method === 'wallet' ? 'selected' : '' }}>
                                     Wallet</option>
                             </select>
@@ -342,7 +342,7 @@
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         @php
                                             $paymentConfig = [
-                                                'balance' => [
+                                                'cod' => [
                                                     'bg' => 'bg-secondary-50',
                                                     'text' => 'text-secondary-700',
                                                     'border' => 'border-secondary-200',

@@ -34,7 +34,7 @@ class PickupRequestSeeder extends Seeder
                 'pickup_latitude' => -6.170000,
                 'pickup_longitude' => 106.630000,
                 'pickup_scheduled_at' => Carbon::now()->addDays(1),
-                'payment_method' => 'balance',
+                'payment_method' => 'cod',
                 'shipping_cost' => 15000.00,
                 'service_fee' => 5000.00,
                 'product_total' => 150000.00,

@@ -411,7 +411,7 @@
                             <option value="">Pilih Metode</option>
                             <option value="wallet" {{ old('payment_method', $pickupRequest->payment_method) === 'wallet' ? 'selected' : '' }}>Wallet
                             </option>
-                            <option value="balance" {{ old('payment_method', $pickupRequest->payment_method) === 'balance' ? 'selected' : '' }}>BALANCE
+                            <option value="cod" {{ old('payment_method', $pickupRequest->payment_method) === 'cod' ? 'selected' : '' }}>COD
                             </option>
                         </select>
                         @error('payment_method')

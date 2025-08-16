@@ -22,7 +22,7 @@ class UpdatePickupRequestRequest extends FormRequest
             'recipient_postal_code' => 'required|string|max:10',
             'recipient_address' => 'required|string|max:500',
             'recipient_scheduled_at' => 'nullable|date|after:now',
-            'payment_method' => ['required', Rule::in(['wallet', 'balance'])],
+            'payment_method' => ['required', Rule::in(['wallet', 'cod'])],
             'shipping_cost' => 'required|numeric|min:0',
             'service_fee' => 'nullable|numeric|min:0',
             'courier_service' => 'nullable|string|max:100',

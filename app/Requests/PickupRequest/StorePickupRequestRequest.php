@@ -26,7 +26,7 @@ class StorePickupRequestRequest extends FormRequest
                 'recipient_scheduled_at' => 'nullable|date|after:now',
                 'pickup_latitude' => 'nullable|numeric',
                 'pickup_longitude' => 'nullable|numeric',
-                'payment_method' => ['required', Rule::in(['wallet', 'balance'])],
+                'payment_method' => ['required', Rule::in(['wallet', 'cod'])],
                 'shipping_cost' => 'required|numeric|min:0',
                 'service_fee' => 'nullable|numeric|min:0',
                 'courier_service' => 'nullable|string|max:100',

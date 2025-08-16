@@ -351,13 +351,13 @@
                                     <div class="text-sm font-medium text-neutral-900">Cash on Delivery (COD)</div>
                                     <div class="text-xs text-neutral-500">Bayar saat terima</div>
                                 </div>
-                            @elseif($pickupRequest->payment_method === 'balance')
+                            @elseif($pickupRequest->payment_method === 'cod')
                                 <div class="p-3 bg-secondary-100 rounded-lg mr-4 text-secondary-600">
                                     <i class="fas fa-wallet text-xl"></i>
                                 </div>
                                 <div>
-                                    <div class="text-sm font-medium text-neutral-900">Saldo</div>
-                                    <div class="text-xs text-neutral-500">Dibayar dari saldo</div>
+                                    <div class="text-sm font-medium text-neutral-900">COD</div>
+                                    <div class="text-xs text-neutral-500">Dibayar saat terima</div>
                                 </div>
                             @else
                                 <div class="p-3 bg-success-100 rounded-lg mr-4 text-success-600">

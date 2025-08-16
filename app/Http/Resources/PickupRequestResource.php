@@ -54,7 +54,7 @@ class PickupRequestResource extends JsonResource
                 'product_total' => (float) $this->product_total,
                 'cod_amount' => (float) $this->cod_amount,
                 'total_amount' => (float) $this->total_amount,
-                'is_balance_payment' => $this->isBalancePayment(),
+                'is_cod_payment' => $this->isCodPayment(),
                 'is_wallet_payment' => $this->isWalletPayment(),
             ],
             

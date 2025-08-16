@@ -97,9 +97,9 @@ class PickupRequest extends Model
     {
         return $query->where('status', 'cancelled');
     }
-    public function scopeBalancePayment($query)
+    public function scopeCodPayment($query)
     {
-        return $query->where('payment_method', 'balance');
+        return $query->where('payment_method', 'cod');
     }
     public function scopeWalletPayment($query)
     {
@@ -109,9 +109,9 @@ class PickupRequest extends Model
     {
         return 'PU' . now()->format('ymd') . str_pad(static::whereDate('created_at', today())->count() + 1, 4, '0', STR_PAD_LEFT);
     }
-    public function isBalancePayment()
+    public function isCodPayment()
     {
-        return $this->payment_method === 'balance';
+        return $this->payment_method === 'cod';
     }
     public function isWalletPayment()
     {
