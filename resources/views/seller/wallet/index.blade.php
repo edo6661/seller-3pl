@@ -86,6 +86,7 @@
                             </a>
                         @endif
                         @if($manualRequests['pending_withdraw'] > 0)
+                            <br>
                             <span class="inline-flex items-center">
                                 <i class="fas fa-arrow-down mr-1"></i>
                                 {{ $manualRequests['pending_withdraw'] }} Withdraw pending
