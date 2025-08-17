@@ -83,6 +83,10 @@
                             class="block text-neutral-600 hover:text-primary-600 transition-colors duration-200 font-medium">
                                 <i class="fas fa-comments mr-2"></i>Chat
                             </a>
+                            <a href="{{ route('admin.support.index') }}"
+                                class="text-neutral-600 hover:text-primary-600 transition-colors duration-200 font-medium">
+                                <i class="fas fa-headset mr-2"></i>Support
+                            </a>
                         </div>
                     @endif
 
@@ -111,6 +115,10 @@
                             <a href="{{ route('seller.addresses.index') }}"
                                 class="text-neutral-600 hover:text-primary-600 transition-colors duration-200 font-medium">
                                 <i class="fas fa-map-marker-alt mr-2"></i>Addresses
+                            </a>
+                            <a href="{{ route('seller.support.index') }}"
+                                class="text-neutral-600 hover:text-primary-600 transition-colors duration-200 font-medium">
+                                <i class="fas fa-headset mr-2"></i>Support
                             </a>
                         </div>
                     @endif
@@ -224,6 +232,10 @@
                          <a href="{{ route('chat.start') }}"
                             class="text-neutral-600 hover:text-primary-600 transition-colors duration-200 font-medium">
                             <i class="fas fa-comments mr-2"></i>Chat
+                        </a>
+                         <a href="{{ route('seller.support.index') }}"
+                            class="text-neutral-600 hover:text-primary-600 transition-colors duration-200 font-medium">
+                            <i class="fas fa-headset mr-2"></i>Support
                         </a>
                     </div>
                 @endif
