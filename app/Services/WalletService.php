@@ -9,6 +9,7 @@ use App\Enums\WalletTransactionStatus;
 use App\Events\PaymentStatusChanged;
 use App\Events\WithdrawRequestCreated;
 use App\Events\WithdrawRequestStatusChanged;
+use App\Models\ManualTopUpRequest;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -558,5 +559,34 @@ class WalletService
         }
 
         return ['valid' => true];
+    }
+    /**
+ * Get manual top up requests for user
+ */
+    public function getManualTopUpRequests(User $user, int $perPage = 10)
+    {
+        return ManualTopUpRequest::where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage);
+    }
+
+    /**
+     * Check if user has pending manual requests
+     */
+    public function hasPendingManualRequests(User $user): array
+    {
+        $pendingTopUp = ManualTopUpRequest::where('user_id', $user->id)
+            ->whereIn('status', ['pending', 'waiting_payment', 'waiting_approval'])
+            ->count();
+            
+        $pendingWithdraw = WithdrawRequest::where('user_id', $user->id)
+            ->where('status', 'pending')
+            ->count();
+            
+        return [
+            'has_pending' => ($pendingTopUp > 0 || $pendingWithdraw > 0),
+            'pending_topup' => $pendingTopUp,
+            'pending_withdraw' => $pendingWithdraw
+        ];
     }
 }

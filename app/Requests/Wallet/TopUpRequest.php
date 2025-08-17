@@ -4,27 +4,27 @@ namespace App\Requests\Wallet;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class TopUpRequest extends FormRequest
-{
-    /**
-     * Determine if the user is authorized to make this request.
-     */
-    public function authorize(): bool
+    class TopUpRequest extends FormRequest
     {
-        return auth()->check();
-    }
+        /**
+         * Determine if the user is authorized to make this request.
+         */
+        public function authorize(): bool
+        {
+            return auth()->check();
+        }
 
-    /**
-     * Get the validation rules that apply to the request.
-     */
-    public function rules(): array
-    {
-        return [
-            'amount' => 'required|numeric|min:10000|max:10000000',
-            'payment_methods' => 'nullable|array',
-            'payment_methods.*' => 'string'
-        ];
-    }
+        /**
+         * Get the validation rules that apply to the request.
+         */
+        public function rules(): array
+        {
+            return [
+                'amount' => 'required|numeric|min:10000|max:10000000',
+                'payment_methods' => 'nullable|array',
+                'payment_methods.*' => 'string'
+            ];
+        }
 
     /**
      * Get custom messages for validator errors.

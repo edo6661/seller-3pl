@@ -12,30 +12,37 @@ use Illuminate\View\View;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-
+use App\Services\ManualWalletService; 
 class WalletController extends Controller
 {
     protected WalletService $walletService;
+    protected ManualWalletService $manualWalletService; 
 
-    public function __construct(WalletService $walletService)
+    public function __construct(WalletService $walletService, ManualWalletService $manualWalletService)
     {
         $this->walletService = $walletService;
+        $this->manualWalletService = $manualWalletService;
     }
 
     /**
      * Tampilkan halaman dompet
      */
-    public function index(): View
+     public function index(): View
     {
         $user = Auth::user();
         $wallet = $this->walletService->getOrCreateWallet($user);
-        $transactions = $this->walletService->getTransactionHistory($user, 10);
+        $transactions = $this->walletService->getTransactionHistory($user, 15);
+        
+        // Dapatkan status permintaan manual pending
+        $manualRequests = $this->manualWalletService->hasPendingManualRequests($user);
 
         return view('seller.wallet.index', [
             'wallet' => $wallet,
-            'transactions' => $transactions
+            'transactions' => $transactions,
+            'manualRequests' => $manualRequests
         ]);
     }
+
 
     /**
      * Tampilkan halaman top up

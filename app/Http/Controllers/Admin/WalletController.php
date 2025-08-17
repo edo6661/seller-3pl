@@ -1,7 +1,5 @@
 <?php
-
 namespace App\Http\Controllers\Admin;
-
 use App\Http\Controllers\Controller;
 use App\Models\Wallet;
 use App\Models\WalletTransaction;
@@ -10,22 +8,18 @@ use App\Models\User;
 use App\Services\WalletService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-
 class WalletController extends Controller
 {
     protected WalletService $walletService;
-
     public function __construct(WalletService $walletService)
     {
         $this->walletService = $walletService;
     }
-
     /**
      * Display admin wallet dashboard
      */
     public function index(Request $request)
     {
-        // Filter dan search parameters
         $search = $request->get('search');
         $transactionType = $request->get('transaction_type');
         $transactionStatus = $request->get('transaction_status');
@@ -33,31 +27,22 @@ class WalletController extends Controller
         $dateFrom = $request->get('date_from');
         $dateTo = $request->get('date_to');
         $perPage = $request->get('per_page', 15);
-
-        // Statistik wallet
         $walletStats = $this->getWalletStatistics();
-
-        // Daftar wallet dengan user info
         $walletsQuery = Wallet::with(['user'])
             ->select('wallets.*')
             ->join('users', 'wallets.user_id', '=', 'users.id');
-
         if ($search) {
             $walletsQuery->where(function($q) use ($search) {
                 $q->where('users.name', 'like', "%{$search}%")
                   ->orWhere('users.email', 'like', "%{$search}%");
             });
         }
-
         $wallets = $walletsQuery->orderBy('wallets.balance', 'desc')
                               ->paginate($perPage, ['*'], 'wallets_page');
-
-        // Recent transactions
         $transactionsQuery = WalletTransaction::with(['wallet.user'])
             ->select('wallet_transactions.*')
             ->join('wallets', 'wallet_transactions.wallet_id', '=', 'wallets.id')
             ->join('users', 'wallets.user_id', '=', 'users.id');
-
         if ($search) {
             $transactionsQuery->where(function($q) use ($search) {
                 $q->where('users.name', 'like', "%{$search}%")
@@ -65,31 +50,23 @@ class WalletController extends Controller
                   ->orWhere('wallet_transactions.reference_id', 'like', "%{$search}%");
             });
         }
-
         if ($transactionType) {
             $transactionsQuery->where('wallet_transactions.type', $transactionType);
         }
-
         if ($transactionStatus) {
             $transactionsQuery->where('wallet_transactions.status', $transactionStatus);
         }
-
         if ($dateFrom) {
             $transactionsQuery->whereDate('wallet_transactions.created_at', '>=', $dateFrom);
         }
-
         if ($dateTo) {
             $transactionsQuery->whereDate('wallet_transactions.created_at', '<=', $dateTo);
         }
-
         $transactions = $transactionsQuery->orderBy('wallet_transactions.created_at', 'desc')
                                         ->paginate($perPage, ['*'], 'transactions_page');
-
-        // Pending withdraw requests
         $withdrawRequestsQuery = WithdrawRequest::with(['user'])
             ->select('withdraw_requests.*')
             ->join('users', 'withdraw_requests.user_id', '=', 'users.id');
-
         if ($search) {
             $withdrawRequestsQuery->where(function($q) use ($search) {
                 $q->where('users.name', 'like', "%{$search}%")
@@ -97,25 +74,19 @@ class WalletController extends Controller
                   ->orWhere('withdraw_requests.withdrawal_code', 'like', "%{$search}%");
             });
         }
-
         if ($withdrawStatus) {
             $withdrawRequestsQuery->where('withdraw_requests.status', $withdrawStatus);
         } else {
-            // Default hanya pending jika tidak ada filter status
             $withdrawRequestsQuery->where('withdraw_requests.status', 'pending');
         }
-
         if ($dateFrom) {
             $withdrawRequestsQuery->whereDate('withdraw_requests.created_at', '>=', $dateFrom);
         }
-
         if ($dateTo) {
             $withdrawRequestsQuery->whereDate('withdraw_requests.created_at', '<=', $dateTo);
         }
-
         $withdrawRequests = $withdrawRequestsQuery->orderBy('withdraw_requests.created_at', 'desc')
                                                 ->paginate($perPage, ['*'], 'withdraws_page');
-
         return view('admin.wallet.index', compact(
             'walletStats',
             'wallets', 
@@ -130,7 +101,6 @@ class WalletController extends Controller
             'perPage'
         ));
     }
-
     /**
      * Get wallet statistics
      */

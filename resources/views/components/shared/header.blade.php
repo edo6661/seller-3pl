@@ -18,6 +18,9 @@
     @endif
     @if(session('error'))
     showToast('error', '{{ session('error') }}');
+    @endif
+    @if(session('warning'))
+    showToast('warning', '{{ session('warning') }}');
     @endif">
     {{-- @auth
         <x-shared.chat-notification :unreadCount="auth()->user()->getTotalUnreadMessages()" />
@@ -86,6 +89,10 @@
                             <a href="{{ route('admin.support.index') }}"
                                 class="text-neutral-600 hover:text-primary-600 transition-colors duration-200 font-medium">
                                 <i class="fas fa-headset mr-2"></i>Support
+                            </a>
+                            <a href="{{ route('admin.manual-wallet.index') }}"
+                                class="text-neutral-600 hover:text-primary-600 transition-colors duration-200 font-medium">
+                                <i class="fas fa-wallet mr-2"></i>Manual Wallet
                             </a>
                         </div>
                     @endif
@@ -208,6 +215,10 @@
                             class="block text-neutral-600 hover:text-primary-600 transition-colors duration-200 font-medium">
                             <i class="fas fa-comments mr-2"></i>Chat
                         </a>
+                        <a href="{{ route('admin.manual-wallet.index') }}"
+                            class="block text-neutral-600 hover:text-primary-600 transition-colors duration-200 font-medium">
+                            <i class="fas fa-wallet mr-2"></i>Manual Wallet
+                        </a>
                     </div>
                 @endif
 
@@ -285,6 +296,9 @@
                     </div>
                     <div x-show="notificationType === 'error'" class="text-error-600">
                         <i class="fas fa-exclamation-circle text-xl"></i>
+                    </div>
+                    <div x-show="notificationType === 'warning'" class="text-warning-600">
+                        <i class="fas fa-exclamation-triangle text-xl"></i>
                     </div>
                 </div>
                 <div class="ml-3 w-0 flex-1 pt-0.5">

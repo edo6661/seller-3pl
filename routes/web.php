@@ -29,6 +29,7 @@ Route::middleware(['auth'])->group(function () {
             require __DIR__ . '/admin/products.php';
             require __DIR__ . '/admin/user.php';
             require __DIR__ . '/admin/wallet.php';
+            require __DIR__ . '/admin/manual-wallet.php';
             require __DIR__ . '/admin/support.php';
         });
     });
@@ -36,6 +37,7 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('/seller')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('seller.dashboard');
         require __DIR__ . '/seller/wallet.php';
+        require __DIR__ . '/seller/manual-wallet.php';
         require __DIR__ . '/seller/products.php';
         require __DIR__ . '/seller/pickup_request.php';
         require __DIR__ . '/seller/addresses.php';

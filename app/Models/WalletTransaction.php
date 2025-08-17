@@ -107,4 +107,5 @@ class WalletTransaction extends Model
             WalletTransactionType::WITHDRAW
         ]);
     }
+
 }

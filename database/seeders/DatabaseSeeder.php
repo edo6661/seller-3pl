@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             WalletTransactionSeeder::class,
             WithdrawRequestSeeder::class,
             UserAddressSeeder::class,
+            BankAccountSeeder::class,
         ]);
         
         $this->command->info('All seeders completed successfully!');

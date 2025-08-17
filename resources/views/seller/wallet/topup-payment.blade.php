@@ -70,6 +70,19 @@
             </a>
         </div>
     </div>
+    <div class="mt-6 bg-info-50 border border-info-200 rounded-xl p-5">
+        <div class="flex">
+            <div class="flex-shrink-0 pt-0.5">
+                <i class="fas fa-info-circle text-info-500 text-xl"></i>
+            </div>
+            <div class="ml-4">
+                <h3 class="text-base font-medium text-info-800">Catatan</h3>
+                <p class="mt-1 text-sm text-info-700">
+                    Anda dapat melanjutkan proses ini kapan saja. Permintaan akan tetap tersimpan hingga diselesaikan atau dibatalkan.
+                </p>
+            </div>
+        </div>
+    </div>
 
     <!-- Midtrans Snap Script -->
     <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}">
