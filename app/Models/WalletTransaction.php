@@ -112,6 +112,14 @@ class WalletTransaction extends Model
         return null;
     }
 
+      public function getQrCodeUrlPathAttribute(): ?string
+    {
+        if ($this->qr_code_url && Storage::disk('r2')->exists($this->qr_code_url)) {
+            return Storage::disk('r2')->temporaryUrl($this->qr_code_url, now()->addMinutes(15));
+        }
+        return null;
+    }
+
     // Helpers
     public function isPending(): bool
     {

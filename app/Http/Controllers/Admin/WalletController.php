@@ -278,7 +278,17 @@ class WalletController extends Controller
     {
         try {
             $bankAccounts = BankAccount::active()->orderBy('created_at', 'asc')->get();
-            return response()->json($bankAccounts);
+            $responseJson = $bankAccounts->map(function ($bank) {
+                return [
+                    'id' => $bank->id,
+                    'bank_name' => $bank->bank_name,
+                    'account_number' => $bank->account_number,
+                    'account_name' => $bank->account_name,
+                    'qr_code' => $bank->qr_code_url,
+                    'is_active' => $bank->is_active,
+                ];
+            });
+            return response()->json($responseJson);
         } catch (\Exception $e) {
             Log::error('Load bank accounts error: ' . $e->getMessage());
             return response()->json(['error' => 'Gagal memuat data rekening bank.'], 500);

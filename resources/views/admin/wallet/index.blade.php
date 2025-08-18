@@ -223,7 +223,6 @@
                                     <th class="px-4 py-3 text-right">Saldo Pending</th>
                                     <th class="px-4 py-3 text-right">Available Balance</th>
                                     <th class="px-4 py-3 text-center">Terakhir Update</th>
-                                    <th class="px-4 py-3 text-center">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-neutral-200">
@@ -247,12 +246,6 @@
                                         </td>
                                         <td class="px-4 py-3 text-center text-sm text-neutral-500">
                                             {{ $wallet->updated_at->format('d/m/Y H:i') }}
-                                        </td>
-                                        <td class="px-4 py-3 text-center text-sm">
-                                            <a href="#" onclick="viewWalletDetail({{ $wallet->id }})"
-                                                class="text-secondary-600 hover:text-secondary-800 transition">
-                                                <i class="fas fa-eye mr-1"></i> Detail
-                                            </a>
                                         </td>
                                     </tr>
                                 @endforeach
@@ -618,7 +611,7 @@
         </div>
     </div>
     <!-- Payment Proof Modal -->
-    <div id="paymentProofModal" class="fixed inset-0 bg-neutral-900 bg-opacity-50 hidden items-center justify-center z-50">
+    <div id="paymentProofModal" class="fixed inset-0 bg-neutral-900/50 hidden items-center justify-center z-50">
         <div class="bg-white rounded-lg p-6 max-w-5xl mx-4 shadow-xl">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg font-semibold text-neutral-900">Bukti Pembayaran</h3>
@@ -632,7 +625,7 @@
         </div>
     </div>
     <!-- Top Up Approval Modal -->
-    <div id="topupModal" class="fixed inset-0 bg-neutral-900 bg-opacity-50 hidden items-center justify-center z-50">
+    <div id="topupModal" class="fixed inset-0 bg-neutral-900/50 hidden items-center justify-center z-50">
         <div class="bg-white rounded-lg p-6 min-w-md mx-4 shadow-xl">
             <h3 class="text-lg font-semibold text-neutral-900 mb-4" id="topupModalTitle">Setujui Top Up</h3>
             <form id="topupForm" method="POST">
@@ -658,7 +651,7 @@
         </div>
     </div>
     <!-- Process Withdraw Modal -->
-    <div id="processModal" class="fixed inset-0 bg-neutral-900 bg-opacity-50 hidden items-center justify-center z-50">
+    <div id="processModal" class="fixed inset-0 bg-neutral-900/50 hidden items-center justify-center z-50">
         <div class="bg-white rounded-lg p-6 min-w-md mx-4 shadow-xl">
             <h3 class="text-lg font-semibold text-neutral-900 mb-4" id="processModalTitle">Proses Penarikan Dana</h3>
             <form id="processForm" method="POST">
@@ -686,7 +679,7 @@
         </div>
     </div>
     <!-- Admin Notes Modal -->
-    <div id="adminNotesModal" class="fixed inset-0 bg-neutral-900 bg-opacity-50 hidden items-center justify-center z-50">
+    <div id="adminNotesModal" class="fixed inset-0 bg-neutral-900/50 hidden items-center justify-center z-50">
         <div class="bg-white rounded-lg p-6 max-w-5xl mx-4 shadow-xl">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg font-semibold text-neutral-900">Catatan Admin</h3>
@@ -700,7 +693,7 @@
         </div>
     </div>
     <!-- Add Bank Account Modal -->
-    <div id="addBankModal" class="fixed inset-0 bg-neutral-900 bg-opacity-50 hidden items-center justify-center z-50">
+    <div id="addBankModal" class="fixed inset-0 bg-neutral-900/50 hidden items-center justify-center z-50">
         <div class="bg-white rounded-lg p-6 max-w-5xl mx-4 shadow-xl">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg font-semibold text-neutral-900">Tambah Rekening Bank</h3>
@@ -757,7 +750,7 @@
         </div>
     </div>
     <!-- Edit Bank Account Modal -->
-    <div id="editBankModal" class="fixed inset-0 bg-neutral-900 bg-opacity-50 hidden items-center justify-center z-50">
+    <div id="editBankModal" class="fixed inset-0 bg-neutral-900/50 hidden items-center justify-center z-50">
         <div class="bg-white rounded-lg p-6 max-w-5xl mx-4 shadow-xl">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg font-semibold text-neutral-900">Edit Rekening Bank</h3>
@@ -952,6 +945,7 @@
                 if (bankAccounts.length > 0) {
                     // Jika ada data, loop dan buat HTML untuk setiap rekening bank
                     bankAccounts.forEach(bank => {
+                        console.log('Bank Account:', bank);
                         const bankCard = `
                             <div class="bg-white rounded-lg shadow-sm p-4 border border-neutral-200 flex flex-col justify-between">
                                 <div>
@@ -967,6 +961,7 @@
                                     </div>
                                     <p class="text-neutral-600 text-sm">No. Rek: <span class="font-mono font-medium">${bank.account_number}</span></p>
                                     <p class="text-neutral-600 text-sm">a.n: <span class="font-medium">${bank.account_name}</span></p>
+                                    ${bank.qr_code ? `<img src="${bank.qr_code}" alt="QR Code" class="mt-2 w-full object-cover">` : ''}
                                 </div>
                                 <div class="flex justify-end items-center mt-4 pt-4 border-t border-neutral-200 space-x-2">
                                     <button onclick="showEditBankModal(${bank.id}, '${bank.bank_name}', '${bank.account_number}', '${bank.account_name}', ${bank.is_active})"

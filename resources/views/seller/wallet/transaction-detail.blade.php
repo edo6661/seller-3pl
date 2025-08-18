@@ -230,7 +230,7 @@
                     <div class="bg-neutral-50 p-4 rounded-lg">
                         <img src="{{ $transaction->payment_proof_url }}" 
                              alt="Bukti Pembayaran" 
-                             class="max-w-full h-auto max-h-96 rounded-lg shadow-sm cursor-pointer"
+                             class="mx-auto object-cover w-full cursor-pointer"
                              onclick="window.open(this.src, '_blank')">
                         <p class="text-xs text-neutral-500 mt-2">Klik gambar untuk memperbesar</p>
                     </div>
@@ -244,9 +244,9 @@
                         <i class="fas fa-qrcode mr-2 text-neutral-400"></i> QR Code Pembayaran
                     </h3>
                     <div class="bg-neutral-50 p-4 rounded-lg text-center">
-                        <img src="{{ $transaction->qr_code_url }}" 
+                        <img src="{{ $transaction->qr_code_url_path }}" 
                              alt="QR Code" 
-                             class="mx-auto h-32 w-32">
+                             class="mx-auto object-cover w-full">
                         <p class="text-xs text-neutral-500 mt-2">Scan QR Code untuk pembayaran</p>
                     </div>
                 </div>

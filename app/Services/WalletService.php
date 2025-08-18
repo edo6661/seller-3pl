@@ -62,7 +62,7 @@ class WalletService
             'bank_name' => $bankAccount->bank_name,
             'bank_account_number' => $bankAccount->account_number,
             'bank_account_name' => $bankAccount->account_name,
-            'qr_code_url' => $bankAccount->qr_code_url,
+            'qr_code_url' => $bankAccount->qr_code_path,
         ]);
 
         return $transaction->fresh();

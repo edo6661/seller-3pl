@@ -35,13 +35,12 @@
                     </div>
                 </div>
             </div>
-
             <!-- QR Code -->
             @if($transaction->qr_code_url)
             <div class="mt-6 text-center">
                 <h4 class="text-sm font-medium text-neutral-700 mb-3">Atau Scan QR Code:</h4>
                 <div class="inline-block bg-white p-4 rounded-lg border-2 border-neutral-200">
-                    <img src="{{ $transaction->qr_code_url }}" alt="QR Code" class="w-48 h-48 mx-auto">
+                    <img src="{{ $transaction->qr_code_url_path }}" alt="QR Code" class="w-full mx-auto object-cover">
                 </div>
             </div>
             @endif
