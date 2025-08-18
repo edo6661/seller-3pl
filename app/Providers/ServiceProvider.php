@@ -14,6 +14,7 @@ use App\Services\PickupService;
 use App\Services\ProductExportService;
 use App\Services\ProductService;
 use App\Services\ProfileService;
+use App\Services\TeamService;
 use App\Services\UserService;
 use App\Services\WalletService;
 use App\Services\WithdrawService;
@@ -30,7 +31,6 @@ class ServiceProvider extends BaseServiceProvider
         AuthService::class => AuthService::class,
         BuyerRatingService::class => BuyerRatingService::class,
         EmailVerificationService::class => EmailVerificationService::class,
-        MidtransService::class => MidtransService::class,
         NotificationService::class => NotificationService::class,
         PasswordResetService::class => PasswordResetService::class,
         PickupService::class => PickupService::class,
@@ -39,10 +39,10 @@ class ServiceProvider extends BaseServiceProvider
         ProfileService::class => ProfileService::class,
         UserService::class => UserService::class,
         WalletService::class => WalletService::class,
-        WithdrawService::class => WithdrawService::class,
         ApiAuthService::class => ApiAuthService::class,
         AdminDashboardService::class => AdminDashboardService::class,
         ProductExportService::class => ProductExportService::class,
+        TeamService::class => TeamService::class,
     ];
 
     /**
@@ -51,27 +51,6 @@ class ServiceProvider extends BaseServiceProvider
     public function register(): void
     {
         
-        $this->app->singleton(PickupService::class, function ($app) {
-            return new PickupService(
-                $app->make(BuyerRatingService::class),
-                $app->make(NotificationService::class),
-                $app->make(WalletService::class)
-            );
-        });
-
-        $this->app->singleton(WithdrawService::class, function ($app) {
-            return new WithdrawService(
-                $app->make(WalletService::class),
-                $app->make(NotificationService::class)
-            );
-        });
-        $this->app->singleton(AuthService::class, function ($app) {
-            return new AuthService(
-                $app->make(EmailVerificationService::class),
-            );
-        });
-
-
     }
 
     /**
@@ -93,7 +72,6 @@ class ServiceProvider extends BaseServiceProvider
             AuthService::class,
             BuyerRatingService::class,
             EmailVerificationService::class,
-            MidtransService::class,
             NotificationService::class,
             PasswordResetService::class,
             PickupService::class,
@@ -102,11 +80,11 @@ class ServiceProvider extends BaseServiceProvider
             ProfileService::class,
             UserService::class,
             WalletService::class,
-            WithdrawService::class,
             ApiAuthService::class,
             AdminDashboardService::class,
             ProductExportService::class,
-            
+            TeamService::class,
+
         ];
     }
 }

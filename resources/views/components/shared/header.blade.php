@@ -124,6 +124,10 @@
                                 class="text-neutral-600 hover:text-primary-600 transition-colors duration-200 font-medium">
                                 <i class="fas fa-headset mr-2"></i>Support
                             </a>
+                            <a href="{{ route('seller.team.index') }}"
+                                class="text-neutral-600 hover:text-primary-600 transition-colors duration-200 font-medium">
+                                <i class="fas fa-users mr-2"></i>Team
+                            </a>
                         </div>
                     @endif
 
@@ -241,6 +245,10 @@
                          <a href="{{ route('seller.support.index') }}"
                             class="text-neutral-600 hover:text-primary-600 transition-colors duration-200 font-medium">
                             <i class="fas fa-headset mr-2"></i>Support
+                        </a>
+                        <a href="{{ route('seller.team.index') }}"
+                            class="text-neutral-600 hover:text-primary-600 transition-colors duration-200 font-medium">
+                            <i class="fas fa-users mr-2"></i>Team
                         </a>
                     </div>
                 @endif

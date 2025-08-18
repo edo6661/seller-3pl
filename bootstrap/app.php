@@ -3,6 +3,7 @@
 use App\Http\Middleware\Api\ApiAdminMiddleware;
 use App\Http\Middleware\AuthMiddleware;
 use App\Http\Middleware\PasswordValidationMiddleware;
+use App\Http\Middleware\TeamPermissionMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -20,6 +21,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'isAdmin' => AuthMiddleware::class,
             'passwordValidation' => PasswordValidationMiddleware::class,
             'apiIsAdmin' => ApiAdminMiddleware::class,
+            'teamPermission' => TeamPermissionMiddleware::class,
+
         ]);    
         $middleware->redirectGuestsTo(function ($request) {
            

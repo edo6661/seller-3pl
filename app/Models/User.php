@@ -168,4 +168,26 @@ class User extends Authenticatable
 
         return $this->sellerProfile->isVerified();
     }
+    public function teamMembers()
+    {
+        return $this->hasMany(TeamMember::class, 'seller_id');
+    }
+
+    public function memberOf()
+    {
+        return $this->hasOne(TeamMember::class, 'user_id');
+    }
+
+    public function isTeamMember(): bool
+    {
+        return $this->memberOf()->exists();
+    }
+
+    public function getTeamSellerProfile()
+    {
+        if ($teamMember = $this->memberOf()->first()) {
+            return $teamMember->seller->sellerProfile;
+        }
+        return null;
+    }
 }

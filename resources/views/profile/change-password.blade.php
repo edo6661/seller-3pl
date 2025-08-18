@@ -2,7 +2,7 @@
     <x-slot:title>Ganti Password</x-slot:title>
     
     <div class="bg-gray-50 py-12">
-        <div class="container mx-auto max-w-2xl px-4 sm:px-6 lg:px-8">
+        <div class="container mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
             
             {{-- Header --}}
             <div class="mb-8">

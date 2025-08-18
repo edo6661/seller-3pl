@@ -4,6 +4,7 @@ use App\Collection\UserCollection;
 use App\Http\Controllers\Seller\DashboardController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\Team\TeamAuthController;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
@@ -13,6 +14,11 @@ Route::get('/', function () {
 })->name('guest.home');
 
 require __DIR__.'/guest/auth.php';
+Route::get('/team/accept', [TeamAuthController::class, 'showAcceptForm'])
+    ->name('team.accept.form');
+Route::post('/team/accept', [TeamAuthController::class, 'acceptInvitation'])
+    ->name('team.accept');
+
 Route::get('chat/unread-count', [ChatController::class, 'getUnreadCount'])->name('unread-count');
 
 
@@ -40,5 +46,6 @@ Route::middleware(['auth'])->group(function () {
         require __DIR__ . '/seller/pickup_request.php';
         require __DIR__ . '/seller/addresses.php';
         require __DIR__ . '/seller/support.php';
+        require __DIR__ . '/seller/team.php';
     });
 });

@@ -8,7 +8,7 @@
                 <div class="overflow-hidden rounded-lg bg-white shadow-md">
                     <div class="px-4 py-5 sm:p-6">
                         <h3 class="text-lg font-medium leading-6 text-gray-900">Informasi Akun</h3>
-                        <p class="mt-1 max-w-2xl text-sm text-gray-500">Perbarui informasi pribadi dan detail akun Anda.</p>
+                        <p class="mt-1 max-w-5xl text-sm text-gray-500">Perbarui informasi pribadi dan detail akun Anda.</p>
                     </div>
                     <div class="border-t border-gray-200 px-4 py-5 sm:p-6">
                         <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
@@ -65,7 +65,7 @@
                 <div class="mt-8 overflow-hidden rounded-lg bg-white shadow-md">
                     <div class="px-4 py-5 sm:p-6">
                         <h3 class="text-lg font-medium leading-6 text-gray-900">Informasi Penjual</h3>
-                        <p class="mt-1 max-w-2xl text-sm text-gray-500">Detail alamat untuk keperluan penjemputan dan lokasi toko.</p>
+                        <p class="mt-1 max-w-5xl text-sm text-gray-500">Detail alamat untuk keperluan penjemputan dan lokasi toko.</p>
                     </div>
                     <div class="border-t border-gray-200 px-4 py-5 sm:p-6">
                         <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
