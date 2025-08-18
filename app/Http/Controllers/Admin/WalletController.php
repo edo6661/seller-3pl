@@ -14,6 +14,7 @@ use Illuminate\View\View;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\JsonResponse; 
 class WalletController extends Controller
 {
     protected WalletService $walletService;
@@ -101,8 +102,7 @@ class WalletController extends Controller
         }
         $pendingWithdraws = $pendingWithdrawQuery->orderBy('wallet_transactions.created_at', 'desc')
                                                ->paginate($perPage, ['*'], 'withdraw_page');
-        $withdrawRequests = $withdrawRequests = collect(); // Initialize empty if needed
-
+        $withdrawRequests = $withdrawRequests = collect(); 
         if ($request->get('withdraw_status') === 'all') {
             $withdrawRequests = WalletTransaction::with(['wallet.user'])
                 ->where('type', WalletTransactionType::WITHDRAW)
@@ -272,6 +272,16 @@ class WalletController extends Controller
         } catch (\Exception $e) {
             Log::error('Delete bank account error: ' . $e->getMessage());
             return back()->with('error', 'Gagal menghapus rekening bank.');
+        }
+    }
+    public function loadBankAccounts(): JsonResponse
+    {
+        try {
+            $bankAccounts = BankAccount::active()->orderBy('created_at', 'asc')->get();
+            return response()->json($bankAccounts);
+        } catch (\Exception $e) {
+            Log::error('Load bank accounts error: ' . $e->getMessage());
+            return response()->json(['error' => 'Gagal memuat data rekening bank.'], 500);
         }
     }
     /**

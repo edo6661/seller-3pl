@@ -21,4 +21,6 @@ Route::prefix('/wallet')->group(function () {
     Route::post('/bank-accounts', [WalletController::class, 'storeBankAccount'])->name('admin.wallets.bank-accounts.store');
     Route::put('/bank-accounts/{id}', [WalletController::class, 'updateBankAccount'])->name('admin.wallets.bank-accounts.update');
     Route::delete('/bank-accounts/{id}', [WalletController::class, 'deleteBankAccount'])->name('admin.wallets.bank-accounts.delete');
+    Route::get('/load-bank-accounts', [WalletController::class, 'loadBankAccounts'])->name('admin.wallets.bank-accounts.load');
+
 });

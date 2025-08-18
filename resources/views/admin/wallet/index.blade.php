@@ -5,7 +5,6 @@
             <h1 class="text-3xl font-bold text-neutral-900 mb-2">Manajemen Wallet</h1>
             <p class="text-neutral-600">Kelola semua wallet, transaksi, dan penarikan dana pengguna</p>
         </div>
-
         <!-- Statistics Cards -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <!-- Total Wallet Card -->
@@ -21,7 +20,6 @@
                     </div>
                 </div>
             </div>
-
             <!-- Total Saldo Card -->
             <div class="bg-white rounded-lg shadow-sm p-6 border border-neutral-200">
                 <div class="flex items-center">
@@ -35,7 +33,6 @@
                     </div>
                 </div>
             </div>
-
             <!-- Top Up Pending Card -->
             <div class="bg-white rounded-lg shadow-sm p-6 border border-neutral-200">
                 <div class="flex items-center">
@@ -50,7 +47,6 @@
                     </div>
                 </div>
             </div>
-
             <!-- Penarikan Pending Card -->
             <div class="bg-white rounded-lg shadow-sm p-6 border border-neutral-200">
                 <div class="flex items-center">
@@ -66,7 +62,6 @@
                 </div>
             </div>
         </div>
-
         <!-- Today's Statistics -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <!-- Top Up Hari Ini -->
@@ -74,21 +69,18 @@
                 <h3 class="text-lg font-semibold mb-2">Top Up Hari Ini</h3>
                 <p class="text-2xl font-bold">Rp {{ number_format($walletStats['total_topup_today'], 0, ',', '.') }}</p>
             </div>
-
             <!-- Penarikan Hari Ini -->
             <div class="bg-gradient-to-r from-error-500 to-error-600 text-white rounded-lg p-6 shadow-md">
                 <h3 class="text-lg font-semibold mb-2">Penarikan Hari Ini</h3>
                 <p class="text-2xl font-bold">Rp {{ number_format($walletStats['total_withdraw_today'], 0, ',', '.') }}
                 </p>
             </div>
-
             <!-- Transaksi Hari Ini -->
             <div class="bg-gradient-to-r from-secondary-500 to-secondary-600 text-white rounded-lg p-6 shadow-md">
                 <h3 class="text-lg font-semibold mb-2">Transaksi Hari Ini</h3>
                 <p class="text-2xl font-bold">{{ number_format($walletStats['total_transactions_today']) }}</p>
             </div>
         </div>
-
         <!-- Filters -->
         <div class="bg-white rounded-lg shadow-sm p-6 mb-8 border border-neutral-200">
             <h3 class="text-lg font-semibold mb-4 text-neutral-800">Filter & Pencarian</h3>
@@ -100,7 +92,6 @@
                         placeholder="Nama atau email user..."
                         class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
                 </div>
-
                 <!-- Jenis Transaksi -->
                 <div>
                     <label class="block text-sm font-medium text-neutral-700 mb-2">Jenis Transaksi</label>
@@ -111,7 +102,6 @@
                         <option value="withdraw" {{ $transactionType === 'withdraw' ? 'selected' : '' }}>Penarikan</option>
                     </select>
                 </div>
-
                 <!-- Status Transaksi -->
                 <div>
                     <label class="block text-sm font-medium text-neutral-700 mb-2">Status Transaksi</label>
@@ -125,7 +115,6 @@
                         <option value="cancelled" {{ $transactionStatus === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
                     </select>
                 </div>
-
                 <!-- Status Penarikan -->
                 <div>
                     <label class="block text-sm font-medium text-neutral-700 mb-2">Status Penarikan</label>
@@ -139,21 +128,18 @@
                         <option value="failed" {{ $withdrawStatus === 'failed' ? 'selected' : '' }}>Failed</option>
                     </select>
                 </div>
-
                 <!-- Tanggal Mulai -->
                 <div>
                     <label class="block text-sm font-medium text-neutral-700 mb-2">Tanggal Mulai</label>
                     <input type="date" name="date_from" value="{{ $dateFrom }}"
                         class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
                 </div>
-
                 <!-- Tanggal Akhir -->
                 <div>
                     <label class="block text-sm font-medium text-neutral-700 mb-2">Tanggal Akhir</label>
                     <input type="date" name="date_to" value="{{ $dateTo }}"
                         class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
                 </div>
-
                 <!-- Per Halaman -->
                 <div>
                     <label class="block text-sm font-medium text-neutral-700 mb-2">Per Halaman</label>
@@ -165,7 +151,6 @@
                         <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50</option>
                     </select>
                 </div>
-
                 <!-- Tombol Filter -->
                 <div class="flex items-end">
                     <button type="submit"
@@ -175,7 +160,6 @@
                 </div>
             </form>
         </div>
-
         <!-- Tabs Navigation -->
         <div class="mb-6">
             <div class="border-b border-neutral-200">
@@ -209,20 +193,17 @@
                 </nav>
             </div>
         </div>
-
         <!-- Success/Error Messages -->
         @if(session('success'))
             <div class="bg-success-50 border border-success-200 text-success-700 px-4 py-3 rounded mb-4">
                 <i class="fas fa-check-circle mr-2"></i>{{ session('success') }}
             </div>
         @endif
-
         @if(session('error'))
             <div class="bg-error-50 border border-error-200 text-error-700 px-4 py-3 rounded mb-4">
                 <i class="fas fa-exclamation-circle mr-2"></i>{{ session('error') }}
             </div>
         @endif
-
         <!-- Wallets Tab -->
         <div id="wallets-content" class="tab-content">
             <div class="bg-white rounded-lg shadow-sm p-6 border border-neutral-200">
@@ -232,7 +213,6 @@
                         Total: {{ $wallets->total() }} wallet
                     </div>
                 </div>
-
                 @if ($wallets->count() > 0)
                     <div class="overflow-x-auto">
                         <table class="w-full">
@@ -293,7 +273,6 @@
                 @endif
             </div>
         </div>
-
         <!-- Transactions Tab -->
         <div id="transactions-content" class="tab-content hidden">
             <div class="bg-white rounded-lg shadow-sm p-6 border border-neutral-200">
@@ -303,7 +282,6 @@
                         Total: {{ $transactions->total() }} transaksi
                     </div>
                 </div>
-
                 @if ($transactions->count() > 0)
                     <div class="overflow-x-auto">
                         <table class="w-full">
@@ -383,7 +361,6 @@
                 @endif
             </div>
         </div>
-
         <!-- Top Up Pending Tab -->
         <div id="topups-content" class="tab-content hidden">
             <div class="bg-white rounded-lg shadow-sm p-6 border border-neutral-200">
@@ -393,7 +370,6 @@
                         Total: {{ $pendingTopUps->total() }} permintaan
                     </div>
                 </div>
-
                 @if ($pendingTopUps->count() > 0)
                     <div class="overflow-x-auto">
                         <table class="w-full">
@@ -473,7 +449,6 @@
                 @endif
             </div>
         </div>
-
         <!-- Withdraw Requests Tab -->
         <div id="withdraws-content" class="tab-content hidden">
             <div class="bg-white rounded-lg shadow-sm p-6 border border-neutral-200">
@@ -483,11 +458,9 @@
                         Total: {{ $withdrawStatus === 'all' ? $withdrawRequests->total() : $pendingWithdraws->total() }} permintaan
                     </div>
                 </div>
-
                 @php
                     $displayWithdraws = $withdrawStatus === 'all' ? $withdrawRequests : $pendingWithdraws;
                 @endphp
-
                 @if ($displayWithdraws->count() > 0)
                     <div class="overflow-x-auto">
                         <table class="w-full">
@@ -616,7 +589,6 @@
                 @endif
             </div>
         </div>
-
         <!-- Bank Accounts Tab -->
         <div id="banks-content" class="tab-content hidden">
             <div class="bg-white rounded-lg shadow-sm border border-neutral-200">
@@ -630,7 +602,6 @@
                         </button>
                     </div>
                 </div>
-
                 <!-- Bank Accounts List -->
                 <div class="p-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="bankAccountsList">
@@ -646,7 +617,6 @@
             </div>
         </div>
     </div>
-
     <!-- Payment Proof Modal -->
     <div id="paymentProofModal" class="fixed inset-0 bg-neutral-900 bg-opacity-50 hidden items-center justify-center z-50">
         <div class="bg-white rounded-lg p-6 max-w-5xl mx-4 shadow-xl">
@@ -661,7 +631,6 @@
             </div>
         </div>
     </div>
-
     <!-- Top Up Approval Modal -->
     <div id="topupModal" class="fixed inset-0 bg-neutral-900 bg-opacity-50 hidden items-center justify-center z-50">
         <div class="bg-white rounded-lg p-6 min-w-md mx-4 shadow-xl">
@@ -669,14 +638,12 @@
             <form id="topupForm" method="POST">
                 @csrf
                 <input type="hidden" id="topupId" name="topup_id">
-
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-neutral-700 mb-2">Catatan Admin (Opsional)</label>
                     <textarea name="admin_notes" rows="3"
                         class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                         placeholder="Tambahkan catatan..."></textarea>
                 </div>
-
                 <div class="flex justify-end space-x-3">
                     <button type="button" onclick="closeTopupModal()"
                         class="px-4 py-2 text-neutral-700 bg-neutral-200 rounded-md hover:bg-neutral-300 transition">
@@ -690,17 +657,14 @@
             </form>
         </div>
     </div>
-
     <!-- Process Withdraw Modal -->
     <div id="processModal" class="fixed inset-0 bg-neutral-900 bg-opacity-50 hidden items-center justify-center z-50">
         <div class="bg-white rounded-lg p-6 min-w-md mx-4 shadow-xl">
             <h3 class="text-lg font-semibold text-neutral-900 mb-4" id="processModalTitle">Proses Penarikan Dana</h3>
-    
             <form id="processForm" method="POST">
                 @csrf
                 <input type="hidden" id="withdrawId" name="withdraw_id">
                 <input type="hidden" id="newStatus" name="status">
-
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-neutral-700 mb-2">Catatan Admin</label>
                     <textarea name="admin_notes" id="adminNotesTextarea" rows="3"
@@ -708,7 +672,6 @@
                         placeholder="Tambahkan catatan..."></textarea>
                     <p class="text-xs text-neutral-500 mt-1" id="notesHint">Opsional untuk proses dan selesai, wajib untuk tolak/gagal</p>
                 </div>
-
                 <div class="flex justify-end space-x-3">
                     <button type="button" onclick="closeProcessModal()"
                         class="px-4 py-2 text-neutral-700 bg-neutral-200 rounded-md hover:bg-neutral-300 transition">
@@ -722,10 +685,9 @@
             </form>
         </div>
     </div>
-
     <!-- Admin Notes Modal -->
     <div id="adminNotesModal" class="fixed inset-0 bg-neutral-900 bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-6 max-w-md mx-4 shadow-xl">
+        <div class="bg-white rounded-lg p-6 max-w-5xl mx-4 shadow-xl">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg font-semibold text-neutral-900">Catatan Admin</h3>
                 <button onclick="closeAdminNotesModal()" class="text-neutral-400 hover:text-neutral-600">
@@ -737,10 +699,9 @@
             </div>
         </div>
     </div>
-
     <!-- Add Bank Account Modal -->
     <div id="addBankModal" class="fixed inset-0 bg-neutral-900 bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-6 max-w-md mx-4 shadow-xl">
+        <div class="bg-white rounded-lg p-6 max-w-5xl mx-4 shadow-xl">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg font-semibold text-neutral-900">Tambah Rekening Bank</h3>
                 <button onclick="closeAddBankModal()" class="text-neutral-400 hover:text-neutral-600">
@@ -764,28 +725,24 @@
                         <option value="BTN">BTN</option>
                     </select>
                 </div>
-
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-neutral-700 mb-2">Nomor Rekening</label>
                     <input type="text" name="account_number" required
                         class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                         placeholder="Masukkan nomor rekening">
                 </div>
-
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-neutral-700 mb-2">Nama Pemilik</label>
                     <input type="text" name="account_name" required
                         class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                         placeholder="Masukkan nama pemilik rekening">
                 </div>
-
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-neutral-700 mb-2">QR Code (Opsional)</label>
                     <input type="file" name="qr_code" accept="image/*"
                         class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
                     <p class="text-xs text-neutral-500 mt-1">Format: JPG, JPEG, PNG. Max: 2MB</p>
                 </div>
-
                 <div class="flex justify-end space-x-3">
                     <button type="button" onclick="closeAddBankModal()"
                         class="px-4 py-2 text-neutral-700 bg-neutral-200 rounded-md hover:bg-neutral-300 transition">
@@ -799,10 +756,9 @@
             </form>
         </div>
     </div>
-
     <!-- Edit Bank Account Modal -->
     <div id="editBankModal" class="fixed inset-0 bg-neutral-900 bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-6 max-w-md mx-4 shadow-xl">
+        <div class="bg-white rounded-lg p-6 max-w-5xl mx-4 shadow-xl">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg font-semibold text-neutral-900">Edit Rekening Bank</h3>
                 <button onclick="closeEditBankModal()" class="text-neutral-400 hover:text-neutral-600">
@@ -813,7 +769,6 @@
                 @csrf
                 @method('PUT')
                 <input type="hidden" id="editBankId" name="bank_id">
-
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-neutral-700 mb-2">Nama Bank</label>
                     <select name="bank_name" id="editBankName" required
@@ -829,33 +784,28 @@
                         <option value="BTN">BTN</option>
                     </select>
                 </div>
-
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-neutral-700 mb-2">Nomor Rekening</label>
                     <input type="text" name="account_number" id="editAccountNumber" required
                         class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
                 </div>
-
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-neutral-700 mb-2">Nama Pemilik</label>
                     <input type="text" name="account_name" id="editAccountName" required
                         class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
                 </div>
-
                 <div class="mb-4">
                     <label class="flex items-center">
                         <input type="checkbox" name="is_active" id="editIsActive" value="1" class="mr-2">
                         <span class="text-sm font-medium text-neutral-700">Aktif</span>
                     </label>
                 </div>
-
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-neutral-700 mb-2">QR Code (Opsional)</label>
                     <input type="file" name="qr_code" accept="image/*"
                         class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
                     <p class="text-xs text-neutral-500 mt-1">Biarkan kosong jika tidak ingin mengubah</p>
                 </div>
-
                 <div class="flex justify-end space-x-3">
                     <button type="button" onclick="closeEditBankModal()"
                         class="px-4 py-2 text-neutral-700 bg-neutral-200 rounded-md hover:bg-neutral-300 transition">
@@ -869,97 +819,68 @@
             </form>
         </div>
     </div>
-
     <script>
-        // Tab functionality
         function showTab(tabName) {
-            // Hide all content
             document.querySelectorAll('.tab-content').forEach(content => {
                 content.classList.add('hidden');
             });
-
-            // Remove active state from all tabs
             document.querySelectorAll('.tab-button').forEach(tab => {
                 tab.classList.remove('border-primary-500', 'text-primary-600');
                 tab.classList.add('border-transparent', 'text-neutral-500');
             });
-
-            // Show selected content
             document.getElementById(tabName + '-content').classList.remove('hidden');
-
-            // Add active state to selected tab
             const activeTab = document.getElementById(tabName + '-tab');
             activeTab.classList.remove('border-transparent', 'text-neutral-500');
             activeTab.classList.add('border-primary-500', 'text-primary-600');
-
-            // Load bank accounts if banks tab is selected
             if (tabName === 'banks') {
-                loadBankAccounts();
+                fetchBankAccounts();
             }
         }
-
-        // Payment proof modal
         function viewPaymentProof(imageUrl) {
             document.getElementById('paymentProofImage').src = imageUrl;
             document.getElementById('paymentProofModal').classList.remove('hidden');
             document.getElementById('paymentProofModal').classList.add('flex');
         }
-
         function closePaymentProofModal() {
             document.getElementById('paymentProofModal').classList.add('hidden');
             document.getElementById('paymentProofModal').classList.remove('flex');
         }
-
-        // Top up approval modal
         function approveTopUp(topupId) {
             document.getElementById('topupId').value = topupId;
             document.getElementById('topupForm').action = `/admin/wallet/topup/${topupId}/approve`;
             document.getElementById('topupModalTitle').textContent = 'Setujui Top Up';
             document.getElementById('topupConfirmButton').innerHTML = '<i class="fas fa-check mr-2"></i> Setujui';
             document.getElementById('topupConfirmButton').className = 'px-4 py-2 text-white bg-success-500 rounded-md hover:bg-success-600 transition';
-            
             document.getElementById('topupModal').classList.remove('hidden');
             document.getElementById('topupModal').classList.add('flex');
         }
-
         function rejectTopUp(topupId) {
             document.getElementById('topupId').value = topupId;
             document.getElementById('topupForm').action = `/admin/wallet/topup/${topupId}/reject`;
             document.getElementById('topupModalTitle').textContent = 'Tolak Top Up';
             document.getElementById('topupConfirmButton').innerHTML = '<i class="fas fa-times mr-2"></i> Tolak';
             document.getElementById('topupConfirmButton').className = 'px-4 py-2 text-white bg-error-500 rounded-md hover:bg-error-600 transition';
-            
-            // Make admin notes required for rejection
             document.querySelector('#topupForm textarea[name="admin_notes"]').setAttribute('required', 'required');
             document.querySelector('#topupForm textarea[name="admin_notes"]').placeholder = 'Alasan penolakan harus diisi...';
-            
             document.getElementById('topupModal').classList.remove('hidden');
             document.getElementById('topupModal').classList.add('flex');
         }
-
         function closeTopupModal() {
             document.getElementById('topupModal').classList.add('hidden');
             document.getElementById('topupModal').classList.remove('flex');
-            // Reset form
             document.getElementById('topupForm').reset();
             document.querySelector('#topupForm textarea[name="admin_notes"]').removeAttribute('required');
         }
-
-        // Process withdraw modal - Enhanced version
         function processWithdraw(withdrawId, status) {
             document.getElementById('withdrawId').value = withdrawId;
             document.getElementById('newStatus').value = status;
             document.getElementById('processForm').action = `/admin/wallet/withdraw/${withdrawId}/process`;
-
             const processModalTitle = document.getElementById('processModalTitle');
             const confirmButton = document.getElementById('confirmButton');
             const adminNotesTextarea = document.getElementById('adminNotesTextarea');
             const notesHint = document.getElementById('notesHint');
-            
-            // Reset form
             adminNotesTextarea.value = '';
             adminNotesTextarea.removeAttribute('required');
-
             const statusConfig = {
                 'processing': {
                     title: 'Mulai Proses Penarikan',
@@ -983,79 +904,120 @@
                     hint: 'Alasan penolakan/kegagalan harus diisi'
                 }
             };
-
             const config = statusConfig[status];
             processModalTitle.textContent = config.title;
             confirmButton.innerHTML = config.buttonText;
             confirmButton.className = config.buttonClass;
             notesHint.textContent = config.hint;
-
             if (config.required) {
                 adminNotesTextarea.setAttribute('required', 'required');
                 adminNotesTextarea.placeholder = 'Alasan penolakan/kegagalan harus diisi...';
             } else {
                 adminNotesTextarea.placeholder = 'Tambahkan catatan...';
             }
-
-
             document.getElementById('processModal').classList.remove('hidden');
             document.getElementById('processModal').classList.add('flex');
         }
-
         function closeProcessModal() {
             document.getElementById('processModal').classList.add('hidden');
             document.getElementById('processModal').classList.remove('flex');
-            // Reset form
             document.getElementById('processForm').reset();
             document.getElementById('adminNotesTextarea').removeAttribute('required');
         }
-
-        // Admin notes modal
         function showAdminNotes(notes) {
             document.getElementById('adminNotesContent').textContent = notes;
             document.getElementById('adminNotesModal').classList.remove('hidden');
             document.getElementById('adminNotesModal').classList.add('flex');
         }
-
         function closeAdminNotesModal() {
             document.getElementById('adminNotesModal').classList.add('hidden');
             document.getElementById('adminNotesModal').classList.remove('flex');
         }
+        // Ganti fungsi ini di kode Anda
 
-        // Bank accounts management
-        function loadBankAccounts() {
-            fetch('{{ route("admin.wallets.bank-accounts") }}')
-                .then(response => response.text())
-                .then(html => {
-                    // Parse the HTML to extract bank accounts data
-                    // This would need to be implemented as an API endpoint
-                    // For now, we'll use a placeholder
-                    const bankAccountsList = document.getElementById('bankAccountsList');
-                    bankAccountsList.innerHTML = `
-                        <div class="text-center py-8 col-span-2">
-                            <div class="text-neutral-400 text-4xl mb-4">
+        async function fetchBankAccounts() {
+            const bankListContainer = document.getElementById('bankAccountsList');
+            const url = "{{ route('admin.wallets.bank-accounts.load') }}";
+
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const bankAccounts = await response.json();
+                
+                // Kosongkan dulu kontainer list banknya
+                bankListContainer.innerHTML = ''; 
+
+                if (bankAccounts.length > 0) {
+                    // Jika ada data, loop dan buat HTML untuk setiap rekening bank
+                    bankAccounts.forEach(bank => {
+                        const bankCard = `
+                            <div class="bg-white rounded-lg shadow-sm p-4 border border-neutral-200 flex flex-col justify-between">
+                                <div>
+                                    <div class="flex justify-between items-start mb-3">
+                                        <h4 class="text-lg font-semibold text-neutral-800">${bank.bank_name}</h4>
+                                        <span class="text-xs font-medium px-2 py-1 rounded-full ${
+                                            bank.is_active 
+                                            ? 'bg-success-100 text-success-800' 
+                                            : 'bg-neutral-200 text-neutral-700'
+                                        }">
+                                            ${bank.is_active ? 'Aktif' : 'Nonaktif'}
+                                        </span>
+                                    </div>
+                                    <p class="text-neutral-600 text-sm">No. Rek: <span class="font-mono font-medium">${bank.account_number}</span></p>
+                                    <p class="text-neutral-600 text-sm">a.n: <span class="font-medium">${bank.account_name}</span></p>
+                                </div>
+                                <div class="flex justify-end items-center mt-4 pt-4 border-t border-neutral-200 space-x-2">
+                                    <button onclick="showEditBankModal(${bank.id}, '${bank.bank_name}', '${bank.account_number}', '${bank.account_name}', ${bank.is_active})"
+                                        class="text-sm text-secondary-600 hover:text-secondary-800 transition font-medium">
+                                        <i class="fas fa-edit mr-1"></i> Edit
+                                    </button>
+                                    <button onclick="deleteBankAccount(${bank.id})"
+                                        class="text-sm text-error-600 hover:text-error-800 transition font-medium">
+                                        <i class="fas fa-trash-alt mr-1"></i> Hapus
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                        // Masukkan HTML card bank ke dalam kontainer
+                        bankListContainer.innerHTML += bankCard;
+                    });
+                } else {
+                    // Jika tidak ada data, tampilkan pesan 'tidak ada data'
+                    bankListContainer.innerHTML = `
+                        <div class="col-span-1 md:col-span-2 text-center py-12">
+                            <div class="text-neutral-300 text-5xl mb-4">
                                 <i class="fas fa-university"></i>
                             </div>
-                            <p class="text-neutral-500 mb-4">Belum ada rekening bank yang terdaftar</p>
-                            <button onclick="showAddBankModal()"
-                                class="bg-primary-500 text-white px-4 py-2 rounded-md hover:bg-primary-600 transition">
-                                <i class="fas fa-plus mr-2"></i> Tambah Rekening Pertama
-                            </button>
+                            <h4 class="text-lg font-medium text-neutral-900 mb-2">Belum ada rekening bank</h4>
+                            <p class="text-neutral-600">Silakan tambahkan rekening bank baru.</p>
                         </div>
                     `;
-                });
-        }
+                }
 
+            } catch (error) {
+                console.error('Gagal mengambil data rekening bank:', error);
+                // Tampilkan pesan error di UI jika gagal fetch
+                bankListContainer.innerHTML = `
+                    <div class="col-span-1 md:col-span-2 text-center py-12">
+                        <div class="text-error-400 text-5xl mb-4">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <h4 class="text-lg font-medium text-error-800 mb-2">Gagal memuat data</h4>
+                        <p class="text-neutral-600">Terjadi kesalahan saat mengambil data rekening bank. Silakan coba lagi.</p>
+                    </div>
+                `;
+            }
+        }
         function showAddBankModal() {
             document.getElementById('addBankModal').classList.remove('hidden');
             document.getElementById('addBankModal').classList.add('flex');
         }
-
         function closeAddBankModal() {
             document.getElementById('addBankModal').classList.add('hidden');
             document.getElementById('addBankModal').classList.remove('flex');
         }
-
         function showEditBankModal(bankId, bankName, accountNumber, accountName, isActive) {
             document.getElementById('editBankId').value = bankId;
             document.getElementById('editBankName').value = bankName;
@@ -1063,16 +1025,13 @@
             document.getElementById('editAccountName').value = accountName;
             document.getElementById('editIsActive').checked = isActive;
             document.getElementById('editBankForm').action = `/admin/wallet/bank-accounts/${bankId}`;
-            
             document.getElementById('editBankModal').classList.remove('hidden');
             document.getElementById('editBankModal').classList.add('flex');
         }
-
         function closeEditBankModal() {
             document.getElementById('editBankModal').classList.add('hidden');
             document.getElementById('editBankModal').classList.remove('flex');
         }
-
         function deleteBankAccount(bankId) {
             if (confirm('Apakah Anda yakin ingin menghapus rekening bank ini?')) {
                 const form = document.createElement('form');
@@ -1086,125 +1045,92 @@
                 form.submit();
             }
         }
-
-        // Close modals when clicking outside
         document.getElementById('paymentProofModal').addEventListener('click', function(e) {
             if (e.target === this) closePaymentProofModal();
         });
-
         document.getElementById('topupModal').addEventListener('click', function(e) {
             if (e.target === this) closeTopupModal();
         });
-
         document.getElementById('processModal').addEventListener('click', function(e) {
             if (e.target === this) closeProcessModal();
         });
-
         document.getElementById('adminNotesModal').addEventListener('click', function(e) {
             if (e.target === this) closeAdminNotesModal();
         });
-
         document.getElementById('addBankModal').addEventListener('click', function(e) {
             if (e.target === this) closeAddBankModal();
         });
-
         document.getElementById('editBankModal').addEventListener('click', function(e) {
             if (e.target === this) closeEditBankModal();
         });
-
-        // Auto-refresh for pending transactions
         setInterval(function() {
             const currentTab = document.querySelector('.tab-button.border-primary-500');
             if (currentTab && (currentTab.id === 'topups-tab' || currentTab.id === 'withdraws-tab')) {
-                // Only refresh if viewing pending transactions
                 const urlParams = new URLSearchParams(window.location.search);
                 if (!urlParams.get('withdraw_status') || urlParams.get('withdraw_status') === '' || urlParams.get('withdraw_status') === 'pending') {
                     location.reload();
                 }
             }
-        }, 30000); // Refresh every 30 seconds
-
-        // Wallet detail view function
+        }, 30000); 
         function viewWalletDetail(walletId) {
-            // This could open a modal or redirect to a detail page
             alert('Detail wallet akan ditampilkan untuk wallet ID: ' + walletId);
-            // Implementation would depend on whether you want modal or separate page
         }
-
-        // Enhanced form validation
         document.getElementById('processForm').addEventListener('submit', function(e) {
             const status = document.getElementById('newStatus').value;
             const adminNotes = document.getElementById('adminNotesTextarea').value.trim();
-            
             if ((status === 'failed' || status === 'cancelled') && !adminNotes) {
                 e.preventDefault();
                 alert('Catatan admin wajib diisi untuk status tolak/gagal!');
                 document.getElementById('adminNotesTextarea').focus();
                 return false;
             }
-            
-            // Confirmation dialog
             const statusText = {
                 'processing': 'memulai proses',
                 'completed': 'menyelesaikan',
                 'failed': 'menolak/gagalkan'
             };
-            
             if (!confirm(`Apakah Anda yakin ingin ${statusText[status]} penarikan ini?`)) {
                 e.preventDefault();
                 return false;
             }
         });
-
-        // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
-            // Check if there are URL parameters to determine which tab to show
             const urlParams = new URLSearchParams(window.location.search);
             const transactionType = urlParams.get('transaction_type');
             const withdrawStatus = urlParams.get('withdraw_status');
-            
             if (transactionType === 'topup') {
                 showTab('topups');
             } else if (transactionType === 'withdraw' || withdrawStatus) {
                 showTab('withdraws');
             } else {
-                showTab('wallets'); // Default tab
+                showTab('wallets'); 
             }
         });
-
-        // Form validation
         document.getElementById('addBankForm').addEventListener('submit', function(e) {
             const bankName = this.querySelector('[name="bank_name"]').value;
             const accountNumber = this.querySelector('[name="account_number"]').value;
             const accountName = this.querySelector('[name="account_name"]').value;
-
             if (!bankName || !accountNumber || !accountName) {
                 e.preventDefault();
                 alert('Semua field wajib harus diisi!');
                 return false;
             }
-
-            // Basic account number validation
             if (accountNumber.length < 8 || accountNumber.length > 20) {
                 e.preventDefault();
                 alert('Nomor rekening harus antara 8-20 digit!');
                 return false;
             }
         });
-
         document.getElementById('editBankForm').addEventListener('submit', function(e) {
             const bankName = this.querySelector('[name="bank_name"]').value;
             const accountNumber = this.querySelector('[name="account_number"]').value;
             const accountName = this.querySelector('[name="account_name"]').value;
-
             if (!bankName || !accountNumber || !accountName) {
                 e.preventDefault();
                 alert('Semua field wajib harus diisi!');
                 return false;
             }
         });
-
-        // Notification handling with auto-dismiss
         @if(session('success'))
             setTimeout(function() {
                 const successAlert = document.querySelector('.bg-success-50');
@@ -1214,7 +1140,6 @@
                 }
             }, 5000);
         @endif
-
         @if(session('error'))
             setTimeout(function() {
                 const errorAlert = document.querySelector('.bg-error-50');
@@ -1224,8 +1149,6 @@
                 }
             }, 5000);
         @endif
-
-        // Search functionality (real-time search with debouncing)
         function setupSearch() {
             const searchInputs = document.querySelectorAll('input[name="search"]');
             searchInputs.forEach(input => {
@@ -1233,7 +1156,6 @@
                 input.addEventListener('input', function() {
                     clearTimeout(timeout);
                     timeout = setTimeout(() => {
-                        // Auto-submit form after 500ms of no typing
                         if (this.value.length >= 3 || this.value.length === 0) {
                             this.closest('form').submit();
                         }
@@ -1241,18 +1163,14 @@
                 });
             });
         }
-
-        // Bulk actions (future enhancement)
         function toggleSelectAll(checkbox) {
             const checkboxes = document.querySelectorAll('input[name="selected_transactions[]"]');
             checkboxes.forEach(cb => cb.checked = checkbox.checked);
             updateBulkActions();
         }
-
         function updateBulkActions() {
             const selectedCount = document.querySelectorAll('input[name="selected_transactions[]"]:checked').length;
             const bulkActionsPanel = document.getElementById('bulkActionsPanel');
-            
             if (selectedCount > 0) {
                 bulkActionsPanel?.classList.remove('hidden');
                 document.getElementById('selectedCount').textContent = selectedCount;
@@ -1260,37 +1178,25 @@
                 bulkActionsPanel?.classList.add('hidden');
             }
         }
-
-        // Status quick filter
         function quickFilterStatus(status) {
             const form = document.querySelector('form');
             const statusSelect = form.querySelector('[name="transaction_status"]');
             statusSelect.value = status;
             form.submit();
         }
-
-        // Export functionality (future enhancement)
         function exportTransactions(format = 'excel') {
             const params = new URLSearchParams(window.location.search);
             params.set('export', format);
             window.open(`${window.location.pathname}?${params.toString()}`);
         }
-
-        // Real-time balance updates via WebSocket (if implemented)
         function initializeWebSocket() {
-            // This would connect to a WebSocket endpoint for real-time updates
-            // Implementation depends on your WebSocket setup
         }
-
-        // Keyboard shortcuts
         document.addEventListener('keydown', function(e) {
-            // ESC key to close modals
             if (e.key === 'Escape') {
                 const modals = [
                     'paymentProofModal', 'topupModal', 'processModal', 
                     'adminNotesModal', 'addBankModal', 'editBankModal'
                 ];
-                
                 modals.forEach(modalId => {
                     const modal = document.getElementById(modalId);
                     if (modal && !modal.classList.contains('hidden')) {
@@ -1303,38 +1209,27 @@
                     }
                 });
             }
-            
-            // Ctrl+F to focus search
             if (e.ctrlKey && e.key === 'f') {
                 e.preventDefault();
                 document.querySelector('input[name="search"]')?.focus();
             }
         });
-
-        // Call setup functions
         setupSearch();
-        
-        // Initialize tooltips for better UX
         function initializeTooltips() {
             const tooltipElements = document.querySelectorAll('[title]');
             tooltipElements.forEach(element => {
                 element.addEventListener('mouseenter', function(e) {
-                    // Create simple tooltip implementation
                     const tooltip = document.createElement('div');
                     tooltip.className = 'absolute bg-neutral-800 text-white text-xs px-2 py-1 rounded shadow-lg z-50 -mt-8';
                     tooltip.textContent = this.getAttribute('title');
                     tooltip.id = 'tooltip-' + Math.random().toString(36).substr(2, 9);
-                    
                     this.setAttribute('data-tooltip-id', tooltip.id);
-                    this.removeAttribute('title'); // Prevent default browser tooltip
-                    
+                    this.removeAttribute('title'); 
                     document.body.appendChild(tooltip);
-                    
                     const rect = this.getBoundingClientRect();
                     tooltip.style.left = rect.left + (rect.width / 2) - (tooltip.offsetWidth / 2) + 'px';
                     tooltip.style.top = rect.top - tooltip.offsetHeight - 5 + 'px';
                 });
-                
                 element.addEventListener('mouseleave', function() {
                     const tooltipId = this.getAttribute('data-tooltip-id');
                     if (tooltipId) {
@@ -1345,8 +1240,6 @@
                 });
             });
         }
-        
-        // Initialize tooltips after DOM is loaded
         setTimeout(initializeTooltips, 100);
     </script>
 </x-layouts.plain-app>
