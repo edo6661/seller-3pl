@@ -74,7 +74,9 @@ class TeamMember extends Authenticatable
             'pickup.create' => 'Buat Pickup Request',
             'pickup.manage' => 'Kelola Pickup Request',
             'addresses.view' => 'Lihat Alamat',
-            'addresses.manage' => 'Kelola Alamat',
+            'addresses.create' => 'Tambah Alamat',
+            'addresses.edit' => 'Edit Alamat',
+            'addresses.delete' => 'Hapus Alamat',
             'profile.view' => 'Lihat Profile Toko',
             'profile.edit' => 'Edit Profile Toko',
         ];

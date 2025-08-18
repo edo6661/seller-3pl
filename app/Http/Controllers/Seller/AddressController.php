@@ -1,14 +1,42 @@
 <?php
 namespace App\Http\Controllers\Seller;
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use App\Models\UserAddress;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 class AddressController extends Controller
 {
+    /**
+     * Mendapatkan ID seller utama, baik untuk seller itu sendiri maupun untuk anggota tim.
+     *
+     * @return int
+     */
+    private function getSellerId(): int
+    {
+        $user = auth()->user();
+        if ($user->isSeller()) {
+            return $user->id;
+        }
+        if ($user->isTeamMember()) {
+            return $user->memberOf()->first()->seller_id;
+        }
+        abort(403, 'Akses tidak diizinkan.');
+    }
+    /**
+     * Mendapatkan instance user dari seller utama.
+     *
+     * @return \App\Models\User
+     */
+    private function getSeller(): User
+    {
+        $sellerId = $this->getSellerId();
+        return User::findOrFail($sellerId);
+    }
     public function index()
     {
-        $addresses = auth()->user()->addresses()
+        $seller = $this->getSeller();
+        $addresses = $seller->addresses()
             ->orderBy('is_default', 'desc')
             ->orderBy('created_at', 'desc')
             ->get();
@@ -32,10 +60,12 @@ class AddressController extends Controller
             'longitude' => 'nullable|numeric|between:-180,180',
             'is_default' => 'boolean',
         ]);
+        $seller = $this->getSeller();
         $data = $request->all();
-        $data['user_id'] = auth()->id();
-        $userAddressCount = auth()->user()->addresses()->count();
-        if ($userAddressCount === 0) {
+        $data['user_id'] = $seller->id;
+        $userAddressCount = $seller->addresses()->count();
+        if ($userAddressCount === 0 || $request->is_default) {
+            $seller->addresses()->update(['is_default' => false]);
             $data['is_default'] = true;
         }
         UserAddress::create($data);
@@ -44,17 +74,20 @@ class AddressController extends Controller
     }
     public function show(UserAddress $address)
     {
-        abort_unless($address->user_id === auth()->id(), 403);
+        $sellerId = $this->getSellerId();
+        abort_unless($address->user_id === $sellerId, 403, 'Anda tidak memiliki akses ke alamat ini.');
         return view('seller.addresses.show', compact('address'));
     }
     public function edit(UserAddress $address)
     {
-        abort_unless($address->user_id === auth()->id(), 403);
+        $sellerId = $this->getSellerId();
+        abort_unless($address->user_id === $sellerId, 403, 'Anda tidak memiliki akses ke alamat ini.');
         return view('seller.addresses.edit', compact('address'));
     }
     public function update(Request $request, UserAddress $address)
     {
-        abort_unless($address->user_id === auth()->id(), 403);
+        $sellerId = $this->getSellerId();
+        abort_unless($address->user_id === $sellerId, 403, 'Anda tidak memiliki akses ke alamat ini.');
         $request->validate([
             'label' => 'required|string|max:255',
             'name' => 'required|string|max:255',
@@ -67,23 +100,25 @@ class AddressController extends Controller
             'longitude' => 'nullable|numeric|between:-180,180',
             'is_default' => 'boolean',
         ]);
+        $seller = $this->getSeller();
+        if ($request->is_default) {
+            $seller->addresses()->where('id', '!=', $address->id)->update(['is_default' => false]);
+        }
         $address->update($request->all());
         return redirect()->route('seller.addresses.index')
             ->with('success', 'Alamat berhasil diperbarui!');
     }
     public function destroy(UserAddress $address)
     {
-        abort_unless($address->user_id === auth()->id(), 403);
+        $sellerId = $this->getSellerId();
+        abort_unless($address->user_id === $sellerId, 403, 'Anda tidak memiliki akses ke alamat ini.');
         if ($address->is_default) {
-            $otherAddresses = auth()->user()->addresses()
+            $otherAddress = $this->getSeller()->addresses()
                 ->where('id', '!=', $address->id)
-                ->exists();
-            if ($otherAddresses) {
-                auth()->user()->addresses()
-                    ->where('id', '!=', $address->id)
-                    ->orderBy('created_at', 'desc')
-                    ->first()
-                    ->update(['is_default' => true]);
+                ->orderBy('created_at', 'desc')
+                ->first();
+            if ($otherAddress) {
+                $otherAddress->update(['is_default' => true]);
             }
         }
         $address->delete();
@@ -92,15 +127,17 @@ class AddressController extends Controller
     }
     public function setDefault(UserAddress $address)
     {
-        abort_unless($address->user_id === auth()->id(), 403);
-        auth()->user()->addresses()->update(['is_default' => false]);
+        $sellerId = $this->getSellerId();
+        abort_unless($address->user_id === $sellerId, 403, 'Anda tidak memiliki akses ke alamat ini.');
+        $this->getSeller()->addresses()->update(['is_default' => false]);
         $address->update(['is_default' => true]);
         return redirect()->back()
             ->with('success', 'Alamat default berhasil diperbarui!');
     }
     public function getAddresses()
     {
-        $addresses = auth()->user()->addresses()
+        $seller = $this->getSeller();
+        $addresses = $seller->addresses()
             ->orderBy('is_default', 'desc')
             ->orderBy('created_at', 'desc')
             ->get(['id', 'label', 'name', 'phone', 'city', 'province', 'postal_code', 'address', 'latitude', 'longitude', 'is_default']);

@@ -136,7 +136,7 @@
                                     Alamat & Profil
                                 </h5>
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    @foreach(['addresses.view', 'addresses.manage', 'profile.view', 'profile.edit'] as $permission)
+                                    @foreach(['addresses.view', 'addresses.create', 'addresses.edit', 'addresses.delete', 'profile.view', 'profile.edit'] as $permission)
                                         <label class="flex items-center">
                                             <input type="checkbox" name="permissions[]" value="{{ $permission }}" 
                                                    {{ in_array($permission, old('permissions', $teamMember->permissions ?? [])) ? 'checked' : '' }}
@@ -213,7 +213,7 @@
                     const advancedPermissions = [
                         'products.view', 'products.create', 'products.edit',
                         'wallet.view', 'pickup.view', 'pickup.create', 'pickup.manage',
-                        'addresses.view', 'addresses.manage', 'profile.view'
+                        'addresses.view', 'addresses.create', 'addresses.edit', 'addresses.delete', 'profile.view', 'profile.edit'
                     ];
                     const checkboxes = document.querySelectorAll('input[name="permissions[]"]');
                     checkboxes.forEach(checkbox => {
