@@ -90,10 +90,7 @@
                                 class="text-neutral-600 hover:text-primary-600 transition-colors duration-200 font-medium">
                                 <i class="fas fa-headset mr-2"></i>Support
                             </a>
-                            <a href="{{ route('admin.manual-wallet.index') }}"
-                                class="text-neutral-600 hover:text-primary-600 transition-colors duration-200 font-medium">
-                                <i class="fas fa-wallet mr-2"></i>Manual Wallet
-                            </a>
+                           
                         </div>
                     @endif
 
@@ -215,10 +212,7 @@
                             class="block text-neutral-600 hover:text-primary-600 transition-colors duration-200 font-medium">
                             <i class="fas fa-comments mr-2"></i>Chat
                         </a>
-                        <a href="{{ route('admin.manual-wallet.index') }}"
-                            class="block text-neutral-600 hover:text-primary-600 transition-colors duration-200 font-medium">
-                            <i class="fas fa-wallet mr-2"></i>Manual Wallet
-                        </a>
+                       
                     </div>
                 @endif
 

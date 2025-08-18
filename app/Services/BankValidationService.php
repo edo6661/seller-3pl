@@ -69,40 +69,40 @@ class BankValidationService
      */
     private function fallbackValidation(string $bankCode, string $accountNumber): array
     {
-        $rules = $this->getBankValidationRules();
-        $rule = $rules[$bankCode] ?? $rules['default'];
+        // $rules = $this->getBankValidationRules();
+        // $rule = $rules[$bankCode] ?? $rules['default'];
 
-        // Remove spaces and special characters
-        $cleanAccountNumber = preg_replace('/[^0-9]/', '', $accountNumber);
+        // // Remove spaces and special characters
+        // $cleanAccountNumber = preg_replace('/[^0-9]/', '', $accountNumber);
 
-        // Check length
-        if (strlen($cleanAccountNumber) < $rule['min_length'] || 
-            strlen($cleanAccountNumber) > $rule['max_length']) {
-            return [
-                'valid' => false,
-                'message' => "Nomor rekening {$bankCode} harus {$rule['min_length']}-{$rule['max_length']} digit"
-            ];
-        }
+        // // Check length
+        // if (strlen($cleanAccountNumber) < $rule['min_length'] || 
+        //     strlen($cleanAccountNumber) > $rule['max_length']) {
+        //     return [
+        //         'valid' => false,
+        //         'message' => "Nomor rekening {$bankCode} harus {$rule['min_length']}-{$rule['max_length']} digit"
+        //     ];
+        // }
 
-        // Check pattern
-        if (!preg_match($rule['pattern'], $cleanAccountNumber)) {
-            return [
-                'valid' => false,
-                'message' => "Format nomor rekening {$bankCode} tidak valid"
-            ];
-        }
+        // // Check pattern
+        // if (!preg_match($rule['pattern'], $cleanAccountNumber)) {
+        //     return [
+        //         'valid' => false,
+        //         'message' => "Format nomor rekening {$bankCode} tidak valid"
+        //     ];
+        // }
 
-        // Basic mod-10 check untuk beberapa bank
-        if (in_array($bankCode, ['BCA', 'Mandiri']) && !$this->luhnCheck($cleanAccountNumber)) {
-            return [
-                'valid' => false,
-                'message' => "Nomor rekening {$bankCode} tidak valid (checksum failed)"
-            ];
-        }
+        // // Basic mod-10 check untuk beberapa bank
+        // if (in_array($bankCode, ['BCA', 'Mandiri']) && !$this->luhnCheck($cleanAccountNumber)) {
+        //     return [
+        //         'valid' => false,
+        //         'message' => "Nomor rekening {$bankCode} tidak valid (checksum failed)"
+        //     ];
+        // }
 
         return [
             'valid' => true,
-            'account_number' => $cleanAccountNumber,
+            // 'account_number' => $cleanAccountNumber,
             'message' => 'Validasi dasar berhasil, namun tidak dapat memverifikasi nama pemilik rekening'
         ];
     }

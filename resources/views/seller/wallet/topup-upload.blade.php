@@ -3,7 +3,7 @@
         <!-- Header -->
         <div class="mb-8">
             <div class="flex items-center mb-4">
-                <a href="{{ route('seller.wallet.manual-topup.payment', $topUpRequest->request_code) }}"
+                <a href="{{ route('seller.wallet.topup.payment', $transaction->reference_id) }}"
                     class="text-secondary-600 hover:text-secondary-800 mr-4 transition flex items-center">
                     <i class="fas fa-arrow-left mr-2"></i> Kembali
                 </a>
@@ -20,9 +20,9 @@
                 <div>
                     <h4 class="text-sm font-medium text-neutral-700 mb-3">Transfer ke Rekening:</h4>
                     <div class="bg-neutral-50 rounded-lg p-4">
-                        <div class="text-lg font-semibold text-neutral-900">{{ $topUpRequest->bank_name }}</div>
-                        <div class="text-sm text-neutral-600 mt-1">{{ $topUpRequest->bank_account_number }}</div>
-                        <div class="text-sm text-neutral-600">a.n. {{ $topUpRequest->bank_account_name }}</div>
+                        <div class="text-lg font-semibold text-neutral-900">{{ $transaction->bank_name }}</div>
+                        <div class="text-sm text-neutral-600 mt-1">{{ $transaction->bank_account_number }}</div>
+                        <div class="text-sm text-neutral-600">a.n. {{ $transaction->bank_account_name }}</div>
                     </div>
                 </div>
 
@@ -30,18 +30,18 @@
                 <div>
                     <h4 class="text-sm font-medium text-neutral-700 mb-3">Jumlah Transfer:</h4>
                     <div class="bg-primary-50 rounded-lg p-4">
-                        <div class="text-2xl font-bold text-primary-900">{{ $topUpRequest->formatted_amount }}</div>
-                        <div class="text-sm text-primary-600 mt-1">{{ $topUpRequest->request_code }}</div>
+                        <div class="text-2xl font-bold text-primary-900">{{ $transaction->formatted_amount }}</div>
+                        <div class="text-sm text-primary-600 mt-1">{{ $transaction->reference_id }}</div>
                     </div>
                 </div>
             </div>
 
             <!-- QR Code -->
-            @if($topUpRequest->qr_code_url)
+            @if($transaction->qr_code_url)
             <div class="mt-6 text-center">
                 <h4 class="text-sm font-medium text-neutral-700 mb-3">Atau Scan QR Code:</h4>
                 <div class="inline-block bg-white p-4 rounded-lg border-2 border-neutral-200">
-                    <img src="{{ $topUpRequest->qr_code_url }}" alt="QR Code" class="w-48 h-48 mx-auto">
+                    <img src="{{ $transaction->qr_code_url }}" alt="QR Code" class="w-48 h-48 mx-auto">
                 </div>
             </div>
             @endif
@@ -51,7 +51,7 @@
         <div class="bg-white rounded-xl shadow-lg p-6">
             <h3 class="text-lg font-semibold text-neutral-900 mb-6">Upload Bukti Transfer</h3>
             
-            <form action="{{ route('seller.wallet.manual-topup.upload.submit', $topUpRequest->request_code) }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('seller.wallet.topup.upload.submit', $transaction->reference_id) }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 
                 <div class="mb-6">

@@ -3,11 +3,17 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Wallet;
 use App\Models\WalletTransaction;
-use App\Models\WithdrawRequest;
+use App\Models\BankAccount;
 use App\Models\User;
 use App\Services\WalletService;
+use App\Enums\WalletTransactionType;
+use App\Enums\WalletTransactionStatus;
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 class WalletController extends Controller
 {
     protected WalletService $walletService;
@@ -18,15 +24,15 @@ class WalletController extends Controller
     /**
      * Display admin wallet dashboard
      */
-    public function index(Request $request)
+    public function index(Request $request): View
     {
         $search = $request->get('search');
         $transactionType = $request->get('transaction_type');
         $transactionStatus = $request->get('transaction_status');
-        $withdrawStatus = $request->get('withdraw_status');
         $dateFrom = $request->get('date_from');
         $dateTo = $request->get('date_to');
         $perPage = $request->get('per_page', 15);
+        $withdrawStatus = $request->get('withdraw_status', '');
         $walletStats = $this->getWalletStatistics();
         $walletsQuery = Wallet::with(['user'])
             ->select('wallets.*')
@@ -64,42 +70,209 @@ class WalletController extends Controller
         }
         $transactions = $transactionsQuery->orderBy('wallet_transactions.created_at', 'desc')
                                         ->paginate($perPage, ['*'], 'transactions_page');
-        $withdrawRequestsQuery = WithdrawRequest::with(['user'])
-            ->select('withdraw_requests.*')
-            ->join('users', 'withdraw_requests.user_id', '=', 'users.id');
+        $pendingTopUpQuery = WalletTransaction::with(['wallet.user'])
+            ->where('type', WalletTransactionType::TOPUP)
+            ->where('status', WalletTransactionStatus::PENDING)
+            ->whereNotNull('payment_proof_path')
+            ->select('wallet_transactions.*')
+            ->join('wallets', 'wallet_transactions.wallet_id', '=', 'wallets.id')
+            ->join('users', 'wallets.user_id', '=', 'users.id');
         if ($search) {
-            $withdrawRequestsQuery->where(function($q) use ($search) {
+            $pendingTopUpQuery->where(function($q) use ($search) {
                 $q->where('users.name', 'like', "%{$search}%")
                   ->orWhere('users.email', 'like', "%{$search}%")
-                  ->orWhere('withdraw_requests.withdrawal_code', 'like', "%{$search}%");
+                  ->orWhere('wallet_transactions.reference_id', 'like', "%{$search}%");
             });
         }
-        if ($withdrawStatus) {
-            $withdrawRequestsQuery->where('withdraw_requests.status', $withdrawStatus);
-        } else {
-            $withdrawRequestsQuery->where('withdraw_requests.status', 'pending');
+        $pendingTopUps = $pendingTopUpQuery->orderBy('wallet_transactions.created_at', 'desc')
+                                         ->paginate($perPage, ['*'], 'topup_page');
+        $pendingWithdrawQuery = WalletTransaction::with(['wallet.user'])
+            ->where('type', WalletTransactionType::WITHDRAW)
+            ->where('status', WalletTransactionStatus::PENDING)
+            ->select('wallet_transactions.*')
+            ->join('wallets', 'wallet_transactions.wallet_id', '=', 'wallets.id')
+            ->join('users', 'wallets.user_id', '=', 'users.id');
+        if ($search) {
+            $pendingWithdrawQuery->where(function($q) use ($search) {
+                $q->where('users.name', 'like', "%{$search}%")
+                  ->orWhere('users.email', 'like', "%{$search}%")
+                  ->orWhere('wallet_transactions.reference_id', 'like', "%{$search}%");
+            });
         }
-        if ($dateFrom) {
-            $withdrawRequestsQuery->whereDate('withdraw_requests.created_at', '>=', $dateFrom);
+        $pendingWithdraws = $pendingWithdrawQuery->orderBy('wallet_transactions.created_at', 'desc')
+                                               ->paginate($perPage, ['*'], 'withdraw_page');
+        $withdrawRequests = $withdrawRequests = collect(); // Initialize empty if needed
+
+        if ($request->get('withdraw_status') === 'all') {
+            $withdrawRequests = WalletTransaction::with(['wallet.user'])
+                ->where('type', WalletTransactionType::WITHDRAW)
+                ->orderBy('created_at', 'desc')
+                ->paginate($perPage, ['*'], 'withdraw_page');
         }
-        if ($dateTo) {
-            $withdrawRequestsQuery->whereDate('withdraw_requests.created_at', '<=', $dateTo);
-        }
-        $withdrawRequests = $withdrawRequestsQuery->orderBy('withdraw_requests.created_at', 'desc')
-                                                ->paginate($perPage, ['*'], 'withdraws_page');
         return view('admin.wallet.index', compact(
             'walletStats',
             'wallets', 
             'transactions', 
-            'withdrawRequests',
+            'pendingTopUps',
+            'pendingWithdraws',
             'search',
             'transactionType',
-            'transactionStatus', 
-            'withdrawStatus',
+            'transactionStatus',
             'dateFrom',
             'dateTo',
-            'perPage'
+            'perPage',
+            'withdrawStatus',
+            'withdrawRequests'
         ));
+    }
+    /**
+     * Approve top up request
+     */
+    public function approveTopUp(Request $request, int $id): RedirectResponse
+    {
+        $request->validate([
+            'admin_notes' => 'nullable|string|max:500'
+        ]);
+        try {
+            $transaction = WalletTransaction::findOrFail($id);
+            $this->walletService->approveTopUp($transaction, $request->admin_notes);
+            return back()->with('success', 'Top up request berhasil disetujui.');
+        } catch (\Exception $e) {
+            Log::error('Approve top up error: ' . $e->getMessage());
+            return back()->with('error', 'Gagal menyetujui top up request.');
+        }
+    }
+    /**
+     * Reject top up request
+     */
+    public function rejectTopUp(Request $request, int $id): RedirectResponse
+    {
+        $request->validate([
+            'admin_notes' => 'required|string|max:500'
+        ], [
+            'admin_notes.required' => 'Alasan penolakan harus diisi.'
+        ]);
+        try {
+            $transaction = WalletTransaction::findOrFail($id);
+            $this->walletService->rejectTopUp($transaction, $request->admin_notes);
+            return back()->with('success', 'Top up request berhasil ditolak.');
+        } catch (\Exception $e) {
+            Log::error('Reject top up error: ' . $e->getMessage());
+            return back()->with('error', 'Gagal menolak top up request.');
+        }
+    }
+    /**
+     * Process withdraw request
+     */
+    public function processWithdraw(Request $request, int $id): RedirectResponse
+    {
+        $request->validate([
+            'status' => 'required|in:processing,completed,failed,cancelled',
+            'admin_notes' => 'nullable|string|max:500'
+        ]);
+        try {
+            $transaction = WalletTransaction::findOrFail($id);
+            $this->walletService->processWithdrawRequest($transaction, $request->status, $request->admin_notes);
+            $statusText = match($request->status) {
+                'processing' => 'sedang diproses',
+                'completed' => 'diselesaikan',
+                'failed' => 'ditolak',
+                'cancelled' => 'dibatalkan',
+            };
+            return back()->with('success', "Permintaan penarikan berhasil {$statusText}.");
+        } catch (\Exception $e) {
+            Log::error('Process withdraw error: ' . $e->getMessage());
+            return back()->with('error', 'Gagal memproses permintaan penarikan.');
+        }
+    }
+    /**
+     * View transaction detail
+     */
+    public function transactionDetail(int $id): View
+    {
+        $transaction = WalletTransaction::with(['wallet.user'])->findOrFail($id);
+        return view('admin.wallet.transaction-detail', [
+            'transaction' => $transaction
+        ]);
+    }
+    /**
+     * Manage bank accounts
+     */
+    public function bankAccounts(): View
+    {
+        $bankAccounts = BankAccount::orderBy('created_at', 'desc')->get();
+        return view('admin.wallet.bank-accounts', [
+            'bankAccounts' => $bankAccounts
+        ]);
+    }
+    /**
+     * Store bank account
+     */
+    public function storeBankAccount(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'bank_name' => 'required|string|max:100',
+            'account_number' => 'required|string|max:50',
+            'account_name' => 'required|string|max:100',
+            'qr_code' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        ]);
+        try {
+            $data = $request->only(['bank_name', 'account_number', 'account_name']);
+            if ($request->hasFile('qr_code')) {
+                $data['qr_code_path'] = $request->file('qr_code')->store('qr-codes', 'r2');
+            }
+            BankAccount::create($data);
+            return back()->with('success', 'Rekening bank berhasil ditambahkan.');
+        } catch (\Exception $e) {
+            Log::error('Store bank account error: ' . $e->getMessage());
+            return back()->with('error', 'Gagal menambahkan rekening bank.');
+        }
+    }
+    /**
+     * Update bank account
+     */
+    public function updateBankAccount(Request $request, int $id): RedirectResponse
+    {
+        $request->validate([
+            'bank_name' => 'required|string|max:100',
+            'account_number' => 'required|string|max:50',
+            'account_name' => 'required|string|max:100',
+            'qr_code' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'is_active' => 'boolean',
+        ]);
+        try {
+            $bankAccount = BankAccount::findOrFail($id);
+            $data = $request->only(['bank_name', 'account_number', 'account_name']);
+            $data['is_active'] = $request->boolean('is_active');
+            if ($request->hasFile('qr_code')) {
+                if ($bankAccount->qr_code_path) {
+                    Storage::disk('r2')->delete($bankAccount->qr_code_path);
+                }
+                $data['qr_code_path'] = $request->file('qr_code')->store('qr-codes', 'r2');
+            }
+            $bankAccount->update($data);
+            return back()->with('success', 'Rekening bank berhasil diperbarui.');
+        } catch (\Exception $e) {
+            Log::error('Update bank account error: ' . $e->getMessage());
+            return back()->with('error', 'Gagal memperbarui rekening bank.');
+        }
+    }
+    /**
+     * Delete bank account
+     */
+    public function deleteBankAccount(int $id): RedirectResponse
+    {
+        try {
+            $bankAccount = BankAccount::findOrFail($id);
+            if ($bankAccount->qr_code_path) {
+                Storage::disk('r2')->delete($bankAccount->qr_code_path);
+            }
+            $bankAccount->delete();
+            return back()->with('success', 'Rekening bank berhasil dihapus.');
+        } catch (\Exception $e) {
+            Log::error('Delete bank account error: ' . $e->getMessage());
+            return back()->with('error', 'Gagal menghapus rekening bank.');
+        }
     }
     /**
      * Get wallet statistics
@@ -120,8 +293,20 @@ class WalletController extends Controller
                                                      ->whereDate('created_at', today())
                                                      ->where('status', 'success')
                                                      ->sum('amount'),
-            'pending_withdraws' => WithdrawRequest::where('status', 'pending')->count(),
-            'pending_withdraw_amount' => WithdrawRequest::where('status', 'pending')->sum('amount'),
+            'pending_topups' => WalletTransaction::where('type', 'topup')
+                                               ->where('status', 'pending')
+                                               ->whereNotNull('payment_proof_path')
+                                               ->count(),
+            'pending_topup_amount' => WalletTransaction::where('type', 'topup')
+                                                     ->where('status', 'pending')
+                                                     ->whereNotNull('payment_proof_path')
+                                                     ->sum('amount'),
+            'pending_withdraws' => WalletTransaction::where('type', 'withdraw')
+                                                  ->where('status', 'pending')
+                                                  ->count(),
+            'pending_withdraw_amount' => WalletTransaction::where('type', 'withdraw')
+                                                        ->where('status', 'pending')
+                                                        ->sum('amount'),
         ];
     }
 }

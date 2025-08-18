@@ -43,13 +43,13 @@ class WithdrawRequestStatusChanged
      */
     public function __construct(
         User $user, 
-        WithdrawRequest $withdrawRequest, 
+        // WithdrawRequest $withdrawRequest, 
         WalletTransaction $transaction,
         string $oldStatus,
         string $newStatus
     ) {
         $this->user = $user;
-        $this->withdrawRequest = $withdrawRequest;
+        // $this->withdrawRequest = $withdrawRequest;
         $this->transaction = $transaction;
         $this->oldStatus = $oldStatus;
         $this->newStatus = $newStatus;

@@ -36,16 +36,17 @@
                 </div>
             </div>
 
-            <!-- Saldo Pending Card -->
+            <!-- Top Up Pending Card -->
             <div class="bg-white rounded-lg shadow-sm p-6 border border-neutral-200">
                 <div class="flex items-center">
                     <div class="p-3 rounded-full bg-warning-100 text-warning-600">
                         <i class="fas fa-clock text-lg"></i>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-neutral-600">Saldo Pending</p>
-                        <p class="text-2xl font-semibold text-neutral-900">Rp
-                            {{ number_format($walletStats['total_pending_balance'], 0, ',', '.') }}</p>
+                        <p class="text-sm font-medium text-neutral-600">Top Up Pending</p>
+                        <p class="text-2xl font-semibold text-neutral-900">{{ $walletStats['pending_topups'] }}</p>
+                        <p class="text-xs text-neutral-500">Rp
+                            {{ number_format($walletStats['pending_topup_amount'], 0, ',', '.') }}</p>
                     </div>
                 </div>
             </div>
@@ -107,8 +108,7 @@
                         class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
                         <option value="">Semua</option>
                         <option value="topup" {{ $transactionType === 'topup' ? 'selected' : '' }}>Top Up</option>
-                        <option value="withdraw" {{ $transactionType === 'withdraw' ? 'selected' : '' }}>Penarikan
-                        </option>
+                        <option value="withdraw" {{ $transactionType === 'withdraw' ? 'selected' : '' }}>Penarikan</option>
                     </select>
                 </div>
 
@@ -118,13 +118,11 @@
                     <select name="transaction_status"
                         class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
                         <option value="">Semua</option>
-                        <option value="pending" {{ $transactionStatus === 'pending' ? 'selected' : '' }}>Pending
-                        </option>
-                        <option value="success" {{ $transactionStatus === 'success' ? 'selected' : '' }}>Success
-                        </option>
+                        <option value="pending" {{ $transactionStatus === 'pending' ? 'selected' : '' }}>Pending</option>
+                        <option value="processing" {{ $transactionStatus === 'processing' ? 'selected' : '' }}>Processing</option>
+                        <option value="success" {{ $transactionStatus === 'success' ? 'selected' : '' }}>Success</option>
                         <option value="failed" {{ $transactionStatus === 'failed' ? 'selected' : '' }}>Failed</option>
-                        <option value="cancelled" {{ $transactionStatus === 'cancelled' ? 'selected' : '' }}>Cancelled
-                        </option>
+                        <option value="cancelled" {{ $transactionStatus === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
                     </select>
                 </div>
 
@@ -136,10 +134,8 @@
                         <option value="">Pending Only</option>
                         <option value="all" {{ $withdrawStatus === 'all' ? 'selected' : '' }}>Semua</option>
                         <option value="pending" {{ $withdrawStatus === 'pending' ? 'selected' : '' }}>Pending</option>
-                        <option value="processing" {{ $withdrawStatus === 'processing' ? 'selected' : '' }}>Processing
-                        </option>
-                        <option value="completed" {{ $withdrawStatus === 'completed' ? 'selected' : '' }}>Completed
-                        </option>
+                        <option value="processing" {{ $withdrawStatus === 'processing' ? 'selected' : '' }}>Processing</option>
+                        <option value="completed" {{ $withdrawStatus === 'completed' ? 'selected' : '' }}>Completed</option>
                         <option value="failed" {{ $withdrawStatus === 'failed' ? 'selected' : '' }}>Failed</option>
                     </select>
                 </div>
@@ -192,23 +188,48 @@
                         class="tab-button py-3 px-1 border-b-2 font-medium text-sm border-transparent text-neutral-500 hover:text-neutral-700 hover:border-neutral-300">
                         <i class="fas fa-exchange-alt mr-2"></i> Transaksi
                     </button>
+                    <button onclick="showTab('topups')" id="topups-tab"
+                        class="tab-button py-3 px-1 border-b-2 font-medium text-sm border-transparent text-neutral-500 hover:text-neutral-700 hover:border-neutral-300">
+                        <i class="fas fa-plus-circle mr-2"></i> Top Up Pending
+                        @if($walletStats['pending_topups'] > 0)
+                            <span class="ml-1 bg-warning-100 text-warning-800 text-xs font-medium px-2 py-0.5 rounded-full">{{ $walletStats['pending_topups'] }}</span>
+                        @endif
+                    </button>
                     <button onclick="showTab('withdraws')" id="withdraws-tab"
                         class="tab-button py-3 px-1 border-b-2 font-medium text-sm border-transparent text-neutral-500 hover:text-neutral-700 hover:border-neutral-300">
                         <i class="fas fa-money-bill-wave mr-2"></i> Penarikan Dana
+                        @if($walletStats['pending_withdraws'] > 0)
+                            <span class="ml-1 bg-error-100 text-error-800 text-xs font-medium px-2 py-0.5 rounded-full">{{ $walletStats['pending_withdraws'] }}</span>
+                        @endif
+                    </button>
+                    <button onclick="showTab('banks')" id="banks-tab"
+                        class="tab-button py-3 px-1 border-b-2 font-medium text-sm border-transparent text-neutral-500 hover:text-neutral-700 hover:border-neutral-300">
+                        <i class="fas fa-university mr-2"></i> Bank Accounts
                     </button>
                 </nav>
             </div>
         </div>
+
+        <!-- Success/Error Messages -->
+        @if(session('success'))
+            <div class="bg-success-50 border border-success-200 text-success-700 px-4 py-3 rounded mb-4">
+                <i class="fas fa-check-circle mr-2"></i>{{ session('success') }}
+            </div>
+        @endif
+
+        @if(session('error'))
+            <div class="bg-error-50 border border-error-200 text-error-700 px-4 py-3 rounded mb-4">
+                <i class="fas fa-exclamation-circle mr-2"></i>{{ session('error') }}
+            </div>
+        @endif
 
         <!-- Wallets Tab -->
         <div id="wallets-content" class="tab-content">
             <div class="bg-white rounded-lg shadow-sm p-6 border border-neutral-200">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-xl font-semibold text-neutral-800">Daftar Wallet Pengguna</h3>
-                    <div class="relative">
-                        <input type="text" placeholder="Cari wallet..."
-                            class="pl-8 pr-4 py-2 border border-neutral-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
-                        <i class="fas fa-search absolute left-3 top-3 text-neutral-400"></i>
+                    <div class="text-sm text-neutral-500">
+                        Total: {{ $wallets->total() }} wallet
                     </div>
                 </div>
 
@@ -220,6 +241,7 @@
                                     <th class="px-4 py-3">Pengguna</th>
                                     <th class="px-4 py-3 text-right">Saldo Aktif</th>
                                     <th class="px-4 py-3 text-right">Saldo Pending</th>
+                                    <th class="px-4 py-3 text-right">Available Balance</th>
                                     <th class="px-4 py-3 text-center">Terakhir Update</th>
                                     <th class="px-4 py-3 text-center">Aksi</th>
                                 </tr>
@@ -235,16 +257,19 @@
                                             </div>
                                         </td>
                                         <td class="px-4 py-3 text-right text-sm font-medium text-neutral-900">
-                                            Rp {{ number_format($wallet->balance, 0, ',', '.') }}
+                                            {{ $wallet->formatted_balance }}
                                         </td>
                                         <td class="px-4 py-3 text-right text-sm text-neutral-900">
                                             Rp {{ number_format($wallet->pending_balance, 0, ',', '.') }}
+                                        </td>
+                                        <td class="px-4 py-3 text-right text-sm font-medium text-success-600">
+                                            {{ $wallet->formatted_available_balance }}
                                         </td>
                                         <td class="px-4 py-3 text-center text-sm text-neutral-500">
                                             {{ $wallet->updated_at->format('d/m/Y H:i') }}
                                         </td>
                                         <td class="px-4 py-3 text-center text-sm">
-                                            <a href="#"
+                                            <a href="#" onclick="viewWalletDetail({{ $wallet->id }})"
                                                 class="text-secondary-600 hover:text-secondary-800 transition">
                                                 <i class="fas fa-eye mr-1"></i> Detail
                                             </a>
@@ -274,10 +299,8 @@
             <div class="bg-white rounded-lg shadow-sm p-6 border border-neutral-200">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-xl font-semibold text-neutral-800">Transaksi Terbaru</h3>
-                    <div class="relative">
-                        <input type="text" placeholder="Cari transaksi..."
-                            class="pl-8 pr-4 py-2 border border-neutral-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
-                        <i class="fas fa-search absolute left-3 top-3 text-neutral-400"></i>
+                    <div class="text-sm text-neutral-500">
+                        Total: {{ $transactions->total() }} transaksi
                     </div>
                 </div>
 
@@ -293,6 +316,7 @@
                                     <th class="px-4 py-3 text-right">Jumlah</th>
                                     <th class="px-4 py-3 text-center">Status</th>
                                     <th class="px-4 py-3 text-center">Ref ID</th>
+                                    <th class="px-4 py-3 text-center">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-neutral-200">
@@ -313,7 +337,7 @@
                                             <span
                                                 class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                                                 {{ $transaction->type->value === 'topup' ? 'bg-success-100 text-success-800' : 'bg-error-100 text-error-800' }}">
-                                                {{ $transaction->type->value === 'topup' ? 'Top Up' : 'Penarikan' }}
+                                                {{ $transaction->type->label() }}
                                             </span>
                                         </td>
                                         <td class="px-4 py-3 text-sm text-neutral-900">
@@ -327,19 +351,18 @@
                                         </td>
                                         <td class="px-4 py-3 text-center">
                                             <span
-                                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                                {{ $transaction->status->value === 'success'
-                                                    ? 'bg-success-100 text-success-800'
-                                                    : ($transaction->status->value === 'pending'
-                                                        ? 'bg-warning-100 text-warning-800'
-                                                        : ($transaction->status->value === 'failed'
-                                                            ? 'bg-error-100 text-error-800'
-                                                            : 'bg-neutral-100 text-neutral-800')) }}">
-                                                {{ ucfirst($transaction->status->value) }}
+                                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-{{ $transaction->status->color() }}-100 text-{{ $transaction->status->color() }}-800">
+                                                {{ $transaction->status->label() }}
                                             </span>
                                         </td>
                                         <td class="px-4 py-3 text-center text-sm text-neutral-500 font-mono">
                                             {{ $transaction->reference_id ? Str::limit($transaction->reference_id, 15) : '-' }}
+                                        </td>
+                                        <td class="px-4 py-3 text-center text-sm">
+                                            <a href="{{ route('admin.wallets.transaction.detail', $transaction->id) }}"
+                                                class="text-secondary-600 hover:text-secondary-800 transition">
+                                                <i class="fas fa-eye mr-1"></i> Detail
+                                            </a>
                                         </td>
                                     </tr>
                                 @endforeach
@@ -361,34 +384,126 @@
             </div>
         </div>
 
-        <!-- Withdraw Requests Tab -->
-        <div id="withdraws-content" class="tab-content hidden">
+        <!-- Top Up Pending Tab -->
+        <div id="topups-content" class="tab-content hidden">
             <div class="bg-white rounded-lg shadow-sm p-6 border border-neutral-200">
                 <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-xl font-semibold text-neutral-800">Permintaan Penarikan Dana</h3>
-                    <div class="relative">
-                        <input type="text" placeholder="Cari penarikan..."
-                            class="pl-8 pr-4 py-2 border border-neutral-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
-                        <i class="fas fa-search absolute left-3 top-3 text-neutral-400"></i>
+                    <h3 class="text-xl font-semibold text-neutral-800">Top Up Menunggu Persetujuan</h3>
+                    <div class="text-sm text-neutral-500">
+                        Total: {{ $pendingTopUps->total() }} permintaan
                     </div>
                 </div>
 
-                @if ($withdrawRequests->count() > 0)
+                @if ($pendingTopUps->count() > 0)
                     <div class="overflow-x-auto">
                         <table class="w-full">
                             <thead class="bg-neutral-50">
                                 <tr class="text-left text-sm font-medium text-neutral-500 border-b border-neutral-200">
                                     <th class="px-4 py-3">Tanggal</th>
                                     <th class="px-4 py-3">Pengguna</th>
-                                    <th class="px-4 py-3 text-center">Kode</th>
+                                    <th class="px-4 py-3 text-center">Ref ID</th>
                                     <th class="px-4 py-3 text-right">Jumlah</th>
-                                    <th class="px-4 py-3">Bank</th>
+                                    <th class="px-4 py-3">Bank Tujuan</th>
+                                    <th class="px-4 py-3 text-center">Bukti</th>
+                                    <th class="px-4 py-3 text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-neutral-200">
+                                @foreach ($pendingTopUps as $topup)
+                                    <tr class="hover:bg-neutral-50 transition">
+                                        <td class="px-4 py-3 text-sm text-neutral-900">
+                                            {{ $topup->created_at->format('d/m/Y H:i') }}
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <div>
+                                                <div class="text-sm font-medium text-neutral-900">
+                                                    {{ $topup->wallet->user->name }}</div>
+                                                <div class="text-sm text-neutral-500">{{ $topup->wallet->user->email }}</div>
+                                            </div>
+                                        </td>
+                                        <td class="px-4 py-3 text-center text-sm font-mono text-neutral-900">
+                                            {{ $topup->reference_id }}
+                                        </td>
+                                        <td class="px-4 py-3 text-right text-sm font-medium text-success-600">
+                                            +Rp {{ number_format($topup->amount, 0, ',', '.') }}
+                                        </td>
+                                        <td class="px-4 py-3 text-sm">
+                                            <div class="text-neutral-900 font-medium">{{ $topup->bank_name ?? '-' }}</div>
+                                            <div class="text-neutral-500">{{ $topup->bank_account_number ?? '-' }}</div>
+                                            <div class="text-neutral-500">{{ $topup->bank_account_name ?? '-' }}</div>
+                                        </td>
+                                        <td class="px-4 py-3 text-center">
+                                            @if($topup->payment_proof_path)
+                                                <button onclick="viewPaymentProof('{{ $topup->payment_proof_url }}')"
+                                                    class="text-secondary-600 hover:text-secondary-800 transition">
+                                                    <i class="fas fa-image mr-1"></i> Lihat
+                                                </button>
+                                            @else
+                                                <span class="text-neutral-400">-</span>
+                                            @endif
+                                        </td>
+                                        <td class="px-4 py-3 text-center text-sm">
+                                            <div class="flex justify-center space-x-2">
+                                                <button onclick="approveTopUp({{ $topup->id }})"
+                                                    class="text-success-600 hover:text-success-800 font-medium transition">
+                                                    <i class="fas fa-check mr-1"></i> Setuju
+                                                </button>
+                                                <button onclick="rejectTopUp({{ $topup->id }})"
+                                                    class="text-error-600 hover:text-error-800 font-medium transition">
+                                                    <i class="fas fa-times mr-1"></i> Tolak
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-6">
+                        {{ $pendingTopUps->appends(request()->query())->links() }}
+                    </div>
+                @else
+                    <div class="text-center py-12">
+                        <div class="text-neutral-300 text-5xl mb-4">
+                            <i class="fas fa-plus-circle"></i>
+                        </div>
+                        <h4 class="text-lg font-medium text-neutral-900 mb-2">Tidak ada top up pending</h4>
+                        <p class="text-neutral-600">Belum ada permintaan top up yang perlu diproses</p>
+                    </div>
+                @endif
+            </div>
+        </div>
+
+        <!-- Withdraw Requests Tab -->
+        <div id="withdraws-content" class="tab-content hidden">
+            <div class="bg-white rounded-lg shadow-sm p-6 border border-neutral-200">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-semibold text-neutral-800">Permintaan Penarikan Dana</h3>
+                    <div class="text-sm text-neutral-500">
+                        Total: {{ $withdrawStatus === 'all' ? $withdrawRequests->total() : $pendingWithdraws->total() }} permintaan
+                    </div>
+                </div>
+
+                @php
+                    $displayWithdraws = $withdrawStatus === 'all' ? $withdrawRequests : $pendingWithdraws;
+                @endphp
+
+                @if ($displayWithdraws->count() > 0)
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-neutral-50">
+                                <tr class="text-left text-sm font-medium text-neutral-500 border-b border-neutral-200">
+                                    <th class="px-4 py-3">Tanggal</th>
+                                    <th class="px-4 py-3">Pengguna</th>
+                                    <th class="px-4 py-3 text-center">Ref ID</th>
+                                    <th class="px-4 py-3 text-right">Jumlah</th>
+                                    <th class="px-4 py-3">Bank Tujuan</th>
                                     <th class="px-4 py-3 text-center">Status</th>
                                     <th class="px-4 py-3 text-center">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-neutral-200">
-                                @foreach ($withdrawRequests as $withdraw)
+                                @foreach ($displayWithdraws as $withdraw)
                                     <tr class="hover:bg-neutral-50 transition">
                                         <td class="px-4 py-3 text-sm text-neutral-900">
                                             {{ $withdraw->created_at->format('d/m/Y H:i') }}
@@ -396,67 +511,90 @@
                                         <td class="px-4 py-3">
                                             <div>
                                                 <div class="text-sm font-medium text-neutral-900">
-                                                    {{ $withdraw->user->name }}</div>
-                                                <div class="text-sm text-neutral-500">{{ $withdraw->user->email }}
+                                                    {{ $withdraw->wallet->user->name }}</div>
+                                                <div class="text-sm text-neutral-500">{{ $withdraw->wallet->user->email }}
                                                 </div>
                                             </div>
                                         </td>
                                         <td class="px-4 py-3 text-center text-sm font-mono text-neutral-900">
-                                            {{ $withdraw->withdrawal_code }}
+                                            {{ $withdraw->reference_id }}
                                         </td>
                                         <td class="px-4 py-3 text-right text-sm font-medium text-neutral-900">
-                                            Rp {{ number_format($withdraw->amount, 0, ',', '.') }}
+                                            -Rp {{ number_format($withdraw->amount, 0, ',', '.') }}
                                             @if ($withdraw->admin_fee > 0)
                                                 <div class="text-xs text-neutral-500">
                                                     Fee: Rp {{ number_format($withdraw->admin_fee, 0, ',', '.') }}
                                                 </div>
+                                                <div class="text-xs text-success-600 font-semibold">
+                                                    Net: Rp {{ number_format($withdraw->amount - $withdraw->admin_fee, 0, ',', '.') }}
+                                                </div>
                                             @endif
                                         </td>
                                         <td class="px-4 py-3 text-sm">
-                                            <div class="text-neutral-900 font-medium">{{ $withdraw->bank_name }}</div>
-                                            <div class="text-neutral-500">{{ $withdraw->account_number }}</div>
-                                            <div class="text-neutral-500">{{ $withdraw->account_name }}</div>
+                                            <div class="text-neutral-900 font-medium">{{ $withdraw->bank_name ?? '-' }}</div>
+                                            <div class="text-neutral-500 font-mono">{{ $withdraw->account_number ?? '-' }}</div>
+                                            <div class="text-neutral-500">{{ $withdraw->account_name ?? '-' }}</div>
                                         </td>
                                         <td class="px-4 py-3 text-center">
                                             <span
-                                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                                {{ $withdraw->status === 'pending'
-                                                    ? 'bg-warning-100 text-warning-800'
-                                                    : ($withdraw->status === 'processing'
-                                                        ? 'bg-secondary-100 text-secondary-800'
-                                                        : ($withdraw->status === 'completed'
-                                                            ? 'bg-success-100 text-success-800'
-                                                            : 'bg-error-100 text-error-800')) }}">
-                                                {{ ucfirst($withdraw->status) }}
+                                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-{{ $withdraw->status->color() }}-100 text-{{ $withdraw->status->color() }}-800">
+                                                {{ $withdraw->status->label() }}
                                             </span>
+                                            @if($withdraw->processed_at)
+                                                <div class="text-xs text-neutral-500 mt-1">
+                                                    {{ $withdraw->processed_at->format('d/m/Y H:i') }}
+                                                </div>
+                                            @endif
                                         </td>
                                         <td class="px-4 py-3 text-center text-sm">
-                                            @if ($withdraw->status === 'pending')
-                                                <div class="flex justify-center space-x-2">
-                                                    <button
+                                            @if ($withdraw->status->value === 'pending')
+                                                <div class="flex justify-center space-x-1">
+                                                    {{-- <button
                                                         onclick="processWithdraw('{{ $withdraw->id }}', 'processing')"
-                                                        class="text-secondary-600 hover:text-secondary-800 font-medium transition">
+                                                        class="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 font-medium transition"
+                                                        title="Mulai Proses">
                                                         <i class="fas fa-cog mr-1"></i> Proses
-                                                    </button>
-                                                    <button onclick="processWithdraw('{{ $withdraw->id }}', 'failed')"
-                                                        class="text-error-600 hover:text-error-800 font-medium transition">
-                                                        <i class="fas fa-times mr-1"></i> Tolak
-                                                    </button>
-                                                </div>
-                                            @elseif($withdraw->status === 'processing')
-                                                <div class="flex justify-center space-x-2">
-                                                    <button
+                                                    </button> --}}
+                                                    <button 
                                                         onclick="processWithdraw('{{ $withdraw->id }}', 'completed')"
-                                                        class="text-success-600 hover:text-success-800 font-medium transition">
+                                                        class="px-3 py-1 text-xs bg-success-100 text-success-700 rounded-md hover:bg-success-200 font-medium transition"
+                                                        title="Langsung Selesaikan">
                                                         <i class="fas fa-check mr-1"></i> Selesai
                                                     </button>
                                                     <button onclick="processWithdraw('{{ $withdraw->id }}', 'failed')"
-                                                        class="text-error-600 hover:text-error-800 font-medium transition">
-                                                        <i class="fas fa-times mr-1"></i> Gagal
+                                                        class="px-3 py-1 text-xs bg-error-100 text-error-700 rounded-md hover:bg-error-200 font-medium transition"
+                                                        title="Tolak/Gagalkan">
+                                                        <i class="fas fa-times mr-1"></i> Tolak
+                                                    </button>
+                                                </div>
+                                            @elseif($withdraw->status->value === 'processing')
+                                                <div class="flex justify-center space-x-1">
+                                                    <button
+                                                        onclick="processWithdraw('{{ $withdraw->id }}', 'completed')"
+                                                        class="px-3 py-1 text-xs bg-success-100 text-success-700 rounded-md hover:bg-success-200 font-medium transition"
+                                                        title="Selesaikan Transfer">
+                                                        <i class="fas fa-check-double mr-1"></i> Selesai
+                                                    </button>
+                                                    <button onclick="processWithdraw('{{ $withdraw->id }}', 'failed')"
+                                                        class="px-3 py-1 text-xs bg-error-100 text-error-700 rounded-md hover:bg-error-200 font-medium transition"
+                                                        title="Gagalkan Transfer">
+                                                        <i class="fas fa-exclamation-triangle mr-1"></i> Gagal
                                                     </button>
                                                 </div>
                                             @else
-                                                <span class="text-neutral-500">-</span>
+                                                <div class="flex justify-center space-x-1">
+                                                    <a href="{{ route('admin.wallets.transaction.detail', $withdraw->id) }}"
+                                                        class="px-3 py-1 text-xs bg-neutral-100 text-neutral-700 rounded-md hover:bg-neutral-200 transition">
+                                                        <i class="fas fa-eye mr-1"></i> Detail
+                                                    </a>
+                                                    @if($withdraw->admin_notes)
+                                                        <button onclick="showAdminNotes('{{ $withdraw->admin_notes }}')"
+                                                            class="px-3 py-1 text-xs bg-warning-100 text-warning-700 rounded-md hover:bg-warning-200 transition"
+                                                            title="Lihat Catatan Admin">
+                                                            <i class="fas fa-sticky-note mr-1"></i> Catatan
+                                                        </button>
+                                                    @endif
+                                                </div>
                                             @endif
                                         </td>
                                     </tr>
@@ -465,7 +603,7 @@
                         </table>
                     </div>
                     <div class="mt-6">
-                        {{ $withdrawRequests->appends(request()->query())->links() }}
+                        {{ $displayWithdraws->appends(request()->query())->links() }}
                     </div>
                 @else
                     <div class="text-center py-12">
@@ -478,34 +616,254 @@
                 @endif
             </div>
         </div>
+
+        <!-- Bank Accounts Tab -->
+        <div id="banks-content" class="tab-content hidden">
+            <div class="bg-white rounded-lg shadow-sm border border-neutral-200">
+                <!-- Add Bank Account Button -->
+                <div class="p-6 border-b border-neutral-200">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-xl font-semibold text-neutral-800">Manajemen Rekening Bank</h3>
+                        <button onclick="showAddBankModal()"
+                            class="bg-primary-500 text-white px-4 py-2 rounded-md hover:bg-primary-600 transition focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
+                            <i class="fas fa-plus mr-2"></i> Tambah Rekening
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Bank Accounts List -->
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="bankAccountsList">
+                        <!-- Bank accounts will be loaded here -->
+                        <div class="text-center py-8">
+                            <div class="text-neutral-400 text-4xl mb-4">
+                                <i class="fas fa-university"></i>
+                            </div>
+                            <p class="text-neutral-500">Loading bank accounts...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Process Withdraw Modal -->
-    <div id="processModal"
-        class="fixed inset-0 bg-neutral-900 bg-opacity-50 hidden items-center justify-center z-50 transition-opacity duration-300">
-        <div class="bg-white rounded-lg p-4 min-w-lg mx-4 shadow-xl transform transition-all duration-300">
-            <h3 class="text-md font-semibold text-neutral-900 mb-3">Proses Penarikan Dana</h3>
-            <form id="processForm" method="POST">
-                @csrf
-                @method('PATCH')
-                <input type="hidden" id="withdrawId" name="withdraw_id">
-                <input type="hidden" id="newStatus" name="status">
+    <!-- Payment Proof Modal -->
+    <div id="paymentProofModal" class="fixed inset-0 bg-neutral-900 bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 max-w-5xl mx-4 shadow-xl">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-neutral-900">Bukti Pembayaran</h3>
+                <button onclick="closePaymentProofModal()" class="text-neutral-400 hover:text-neutral-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="text-center">
+                <img id="paymentProofImage" src="" alt="Bukti Pembayaran" class="max-w-full h-auto rounded-lg shadow-md">
+            </div>
+        </div>
+    </div>
 
-                <div class="mb-3">
-                    <label class="block text-xs font-medium text-neutral-700 mb-1">Catatan Admin (Opsional)</label>
-                    <textarea name="admin_notes" rows="2"
-                        class="w-full px-2 py-1 text-sm border border-neutral-300 rounded-md focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500"
+    <!-- Top Up Approval Modal -->
+    <div id="topupModal" class="fixed inset-0 bg-neutral-900 bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 min-w-md mx-4 shadow-xl">
+            <h3 class="text-lg font-semibold text-neutral-900 mb-4" id="topupModalTitle">Setujui Top Up</h3>
+            <form id="topupForm" method="POST">
+                @csrf
+                <input type="hidden" id="topupId" name="topup_id">
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-neutral-700 mb-2">Catatan Admin (Opsional)</label>
+                    <textarea name="admin_notes" rows="3"
+                        class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                         placeholder="Tambahkan catatan..."></textarea>
                 </div>
 
-                <div class="flex justify-end space-x-2">
-                    <button type="button" onclick="closeModal()"
-                        class="px-3 py-1 text-xs text-neutral-700 bg-neutral-200 rounded-md hover:bg-neutral-300 transition focus:outline-none focus:ring-1 focus:ring-neutral-500">
+                <div class="flex justify-end space-x-3">
+                    <button type="button" onclick="closeTopupModal()"
+                        class="px-4 py-2 text-neutral-700 bg-neutral-200 rounded-md hover:bg-neutral-300 transition">
+                        Batal
+                    </button>
+                    <button type="submit" id="topupConfirmButton"
+                        class="px-4 py-2 text-white bg-success-500 rounded-md hover:bg-success-600 transition">
+                        <i class="fas fa-check mr-2"></i> Setujui
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Process Withdraw Modal -->
+    <div id="processModal" class="fixed inset-0 bg-neutral-900 bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 min-w-md mx-4 shadow-xl">
+            <h3 class="text-lg font-semibold text-neutral-900 mb-4" id="processModalTitle">Proses Penarikan Dana</h3>
+    
+            <form id="processForm" method="POST">
+                @csrf
+                <input type="hidden" id="withdrawId" name="withdraw_id">
+                <input type="hidden" id="newStatus" name="status">
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-neutral-700 mb-2">Catatan Admin</label>
+                    <textarea name="admin_notes" id="adminNotesTextarea" rows="3"
+                        class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                        placeholder="Tambahkan catatan..."></textarea>
+                    <p class="text-xs text-neutral-500 mt-1" id="notesHint">Opsional untuk proses dan selesai, wajib untuk tolak/gagal</p>
+                </div>
+
+                <div class="flex justify-end space-x-3">
+                    <button type="button" onclick="closeProcessModal()"
+                        class="px-4 py-2 text-neutral-700 bg-neutral-200 rounded-md hover:bg-neutral-300 transition">
                         Batal
                     </button>
                     <button type="submit" id="confirmButton"
-                        class="px-3 py-1 text-xs text-white bg-primary-500 rounded-md hover:bg-primary-600 transition focus:outline-none focus:ring-1 focus:ring-primary-500">
+                        class="px-4 py-2 text-white bg-primary-500 rounded-md hover:bg-primary-600 transition">
                         Konfirmasi
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Notes Modal -->
+    <div id="adminNotesModal" class="fixed inset-0 bg-neutral-900 bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 max-w-md mx-4 shadow-xl">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-neutral-900">Catatan Admin</h3>
+                <button onclick="closeAdminNotesModal()" class="text-neutral-400 hover:text-neutral-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="bg-neutral-50 p-4 rounded-lg">
+                <p id="adminNotesContent" class="text-neutral-700"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Bank Account Modal -->
+    <div id="addBankModal" class="fixed inset-0 bg-neutral-900 bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 max-w-md mx-4 shadow-xl">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-neutral-900">Tambah Rekening Bank</h3>
+                <button onclick="closeAddBankModal()" class="text-neutral-400 hover:text-neutral-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <form id="addBankForm" method="POST" action="{{ route('admin.wallets.bank-accounts.store') }}" enctype="multipart/form-data">
+                @csrf
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-neutral-700 mb-2">Nama Bank</label>
+                    <select name="bank_name" required
+                        class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                        <option value="">Pilih Bank</option>
+                        <option value="BCA">BCA</option>
+                        <option value="BNI">BNI</option>
+                        <option value="BRI">BRI</option>
+                        <option value="Mandiri">Mandiri</option>
+                        <option value="CIMB Niaga">CIMB Niaga</option>
+                        <option value="Danamon">Danamon</option>
+                        <option value="Permata">Permata</option>
+                        <option value="BTN">BTN</option>
+                    </select>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-neutral-700 mb-2">Nomor Rekening</label>
+                    <input type="text" name="account_number" required
+                        class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                        placeholder="Masukkan nomor rekening">
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-neutral-700 mb-2">Nama Pemilik</label>
+                    <input type="text" name="account_name" required
+                        class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                        placeholder="Masukkan nama pemilik rekening">
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-neutral-700 mb-2">QR Code (Opsional)</label>
+                    <input type="file" name="qr_code" accept="image/*"
+                        class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                    <p class="text-xs text-neutral-500 mt-1">Format: JPG, JPEG, PNG. Max: 2MB</p>
+                </div>
+
+                <div class="flex justify-end space-x-3">
+                    <button type="button" onclick="closeAddBankModal()"
+                        class="px-4 py-2 text-neutral-700 bg-neutral-200 rounded-md hover:bg-neutral-300 transition">
+                        Batal
+                    </button>
+                    <button type="submit"
+                        class="px-4 py-2 text-white bg-primary-500 rounded-md hover:bg-primary-600 transition">
+                        <i class="fas fa-save mr-2"></i> Simpan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Bank Account Modal -->
+    <div id="editBankModal" class="fixed inset-0 bg-neutral-900 bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 max-w-md mx-4 shadow-xl">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-neutral-900">Edit Rekening Bank</h3>
+                <button onclick="closeEditBankModal()" class="text-neutral-400 hover:text-neutral-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <form id="editBankForm" method="POST" enctype="multipart/form-data">
+                @csrf
+                @method('PUT')
+                <input type="hidden" id="editBankId" name="bank_id">
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-neutral-700 mb-2">Nama Bank</label>
+                    <select name="bank_name" id="editBankName" required
+                        class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                        <option value="">Pilih Bank</option>
+                        <option value="BCA">BCA</option>
+                        <option value="BNI">BNI</option>
+                        <option value="BRI">BRI</option>
+                        <option value="Mandiri">Mandiri</option>
+                        <option value="CIMB Niaga">CIMB Niaga</option>
+                        <option value="Danamon">Danamon</option>
+                        <option value="Permata">Permata</option>
+                        <option value="BTN">BTN</option>
+                    </select>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-neutral-700 mb-2">Nomor Rekening</label>
+                    <input type="text" name="account_number" id="editAccountNumber" required
+                        class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-neutral-700 mb-2">Nama Pemilik</label>
+                    <input type="text" name="account_name" id="editAccountName" required
+                        class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                </div>
+
+                <div class="mb-4">
+                    <label class="flex items-center">
+                        <input type="checkbox" name="is_active" id="editIsActive" value="1" class="mr-2">
+                        <span class="text-sm font-medium text-neutral-700">Aktif</span>
+                    </label>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-neutral-700 mb-2">QR Code (Opsional)</label>
+                    <input type="file" name="qr_code" accept="image/*"
+                        class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                    <p class="text-xs text-neutral-500 mt-1">Biarkan kosong jika tidak ingin mengubah</p>
+                </div>
+
+                <div class="flex justify-end space-x-3">
+                    <button type="button" onclick="closeEditBankModal()"
+                        class="px-4 py-2 text-neutral-700 bg-neutral-200 rounded-md hover:bg-neutral-300 transition">
+                        Batal
+                    </button>
+                    <button type="submit"
+                        class="px-4 py-2 text-white bg-primary-500 rounded-md hover:bg-primary-600 transition">
+                        <i class="fas fa-save mr-2"></i> Update
                     </button>
                 </div>
             </form>
@@ -533,73 +891,462 @@
             const activeTab = document.getElementById(tabName + '-tab');
             activeTab.classList.remove('border-transparent', 'text-neutral-500');
             activeTab.classList.add('border-primary-500', 'text-primary-600');
+
+            // Load bank accounts if banks tab is selected
+            if (tabName === 'banks') {
+                loadBankAccounts();
+            }
         }
 
-        // Process withdraw modal
+        // Payment proof modal
+        function viewPaymentProof(imageUrl) {
+            document.getElementById('paymentProofImage').src = imageUrl;
+            document.getElementById('paymentProofModal').classList.remove('hidden');
+            document.getElementById('paymentProofModal').classList.add('flex');
+        }
+
+        function closePaymentProofModal() {
+            document.getElementById('paymentProofModal').classList.add('hidden');
+            document.getElementById('paymentProofModal').classList.remove('flex');
+        }
+
+        // Top up approval modal
+        function approveTopUp(topupId) {
+            document.getElementById('topupId').value = topupId;
+            document.getElementById('topupForm').action = `/admin/wallet/topup/${topupId}/approve`;
+            document.getElementById('topupModalTitle').textContent = 'Setujui Top Up';
+            document.getElementById('topupConfirmButton').innerHTML = '<i class="fas fa-check mr-2"></i> Setujui';
+            document.getElementById('topupConfirmButton').className = 'px-4 py-2 text-white bg-success-500 rounded-md hover:bg-success-600 transition';
+            
+            document.getElementById('topupModal').classList.remove('hidden');
+            document.getElementById('topupModal').classList.add('flex');
+        }
+
+        function rejectTopUp(topupId) {
+            document.getElementById('topupId').value = topupId;
+            document.getElementById('topupForm').action = `/admin/wallet/topup/${topupId}/reject`;
+            document.getElementById('topupModalTitle').textContent = 'Tolak Top Up';
+            document.getElementById('topupConfirmButton').innerHTML = '<i class="fas fa-times mr-2"></i> Tolak';
+            document.getElementById('topupConfirmButton').className = 'px-4 py-2 text-white bg-error-500 rounded-md hover:bg-error-600 transition';
+            
+            // Make admin notes required for rejection
+            document.querySelector('#topupForm textarea[name="admin_notes"]').setAttribute('required', 'required');
+            document.querySelector('#topupForm textarea[name="admin_notes"]').placeholder = 'Alasan penolakan harus diisi...';
+            
+            document.getElementById('topupModal').classList.remove('hidden');
+            document.getElementById('topupModal').classList.add('flex');
+        }
+
+        function closeTopupModal() {
+            document.getElementById('topupModal').classList.add('hidden');
+            document.getElementById('topupModal').classList.remove('flex');
+            // Reset form
+            document.getElementById('topupForm').reset();
+            document.querySelector('#topupForm textarea[name="admin_notes"]').removeAttribute('required');
+        }
+
+        // Process withdraw modal - Enhanced version
         function processWithdraw(withdrawId, status) {
             document.getElementById('withdrawId').value = withdrawId;
             document.getElementById('newStatus').value = status;
+            document.getElementById('processForm').action = `/admin/wallet/withdraw/${withdrawId}/process`;
 
-            const form = document.getElementById('processForm');
-            form.action = `/admin/withdraw-requests/${withdrawId}/process`;
-
+            const processModalTitle = document.getElementById('processModalTitle');
             const confirmButton = document.getElementById('confirmButton');
-            const statusText = {
-                'processing': '<i class="fas fa-cog mr-2"></i> Proses',
-                'completed': '<i class="fas fa-check mr-2"></i> Selesaikan',
-                'failed': '<i class="fas fa-times mr-2"></i> Tolak/Gagalkan'
+            const adminNotesTextarea = document.getElementById('adminNotesTextarea');
+            const notesHint = document.getElementById('notesHint');
+            
+            // Reset form
+            adminNotesTextarea.value = '';
+            adminNotesTextarea.removeAttribute('required');
+
+            const statusConfig = {
+                'processing': {
+                    title: 'Mulai Proses Penarikan',
+                    buttonText: '<i class="fas fa-cog mr-2"></i> Mulai Proses',
+                    buttonClass: 'px-4 py-2 text-white bg-blue-500 rounded-md hover:bg-blue-600 transition',
+                    required: false,
+                    hint: 'Tambahkan catatan proses (opsional)'
+                },
+                'completed': {
+                    title: 'Selesaikan Penarikan',
+                    buttonText: '<i class="fas fa-check mr-2"></i> Selesaikan',
+                    buttonClass: 'px-4 py-2 text-white bg-success-500 rounded-md hover:bg-success-600 transition',
+                    required: false,
+                    hint: 'Konfirmasi bahwa transfer berhasil (catatan opsional)'
+                },
+                'failed': {
+                    title: 'Tolak/Gagalkan Penarikan',
+                    buttonText: '<i class="fas fa-times mr-2"></i> Tolak/Gagalkan',
+                    buttonClass: 'px-4 py-2 text-white bg-error-500 rounded-md hover:bg-error-600 transition',
+                    required: true,
+                    hint: 'Alasan penolakan/kegagalan harus diisi'
+                }
             };
 
-            confirmButton.innerHTML = statusText[status] || 'Konfirmasi';
+            const config = statusConfig[status];
+            processModalTitle.textContent = config.title;
+            confirmButton.innerHTML = config.buttonText;
+            confirmButton.className = config.buttonClass;
+            notesHint.textContent = config.hint;
 
-            // Update button color based on action
-            // Update button color based on action
-            if (status === 'failed') {
-                confirmButton.className =
-                    'px-3 py-1 text-xs text-white bg-error-500 rounded-md hover:bg-error-600 transition focus:outline-none focus:ring-1 focus:ring-error-500';
-            } else if (status === 'completed') {
-                confirmButton.className =
-                    'px-3 py-1 text-xs text-white bg-success-500 rounded-md hover:bg-success-600 transition focus:outline-none focus:ring-1 focus:ring-success-500';
+            if (config.required) {
+                adminNotesTextarea.setAttribute('required', 'required');
+                adminNotesTextarea.placeholder = 'Alasan penolakan/kegagalan harus diisi...';
             } else {
-                confirmButton.className =
-                    'px-3 py-1 text-xs text-white bg-primary-500 rounded-md hover:bg-primary-600 transition focus:outline-none focus:ring-1 focus:ring-primary-500';
+                adminNotesTextarea.placeholder = 'Tambahkan catatan...';
             }
 
-            // Show modal with animation
-            const modal = document.getElementById('processModal');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            setTimeout(() => {
-                modal.querySelector('div').classList.add('opacity-100', 'scale-100');
-            }, 10);
+
+            document.getElementById('processModal').classList.remove('hidden');
+            document.getElementById('processModal').classList.add('flex');
         }
 
-        function closeModal() {
-            const modal = document.getElementById('processModal');
-            modal.querySelector('div').classList.remove('opacity-100', 'scale-100');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-            }, 300);
+        function closeProcessModal() {
+            document.getElementById('processModal').classList.add('hidden');
+            document.getElementById('processModal').classList.remove('flex');
+            // Reset form
+            document.getElementById('processForm').reset();
+            document.getElementById('adminNotesTextarea').removeAttribute('required');
         }
 
-        // Close modal when clicking outside
-        document.getElementById('processModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeModal();
+        // Admin notes modal
+        function showAdminNotes(notes) {
+            document.getElementById('adminNotesContent').textContent = notes;
+            document.getElementById('adminNotesModal').classList.remove('hidden');
+            document.getElementById('adminNotesModal').classList.add('flex');
+        }
+
+        function closeAdminNotesModal() {
+            document.getElementById('adminNotesModal').classList.add('hidden');
+            document.getElementById('adminNotesModal').classList.remove('flex');
+        }
+
+        // Bank accounts management
+        function loadBankAccounts() {
+            fetch('{{ route("admin.wallets.bank-accounts") }}')
+                .then(response => response.text())
+                .then(html => {
+                    // Parse the HTML to extract bank accounts data
+                    // This would need to be implemented as an API endpoint
+                    // For now, we'll use a placeholder
+                    const bankAccountsList = document.getElementById('bankAccountsList');
+                    bankAccountsList.innerHTML = `
+                        <div class="text-center py-8 col-span-2">
+                            <div class="text-neutral-400 text-4xl mb-4">
+                                <i class="fas fa-university"></i>
+                            </div>
+                            <p class="text-neutral-500 mb-4">Belum ada rekening bank yang terdaftar</p>
+                            <button onclick="showAddBankModal()"
+                                class="bg-primary-500 text-white px-4 py-2 rounded-md hover:bg-primary-600 transition">
+                                <i class="fas fa-plus mr-2"></i> Tambah Rekening Pertama
+                            </button>
+                        </div>
+                    `;
+                });
+        }
+
+        function showAddBankModal() {
+            document.getElementById('addBankModal').classList.remove('hidden');
+            document.getElementById('addBankModal').classList.add('flex');
+        }
+
+        function closeAddBankModal() {
+            document.getElementById('addBankModal').classList.add('hidden');
+            document.getElementById('addBankModal').classList.remove('flex');
+        }
+
+        function showEditBankModal(bankId, bankName, accountNumber, accountName, isActive) {
+            document.getElementById('editBankId').value = bankId;
+            document.getElementById('editBankName').value = bankName;
+            document.getElementById('editAccountNumber').value = accountNumber;
+            document.getElementById('editAccountName').value = accountName;
+            document.getElementById('editIsActive').checked = isActive;
+            document.getElementById('editBankForm').action = `/admin/wallet/bank-accounts/${bankId}`;
+            
+            document.getElementById('editBankModal').classList.remove('hidden');
+            document.getElementById('editBankModal').classList.add('flex');
+        }
+
+        function closeEditBankModal() {
+            document.getElementById('editBankModal').classList.add('hidden');
+            document.getElementById('editBankModal').classList.remove('flex');
+        }
+
+        function deleteBankAccount(bankId) {
+            if (confirm('Apakah Anda yakin ingin menghapus rekening bank ini?')) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/admin/wallet/bank-accounts/${bankId}`;
+                form.innerHTML = `
+                    @csrf
+                    @method('DELETE')
+                `;
+                document.body.appendChild(form);
+                form.submit();
             }
+        }
+
+        // Close modals when clicking outside
+        document.getElementById('paymentProofModal').addEventListener('click', function(e) {
+            if (e.target === this) closePaymentProofModal();
         });
 
-        // Auto-refresh every 30 seconds for pending status
+        document.getElementById('topupModal').addEventListener('click', function(e) {
+            if (e.target === this) closeTopupModal();
+        });
+
+        document.getElementById('processModal').addEventListener('click', function(e) {
+            if (e.target === this) closeProcessModal();
+        });
+
+        document.getElementById('adminNotesModal').addEventListener('click', function(e) {
+            if (e.target === this) closeAdminNotesModal();
+        });
+
+        document.getElementById('addBankModal').addEventListener('click', function(e) {
+            if (e.target === this) closeAddBankModal();
+        });
+
+        document.getElementById('editBankModal').addEventListener('click', function(e) {
+            if (e.target === this) closeEditBankModal();
+        });
+
+        // Auto-refresh for pending transactions
         setInterval(function() {
-            if (new URLSearchParams(window.location.search).get('withdraw_status') === '' ||
-                new URLSearchParams(window.location.search).get('withdraw_status') === 'pending') {
-                // Only refresh if we're viewing pending withdrawals
-                const currentTab = document.querySelector('.tab-button.border-primary-500');
-                if (currentTab && currentTab.id === 'withdraws-tab') {
+            const currentTab = document.querySelector('.tab-button.border-primary-500');
+            if (currentTab && (currentTab.id === 'topups-tab' || currentTab.id === 'withdraws-tab')) {
+                // Only refresh if viewing pending transactions
+                const urlParams = new URLSearchParams(window.location.search);
+                if (!urlParams.get('withdraw_status') || urlParams.get('withdraw_status') === '' || urlParams.get('withdraw_status') === 'pending') {
                     location.reload();
                 }
             }
-        }, 30000);
+        }, 30000); // Refresh every 30 seconds
+
+        // Wallet detail view function
+        function viewWalletDetail(walletId) {
+            // This could open a modal or redirect to a detail page
+            alert('Detail wallet akan ditampilkan untuk wallet ID: ' + walletId);
+            // Implementation would depend on whether you want modal or separate page
+        }
+
+        // Enhanced form validation
+        document.getElementById('processForm').addEventListener('submit', function(e) {
+            const status = document.getElementById('newStatus').value;
+            const adminNotes = document.getElementById('adminNotesTextarea').value.trim();
+            
+            if ((status === 'failed' || status === 'cancelled') && !adminNotes) {
+                e.preventDefault();
+                alert('Catatan admin wajib diisi untuk status tolak/gagal!');
+                document.getElementById('adminNotesTextarea').focus();
+                return false;
+            }
+            
+            // Confirmation dialog
+            const statusText = {
+                'processing': 'memulai proses',
+                'completed': 'menyelesaikan',
+                'failed': 'menolak/gagalkan'
+            };
+            
+            if (!confirm(`Apakah Anda yakin ingin ${statusText[status]} penarikan ini?`)) {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if there are URL parameters to determine which tab to show
+            const urlParams = new URLSearchParams(window.location.search);
+            const transactionType = urlParams.get('transaction_type');
+            const withdrawStatus = urlParams.get('withdraw_status');
+            
+            if (transactionType === 'topup') {
+                showTab('topups');
+            } else if (transactionType === 'withdraw' || withdrawStatus) {
+                showTab('withdraws');
+            } else {
+                showTab('wallets'); // Default tab
+            }
+        });
+
+        // Form validation
+        document.getElementById('addBankForm').addEventListener('submit', function(e) {
+            const bankName = this.querySelector('[name="bank_name"]').value;
+            const accountNumber = this.querySelector('[name="account_number"]').value;
+            const accountName = this.querySelector('[name="account_name"]').value;
+
+            if (!bankName || !accountNumber || !accountName) {
+                e.preventDefault();
+                alert('Semua field wajib harus diisi!');
+                return false;
+            }
+
+            // Basic account number validation
+            if (accountNumber.length < 8 || accountNumber.length > 20) {
+                e.preventDefault();
+                alert('Nomor rekening harus antara 8-20 digit!');
+                return false;
+            }
+        });
+
+        document.getElementById('editBankForm').addEventListener('submit', function(e) {
+            const bankName = this.querySelector('[name="bank_name"]').value;
+            const accountNumber = this.querySelector('[name="account_number"]').value;
+            const accountName = this.querySelector('[name="account_name"]').value;
+
+            if (!bankName || !accountNumber || !accountName) {
+                e.preventDefault();
+                alert('Semua field wajib harus diisi!');
+                return false;
+            }
+        });
+
+        // Notification handling with auto-dismiss
+        @if(session('success'))
+            setTimeout(function() {
+                const successAlert = document.querySelector('.bg-success-50');
+                if (successAlert) {
+                    successAlert.style.opacity = '0';
+                    setTimeout(() => successAlert.style.display = 'none', 300);
+                }
+            }, 5000);
+        @endif
+
+        @if(session('error'))
+            setTimeout(function() {
+                const errorAlert = document.querySelector('.bg-error-50');
+                if (errorAlert) {
+                    errorAlert.style.opacity = '0';
+                    setTimeout(() => errorAlert.style.display = 'none', 300);
+                }
+            }, 5000);
+        @endif
+
+        // Search functionality (real-time search with debouncing)
+        function setupSearch() {
+            const searchInputs = document.querySelectorAll('input[name="search"]');
+            searchInputs.forEach(input => {
+                let timeout;
+                input.addEventListener('input', function() {
+                    clearTimeout(timeout);
+                    timeout = setTimeout(() => {
+                        // Auto-submit form after 500ms of no typing
+                        if (this.value.length >= 3 || this.value.length === 0) {
+                            this.closest('form').submit();
+                        }
+                    }, 500);
+                });
+            });
+        }
+
+        // Bulk actions (future enhancement)
+        function toggleSelectAll(checkbox) {
+            const checkboxes = document.querySelectorAll('input[name="selected_transactions[]"]');
+            checkboxes.forEach(cb => cb.checked = checkbox.checked);
+            updateBulkActions();
+        }
+
+        function updateBulkActions() {
+            const selectedCount = document.querySelectorAll('input[name="selected_transactions[]"]:checked').length;
+            const bulkActionsPanel = document.getElementById('bulkActionsPanel');
+            
+            if (selectedCount > 0) {
+                bulkActionsPanel?.classList.remove('hidden');
+                document.getElementById('selectedCount').textContent = selectedCount;
+            } else {
+                bulkActionsPanel?.classList.add('hidden');
+            }
+        }
+
+        // Status quick filter
+        function quickFilterStatus(status) {
+            const form = document.querySelector('form');
+            const statusSelect = form.querySelector('[name="transaction_status"]');
+            statusSelect.value = status;
+            form.submit();
+        }
+
+        // Export functionality (future enhancement)
+        function exportTransactions(format = 'excel') {
+            const params = new URLSearchParams(window.location.search);
+            params.set('export', format);
+            window.open(`${window.location.pathname}?${params.toString()}`);
+        }
+
+        // Real-time balance updates via WebSocket (if implemented)
+        function initializeWebSocket() {
+            // This would connect to a WebSocket endpoint for real-time updates
+            // Implementation depends on your WebSocket setup
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // ESC key to close modals
+            if (e.key === 'Escape') {
+                const modals = [
+                    'paymentProofModal', 'topupModal', 'processModal', 
+                    'adminNotesModal', 'addBankModal', 'editBankModal'
+                ];
+                
+                modals.forEach(modalId => {
+                    const modal = document.getElementById(modalId);
+                    if (modal && !modal.classList.contains('hidden')) {
+                        const closeFunction = window[`close${modalId.replace('Modal', '').replace(/^[a-z]/, c => c.toUpperCase())}Modal`];
+                        if (closeFunction) closeFunction();
+                        else {
+                            modal.classList.add('hidden');
+                            modal.classList.remove('flex');
+                        }
+                    }
+                });
+            }
+            
+            // Ctrl+F to focus search
+            if (e.ctrlKey && e.key === 'f') {
+                e.preventDefault();
+                document.querySelector('input[name="search"]')?.focus();
+            }
+        });
+
+        // Call setup functions
+        setupSearch();
+        
+        // Initialize tooltips for better UX
+        function initializeTooltips() {
+            const tooltipElements = document.querySelectorAll('[title]');
+            tooltipElements.forEach(element => {
+                element.addEventListener('mouseenter', function(e) {
+                    // Create simple tooltip implementation
+                    const tooltip = document.createElement('div');
+                    tooltip.className = 'absolute bg-neutral-800 text-white text-xs px-2 py-1 rounded shadow-lg z-50 -mt-8';
+                    tooltip.textContent = this.getAttribute('title');
+                    tooltip.id = 'tooltip-' + Math.random().toString(36).substr(2, 9);
+                    
+                    this.setAttribute('data-tooltip-id', tooltip.id);
+                    this.removeAttribute('title'); // Prevent default browser tooltip
+                    
+                    document.body.appendChild(tooltip);
+                    
+                    const rect = this.getBoundingClientRect();
+                    tooltip.style.left = rect.left + (rect.width / 2) - (tooltip.offsetWidth / 2) + 'px';
+                    tooltip.style.top = rect.top - tooltip.offsetHeight - 5 + 'px';
+                });
+                
+                element.addEventListener('mouseleave', function() {
+                    const tooltipId = this.getAttribute('data-tooltip-id');
+                    if (tooltipId) {
+                        const tooltip = document.getElementById(tooltipId);
+                        if (tooltip) tooltip.remove();
+                        this.removeAttribute('data-tooltip-id');
+                    }
+                });
+            });
+        }
+        
+        // Initialize tooltips after DOM is loaded
+        setTimeout(initializeTooltips, 100);
     </script>
 </x-layouts.plain-app>

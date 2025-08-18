@@ -1,10 +1,12 @@
 <?php
+
 namespace App\Http\Controllers\Seller;
 
 use App\Http\Controllers\Controller;
 use App\Services\WalletService;
 use App\Requests\Wallet\TopUpRequest;
 use App\Requests\Wallet\WithdrawRequest;
+use App\Requests\Wallet\PaymentProofUploadRequest;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\JsonResponse;
@@ -12,37 +14,34 @@ use Illuminate\View\View;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use App\Services\ManualWalletService; 
+
 class WalletController extends Controller
 {
     protected WalletService $walletService;
-    protected ManualWalletService $manualWalletService; 
 
-    public function __construct(WalletService $walletService, ManualWalletService $manualWalletService)
+    public function __construct(WalletService $walletService)
     {
         $this->walletService = $walletService;
-        $this->manualWalletService = $manualWalletService;
     }
 
     /**
      * Tampilkan halaman dompet
      */
-     public function index(): View
+    public function index(): View
     {
         $user = Auth::user();
         $wallet = $this->walletService->getOrCreateWallet($user);
         $transactions = $this->walletService->getTransactionHistory($user, 15);
         
-        // Dapatkan status permintaan manual pending
-        $manualRequests = $this->manualWalletService->hasPendingManualRequests($user);
+        // Dapatkan status permintaan pending
+        $pendingRequests = $this->walletService->hasPendingRequests($user);
 
         return view('seller.wallet.index', [
             'wallet' => $wallet,
             'transactions' => $transactions,
-            'manualRequests' => $manualRequests
+            'pendingRequests' => $pendingRequests
         ]);
     }
-
 
     /**
      * Tampilkan halaman top up
@@ -51,38 +50,41 @@ class WalletController extends Controller
     {
         $user = Auth::user();
         $wallet = $this->walletService->getOrCreateWallet($user);
+        $topUpRequests = $this->walletService->getTopUpRequests($user, 5);
+        $resumableRequests = $this->walletService->getResumableTopUpRequests($user);
         
         return view('seller.wallet.topup', [
-            'wallet' => $wallet
+            'wallet' => $wallet,
+            'topUpRequests' => $topUpRequests,
+            'resumableRequests' => $resumableRequests
         ]);
     }
 
     /**
-     * Proses top up - Return ke view dengan snap token
+     * Proses top up - Buat transaksi baru
      */
-    public function topUpSubmit(TopUpRequest $request)
+    public function topUpSubmit(TopUpRequest $request): RedirectResponse
     {
         try {
             $user = Auth::user();
+            
+            // Cek apakah ada permintaan yang belum selesai
+            $existingRequests = $this->walletService->getResumableTopUpRequests($user);
+            
+            if ($existingRequests->count() > 0) {
+                return redirect()
+                    ->route('seller.wallet.topup')
+                    ->with('warning', 'Anda memiliki ' . $existingRequests->count() . ' permintaan top up yang belum diselesaikan.');
+            }
+            
             $amount = $request->amount;
-            $paymentMethods = $request->payment_methods ?? [];
+            $transaction = $this->walletService->createTopUpTransaction($user, $amount);
 
-            $result = $this->walletService->createTopUpTransaction($user, $amount, $paymentMethods);
-
-            return view('seller.wallet.topup-payment', [
-                'snap_token' => $result['snap_token'],
-                'snap_url' => $result['snap_url'],
-                'transaction_id' => $result['transaction_id'],
-                'order_id' => $result['order_id'],
-                'amount' => $amount
-            ]);
+            return redirect()
+                ->route('seller.wallet.topup.payment', $transaction->reference_id)
+                ->with('success', 'Permintaan top up berhasil dibuat. Silakan pilih metode pembayaran.');
 
         } catch (ValidationException $e) {
-            Log::warning('Top up validation error', [
-                'user_id' => Auth::id(),
-                'errors' => $e->errors()
-            ]);
-            
             return back()
                 ->withErrors($e->errors())
                 ->withInput();
@@ -90,125 +92,130 @@ class WalletController extends Controller
         } catch (\Exception $e) {
             Log::error('Top up submission error', [
                 'user_id' => Auth::id(),
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'error' => $e->getMessage()
             ]);
             
             return back()
-                ->with('error', 'Terjadi kesalahan saat membuat transaksi top up. Silakan coba lagi.')
+                ->with('error', 'Terjadi kesalahan saat membuat transaksi top up.')
                 ->withInput();
         }
     }
 
     /**
-     * Halaman finish setelah pembayaran - UPDATED dengan status update otomatis
+     * Halaman pilih bank untuk pembayaran
      */
-    public function topUpFinish(Request $request): View
+    public function topUpPayment(string $referenceId): View
     {
-        $orderId = $request->order_id;
-        $status = $request->transaction_status;
-        $transaction = null;
-        $errorMessage = null;
+        $user = Auth::user();
+        $transaction = $this->walletService->getTransactionByReferenceId($referenceId);
 
-        try {
-            if ($orderId) {
-                
-                $transaction = $this->walletService->finishTransaction($orderId);
-                
-            }
-        } catch (\Exception $e) {
-            Log::error('Error processing finish transaction', [
-                'order_id' => $orderId,
-                'error' => $e->getMessage(),
-                'user_id' => Auth::id()
-            ]);
-            
-            
-            try {
-                $transaction = $this->walletService->getTransactionByOrderId($orderId);
-            } catch (\Exception $ex) {
-                $errorMessage = 'Tidak dapat menemukan transaksi';
-            }
-            
-            if (!$errorMessage) {
-                $errorMessage = 'Terjadi kesalahan saat memproses transaksi';
-            }
+        if (!$transaction || $transaction->wallet->user_id !== $user->id) {
+            abort(404, 'Transaksi top up tidak ditemukan.');
         }
 
-        return view('seller.wallet.topup-finish', [
-            'order_id' => $orderId,
-            'status' => $status,
+        $bankAccounts = $this->walletService->getActiveBankAccounts();
+
+        return view('seller.wallet.topup-payment', [
             'transaction' => $transaction,
-            'error_message' => $errorMessage
+            'bankAccounts' => $bankAccounts
         ]);
     }
 
     /**
-     * Check status transaksi - AJAX endpoint untuk cek status real-time
+     * Set bank account untuk pembayaran
      */
-    public function checkTransactionStatus(Request $request): JsonResponse
+    public function setTopUpBank(Request $request, string $referenceId): RedirectResponse
     {
-        try {
-            $orderId = $request->input('order_id');
-            
-            if (!$orderId) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Order ID diperlukan'
-                ], 400);
-            }
+        $request->validate([
+            'bank_account_id' => 'required|exists:bank_accounts,id'
+        ]);
 
+        try {
             $user = Auth::user();
-            $transaction = $this->walletService->getTransactionByOrderId($orderId);
+            $transaction = $this->walletService->getTransactionByReferenceId($referenceId);
 
             if (!$transaction || $transaction->wallet->user_id !== $user->id) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Transaksi tidak ditemukan'
-                ], 404);
+                abort(404, 'Transaksi top up tidak ditemukan.');
             }
 
-            
-            if ($transaction->status->value === 'pending') {
-                try {
-                    $statusResponse = $this->walletService->checkTransactionStatus($orderId);
-                    
-                    if ($statusResponse['success']) {
-                        $midtransStatus = $statusResponse['data']['transaction_status'];
-                        $transaction = $this->walletService->updateTransactionStatus($orderId, $midtransStatus);
-                    }
-                } catch (\Exception $e) {
-                    Log::warning('Error checking Midtrans status', [
-                        'order_id' => $orderId,
-                        'error' => $e->getMessage()
-                    ]);
-                }
-            }
+            $this->walletService->setTopUpToWaitingPayment($transaction, $request->bank_account_id);
 
-            return response()->json([
-                'success' => true,
-                'transaction' => [
-                    'id' => $transaction->id,
-                    'status' => $transaction->status->value,
-                    'amount' => $transaction->amount,
-                    'description' => $transaction->description,
-                    'created_at' => $transaction->created_at->format('d/m/Y H:i:s'),
-                    'updated_at' => $transaction->updated_at->format('d/m/Y H:i:s'),
-                ]
-            ]);
+            return redirect()
+                ->route('seller.wallet.topup.upload', $referenceId)
+                ->with('success', 'Silakan lakukan pembayaran dan upload bukti transfer.');
 
         } catch (\Exception $e) {
-            Log::error('Check transaction status error', [
-                'error' => $e->getMessage(),
-                'user_id' => Auth::id(),
-                'order_id' => $request->input('order_id')
-            ]);
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan saat mengecek status transaksi'
-            ], 500);
+            Log::error('Set top up bank error: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan saat memproses permintaan.');
         }
+    }
+
+    /**
+     * Halaman upload bukti pembayaran
+     */
+    public function topUpUpload(string $referenceId): View
+    {
+        $user = Auth::user();
+        $transaction = $this->walletService->getTransactionByReferenceId($referenceId);
+
+        if (!$transaction || $transaction->wallet->user_id !== $user->id) {
+            abort(404, 'Transaksi top up tidak ditemukan.');
+        }
+
+        return view('seller.wallet.topup-upload', [
+            'transaction' => $transaction
+        ]);
+    }
+
+    /**
+     * Upload bukti pembayaran
+     */
+    public function uploadPaymentProof(PaymentProofUploadRequest $request, string $referenceId): RedirectResponse
+    {
+        try {
+            $user = Auth::user();
+            $transaction = $this->walletService->getTransactionByReferenceId($referenceId);
+
+            if (!$transaction || $transaction->wallet->user_id !== $user->id) {
+                abort(404, 'Transaksi top up tidak ditemukan.');
+            }
+
+            $this->walletService->uploadPaymentProof($transaction, $request->file('payment_proof'));
+
+            return redirect()
+                ->route('seller.wallet.index')
+                ->with('success', 'Bukti pembayaran berhasil diupload. Menunggu verifikasi admin.');
+
+        } catch (ValidationException $e) {
+            return back()->withErrors($e->errors());
+
+        } catch (\Exception $e) {
+            Log::error('Upload payment proof error: ' . $e->getMessage());
+            return back()->with('error', 'Gagal mengupload bukti pembayaran.');
+        }
+    }
+
+    /**
+     * Resume top up process
+     */
+    public function resumeTopUpProcess(string $referenceId): RedirectResponse
+    {
+        $user = Auth::user();
+        $transaction = $this->walletService->getTransactionByReferenceId($referenceId);
+
+        if (!$transaction || $transaction->wallet->user_id !== $user->id) {
+            abort(404, 'Transaksi top up tidak ditemukan.');
+        }
+
+        // Redirect berdasarkan status
+        if (!$transaction->bank_name) {
+            return redirect()->route('seller.wallet.topup.payment', $referenceId);
+        } elseif (!$transaction->payment_proof_path) {
+            return redirect()->route('seller.wallet.topup.upload', $referenceId);
+        }
+
+        return redirect()->route('seller.wallet.topup')
+            ->with('error', 'Transaksi ini tidak dapat dilanjutkan.');
     }
 
     /**
@@ -218,9 +225,11 @@ class WalletController extends Controller
     {
         $user = Auth::user();
         $wallet = $this->walletService->getOrCreateWallet($user);
+        $withdrawRequests = $this->walletService->getWithdrawRequests($user, 5);
 
         return view('seller.wallet.withdraw', [
-            'wallet' => $wallet
+            'wallet' => $wallet,
+            'withdrawRequests' => $withdrawRequests
         ]);
     }
 
@@ -238,7 +247,7 @@ class WalletController extends Controller
                 'account_number' => $request->account_number
             ];
 
-            $transaction = $this->walletService->createWithdrawRequest($user, $amount, $bankDetails);
+            $this->walletService->createWithdrawRequest($user, $amount, $bankDetails);
 
             return redirect()
                 ->route('seller.wallet.index')
@@ -272,7 +281,6 @@ class WalletController extends Controller
 
             return view('seller.wallet.transaction-detail', [
                 'transaction' => $transaction,
-                'order_id' => $transaction->reference_id,
             ]);
 
         } catch (\Exception $e) {
@@ -305,33 +313,27 @@ class WalletController extends Controller
     }
 
     /**
-     * Handle Midtrans notification/webhook - Tetap JSON untuk webhook
+     * Cancel top up request
      */
-    public function midtransNotification(Request $request): JsonResponse
+    public function cancelTopUpRequest(string $referenceId): RedirectResponse
     {
         try {
-            $notification = $request->all();
-            
-            $result = $this->walletService->handleMidtransNotification($notification);
+            $user = Auth::user();
+            $transaction = $this->walletService->getTransactionByReferenceId($referenceId);
 
-            if ($result) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Notification processed successfully'
-                ]);
-            } else {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Failed to process notification'
-                ], 400);
+            if (!$transaction || $transaction->wallet->user_id !== $user->id) {
+                abort(404, 'Transaksi top up tidak ditemukan.');
             }
 
+            $this->walletService->cancelTransaction($user, $transaction->id);
+
+            return redirect()
+                ->route('seller.wallet.index')
+                ->with('success', 'Permintaan top up berhasil dibatalkan.');
+
         } catch (\Exception $e) {
-            Log::error('Midtrans notification error: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Internal server error'
-            ], 500);
+            Log::error('Cancel top up request error: ' . $e->getMessage());
+            return back()->with('error', 'Terjadi kesalahan saat membatalkan permintaan top up.');
         }
     }
 }
