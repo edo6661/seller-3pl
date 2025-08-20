@@ -216,7 +216,7 @@
                 
                 selectBasicPermissions() {
                     this.clearAllPermissions();
-                    const basicPermissions = ['products.view', 'pickup.view', 'addresses.view', 'profile.view'];
+                    const basicPermissions = ['products.view', 'wallet.view', 'pickup.view', 'addresses.view', 'profile.view'];
                     const checkboxes = document.querySelectorAll('input[name="permissions[]"]');
                     checkboxes.forEach(checkbox => {
                         if (basicPermissions.includes(checkbox.value)) {
@@ -229,8 +229,10 @@
                     this.clearAllPermissions();
                     const advancedPermissions = [
                         'products.view', 'products.create', 'products.edit',
-                        'wallet.view', 'pickup.view', 'pickup.create', 'pickup.manage',
-                        'addresses.view', 'addresses.create', 'addresses.edit', 'addresses.delete', 'profile.view', 'profile.edit'
+                        'wallet.view', 'wallet.transaction',
+                        'pickup.view', 'pickup.create', 'pickup.manage',
+                        'addresses.view', 'addresses.create', 'addresses.edit', 'addresses.delete', 
+                        'profile.view', 'profile.edit'
                     ];
                     const checkboxes = document.querySelectorAll('input[name="permissions[]"]');
                     checkboxes.forEach(checkbox => {

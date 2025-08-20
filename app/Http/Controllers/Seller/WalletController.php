@@ -24,17 +24,38 @@ class WalletController extends Controller
         $this->walletService = $walletService;
     }
 
+    // TAMBAHKAN HELPER METHOD INI SEPERTI DI AddressController
+    private function getSellerId()
+    {
+        $user = auth()->user();
+        $membership = $user->memberOf()->first();
+        if ($membership) {
+            return $membership->seller_id;
+        }
+        if ($user->isSeller()) {
+            return $user->id;
+        }
+        abort(403, 'Akses tidak diizinkan.');
+    }
+
+    private function getSeller(): \App\Models\User
+    {
+        $sellerId = $this->getSellerId();
+        return \App\Models\User::findOrFail($sellerId);
+    }
+
     /**
      * Tampilkan halaman dompet
      */
     public function index(): View
     {
-        $user = Auth::user();
-        $wallet = $this->walletService->getOrCreateWallet($user);
-        $transactions = $this->walletService->getTransactionHistory($user, 15);
+        // Gunakan seller yang benar
+        $seller = $this->getSeller();
+        $wallet = $this->walletService->getOrCreateWallet($seller);
+        $transactions = $this->walletService->getTransactionHistory($seller, 15);
         
         // Dapatkan status permintaan pending
-        $pendingRequests = $this->walletService->hasPendingRequests($user);
+        $pendingRequests = $this->walletService->hasPendingRequests($seller);
 
         return view('seller.wallet.index', [
             'wallet' => $wallet,
@@ -48,10 +69,10 @@ class WalletController extends Controller
      */
     public function topUp(): View
     {
-        $user = Auth::user();
-        $wallet = $this->walletService->getOrCreateWallet($user);
-        $topUpRequests = $this->walletService->getTopUpRequests($user, 5);
-        $resumableRequests = $this->walletService->getResumableTopUpRequests($user);
+        $seller = $this->getSeller();
+        $wallet = $this->walletService->getOrCreateWallet($seller);
+        $topUpRequests = $this->walletService->getTopUpRequests($seller, 5);
+        $resumableRequests = $this->walletService->getResumableTopUpRequests($seller);
         
         return view('seller.wallet.topup', [
             'wallet' => $wallet,
@@ -66,10 +87,10 @@ class WalletController extends Controller
     public function topUpSubmit(TopUpRequest $request): RedirectResponse
     {
         try {
-            $user = Auth::user();
+            $seller = $this->getSeller();
             
             // Cek apakah ada permintaan yang belum selesai
-            $existingRequests = $this->walletService->getResumableTopUpRequests($user);
+            $existingRequests = $this->walletService->getResumableTopUpRequests($seller);
             
             if ($existingRequests->count() > 0) {
                 return redirect()
@@ -78,7 +99,7 @@ class WalletController extends Controller
             }
             
             $amount = $request->amount;
-            $transaction = $this->walletService->createTopUpTransaction($user, $amount);
+            $transaction = $this->walletService->createTopUpTransaction($seller, $amount);
 
             return redirect()
                 ->route('seller.wallet.topup.payment', $transaction->reference_id)
@@ -91,7 +112,7 @@ class WalletController extends Controller
 
         } catch (\Exception $e) {
             Log::error('Top up submission error', [
-                'user_id' => Auth::id(),
+                'user_id' => $this->getSellerId(),
                 'error' => $e->getMessage()
             ]);
             
@@ -106,10 +127,10 @@ class WalletController extends Controller
      */
     public function topUpPayment(string $referenceId): View
     {
-        $user = Auth::user();
+        $seller = $this->getSeller();
         $transaction = $this->walletService->getTransactionByReferenceId($referenceId);
 
-        if (!$transaction || $transaction->wallet->user_id !== $user->id) {
+        if (!$transaction || $transaction->wallet->user_id !== $seller->id) {
             abort(404, 'Transaksi top up tidak ditemukan.');
         }
 
@@ -131,10 +152,10 @@ class WalletController extends Controller
         ]);
 
         try {
-            $user = Auth::user();
+            $seller = $this->getSeller();
             $transaction = $this->walletService->getTransactionByReferenceId($referenceId);
 
-            if (!$transaction || $transaction->wallet->user_id !== $user->id) {
+            if (!$transaction || $transaction->wallet->user_id !== $seller->id) {
                 abort(404, 'Transaksi top up tidak ditemukan.');
             }
 
@@ -155,10 +176,10 @@ class WalletController extends Controller
      */
     public function topUpUpload(string $referenceId): View
     {
-        $user = Auth::user();
+        $seller = $this->getSeller();
         $transaction = $this->walletService->getTransactionByReferenceId($referenceId);
 
-        if (!$transaction || $transaction->wallet->user_id !== $user->id) {
+        if (!$transaction || $transaction->wallet->user_id !== $seller->id) {
             abort(404, 'Transaksi top up tidak ditemukan.');
         }
 
@@ -173,10 +194,10 @@ class WalletController extends Controller
     public function uploadPaymentProof(PaymentProofUploadRequest $request, string $referenceId): RedirectResponse
     {
         try {
-            $user = Auth::user();
+            $seller = $this->getSeller();
             $transaction = $this->walletService->getTransactionByReferenceId($referenceId);
 
-            if (!$transaction || $transaction->wallet->user_id !== $user->id) {
+            if (!$transaction || $transaction->wallet->user_id !== $seller->id) {
                 abort(404, 'Transaksi top up tidak ditemukan.');
             }
 
@@ -200,10 +221,10 @@ class WalletController extends Controller
      */
     public function resumeTopUpProcess(string $referenceId): RedirectResponse
     {
-        $user = Auth::user();
+        $seller = $this->getSeller();
         $transaction = $this->walletService->getTransactionByReferenceId($referenceId);
 
-        if (!$transaction || $transaction->wallet->user_id !== $user->id) {
+        if (!$transaction || $transaction->wallet->user_id !== $seller->id) {
             abort(404, 'Transaksi top up tidak ditemukan.');
         }
 
@@ -223,9 +244,9 @@ class WalletController extends Controller
      */
     public function withdraw(): View
     {
-        $user = Auth::user();
-        $wallet = $this->walletService->getOrCreateWallet($user);
-        $withdrawRequests = $this->walletService->getWithdrawRequests($user, 5);
+        $seller = $this->getSeller();
+        $wallet = $this->walletService->getOrCreateWallet($seller);
+        $withdrawRequests = $this->walletService->getWithdrawRequests($seller, 5);
 
         return view('seller.wallet.withdraw', [
             'wallet' => $wallet,
@@ -239,7 +260,7 @@ class WalletController extends Controller
     public function withdrawSubmit(WithdrawRequest $request): RedirectResponse
     {
         try {
-            $user = Auth::user();
+            $seller = $this->getSeller();
             $amount = $request->amount;
             $bankDetails = [
                 'bank_name' => $request->bank_name,
@@ -247,7 +268,7 @@ class WalletController extends Controller
                 'account_number' => $request->account_number
             ];
 
-            $this->walletService->createWithdrawRequest($user, $amount, $bankDetails);
+            $this->walletService->createWithdrawRequest($seller, $amount, $bankDetails);
 
             return redirect()
                 ->route('seller.wallet.index')
@@ -272,8 +293,8 @@ class WalletController extends Controller
     public function transactionDetail(Request $request, int $id): View
     {   
         try {
-            $user = Auth::user();
-            $transaction = $this->walletService->getTransactionById($user, $id);
+            $seller = $this->getSeller();
+            $transaction = $this->walletService->getTransactionById($seller, $id);
 
             if (!$transaction) {
                 abort(404, 'Transaksi tidak ditemukan.');
@@ -294,8 +315,8 @@ class WalletController extends Controller
     public function cancelTransaction(Request $request, int $id): RedirectResponse
     {
         try {
-            $user = Auth::user();
-            $this->walletService->cancelTransaction($user, $id);
+            $seller = $this->getSeller();
+            $this->walletService->cancelTransaction($seller, $id);
 
             return redirect()
                 ->route('seller.wallet.index')
@@ -318,14 +339,14 @@ class WalletController extends Controller
     public function cancelTopUpRequest(string $referenceId): RedirectResponse
     {
         try {
-            $user = Auth::user();
+            $seller = $this->getSeller();
             $transaction = $this->walletService->getTransactionByReferenceId($referenceId);
 
-            if (!$transaction || $transaction->wallet->user_id !== $user->id) {
+            if (!$transaction || $transaction->wallet->user_id !== $seller->id) {
                 abort(404, 'Transaksi top up tidak ditemukan.');
             }
 
-            $this->walletService->cancelTransaction($user, $transaction->id);
+            $this->walletService->cancelTransaction($seller, $transaction->id);
 
             return redirect()
                 ->route('seller.wallet.index')

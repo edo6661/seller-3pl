@@ -141,6 +141,23 @@
                                     @endforeach
                                 </div>
                             </div>
+                            {{-- Wallet Permissions --}}
+                            <div class="bg-green-50 p-4 rounded-lg">
+                                <h5 class="font-medium text-green-900 mb-3 flex items-center">
+                                    <i class="fas fa-wallet mr-2"></i>
+                                    Manajemen Wallet
+                                </h5>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    @foreach(['wallet.view', 'wallet.transaction'] as $permission)
+                                        <label class="flex items-center">
+                                            <input type="checkbox" name="permissions[]" value="{{ $permission }}" 
+                                                {{ in_array($permission, old('permissions', [])) ? 'checked' : '' }}
+                                                class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                            <span class="ml-2 text-sm text-gray-700">{{ $availablePermissions[$permission] }}</span>
+                                        </label>
+                                    @endforeach
+                                </div>
+                            </div>
                         {{-- Quick Select Options --}}
                         <div class="mt-6 p-4 bg-gray-50 rounded-lg">
                             <h6 class="font-medium text-gray-700 mb-3">Pilihan Cepat:</h6>
@@ -189,7 +206,7 @@
                 },
                 selectBasicPermissions() {
                     this.clearAllPermissions();
-                    const basicPermissions = ['products.view', 'pickup.view', 'addresses.view', 'profile.view'];
+                    const basicPermissions = ['products.view', 'wallet.view', 'pickup.view', 'addresses.view', 'profile.view'];
                     const checkboxes = document.querySelectorAll('input[name="permissions[]"]');
                     checkboxes.forEach(checkbox => {
                         if (basicPermissions.includes(checkbox.value)) {
@@ -201,8 +218,10 @@
                     this.clearAllPermissions();
                     const advancedPermissions = [
                         'products.view', 'products.create', 'products.edit',
-                        'wallet.view', 'pickup.view', 'pickup.create', 'pickup.manage',
-                        'addresses.view', 'addresses.create', 'addresses.edit', 'addresses.delete', 'profile.view'
+                        'wallet.view', 'wallet.transaction',
+                        'pickup.view', 'pickup.create', 'pickup.manage',
+                        'addresses.view', 'addresses.create', 'addresses.edit', 'addresses.delete', 
+                        'profile.view', 'profile.edit'
                     ];
                     const checkboxes = document.querySelectorAll('input[name="permissions[]"]');
                     checkboxes.forEach(checkbox => {
