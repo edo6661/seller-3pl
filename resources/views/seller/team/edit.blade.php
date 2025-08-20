@@ -147,6 +147,23 @@
                                 </div>
                             </div>
                         </div>
+                        {{-- Team Management Permissions --}}
+                            <div class="bg-red-50 p-4 rounded-lg">
+                                <h5 class="font-medium text-red-900 mb-3 flex items-center">
+                                    <i class="fas fa-users-cog mr-2"></i>
+                                    Manajemen Tim
+                                </h5>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    @foreach(['team.view', 'team.create', 'team.edit', 'team.delete'] as $permission)
+                                        <label class="flex items-center">
+                                            <input type="checkbox" name="permissions[]" value="{{ $permission }}"
+                                                 {{ in_array($permission, old('permissions', $teamMember->permissions ?? [])) ? 'checked' : '' }}
+                                                class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                            <span class="ml-2 text-sm text-gray-700">{{ $availablePermissions[$permission] }}</span>
+                                        </label>
+                                    @endforeach
+                                </div>
+                            </div>
                         
                         {{-- Quick Select Options --}}
                         <div class="mt-6 p-4 bg-gray-50 rounded-lg">

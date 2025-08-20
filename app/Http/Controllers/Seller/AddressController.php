@@ -7,27 +7,18 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 class AddressController extends Controller
 {
-    /**
-     * Mendapatkan ID seller utama, baik untuk seller itu sendiri maupun untuk anggota tim.
-     *
-     * @return int
-     */
-    private function getSellerId(): int
+    private function getSellerId()
     {
         $user = auth()->user();
+        $membership = $user->memberOf()->first();
+        if ($membership) {
+            return $membership->seller_id;
+        }
         if ($user->isSeller()) {
             return $user->id;
         }
-        if ($user->isTeamMember()) {
-            return $user->memberOf()->first()->seller_id;
-        }
         abort(403, 'Akses tidak diizinkan.');
     }
-    /**
-     * Mendapatkan instance user dari seller utama.
-     *
-     * @return \App\Models\User
-     */
     private function getSeller(): User
     {
         $sellerId = $this->getSellerId();

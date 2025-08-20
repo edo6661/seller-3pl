@@ -19,11 +19,12 @@ class ProductController extends Controller
      private function getSellerId()
     {
         $user = auth()->user();
+        $membership = $user->memberOf()->first();
+        if ($membership) {
+            return $membership->seller_id;
+        }
         if ($user->isSeller()) {
             return $user->id;
-        }
-        if ($user->isTeamMember()) {
-            return $user->memberOf()->first()->seller_id;
         }
         abort(403, 'Akses tidak diizinkan.');
     }

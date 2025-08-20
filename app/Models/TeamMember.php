@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -38,29 +37,24 @@ class TeamMember extends Authenticatable
         'accepted_at' => 'datetime',
     ];
 
-    // Relasi ke seller (user utama)
     public function seller()
     {
         return $this->belongsTo(User::class, 'seller_id');
     }
 
-    // Relasi ke user (jika sudah accept invitation)
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    // Check permission
     public function hasPermission(string $permission): bool
     {
         if (!$this->is_active) {
             return false;
         }
-        
         return in_array($permission, $this->permissions ?? []);
     }
 
-    // Available permissions
     public static function getAvailablePermissions(): array
     {
         return [
@@ -79,22 +73,23 @@ class TeamMember extends Authenticatable
             'addresses.delete' => 'Hapus Alamat',
             'profile.view' => 'Lihat Profile Toko',
             'profile.edit' => 'Edit Profile Toko',
+            'team.view' => 'Lihat Anggota Tim',
+            'team.create' => 'Undang Anggota Tim',
+            'team.edit' => 'Edit Anggota Tim',
+            'team.delete' => 'Hapus Anggota Tim',
         ];
     }
 
-    // Scope aktif
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
     }
 
-    // Scope sudah terverifikasi
     public function scopeVerified($query)
     {
         return $query->whereNotNull('email_verified_at');
     }
 
-    // Scope belum accept invitation
     public function scopePendingInvitation($query)
     {
         return $query->whereNull('accepted_at')->whereNotNull('invited_at');

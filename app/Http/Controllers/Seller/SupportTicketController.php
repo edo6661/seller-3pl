@@ -6,8 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Requests\SupportTicket\AddResponseRequest;
 use App\Requests\SupportTicket\CreateTicketRequest;
 use App\Services\SupportTicketService;
+use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class SupportTicketController extends Controller
 {
@@ -19,10 +19,37 @@ class SupportTicketController extends Controller
     }
 
     /**
+     * Mendapatkan ID seller berdasarkan user yang login
+     */
+    private function getSellerId()
+    {
+        $user = auth()->user();
+        $membership = $user->memberOf()->first();
+        if ($membership) {
+            return $membership->seller_id;
+        }
+        if ($user->isSeller()) {
+            return $user->id;
+        }
+        abort(403, 'Akses tidak diizinkan.');
+    }
+
+    /**
+     * Mendapatkan instance seller
+     */
+    private function getSeller(): User
+    {
+        $sellerId = $this->getSellerId();
+        return User::findOrFail($sellerId);
+    }
+
+    /**
      * Menampilkan daftar tiket user
      */
     public function index(Request $request)
     {
+        $sellerId = $this->getSellerId();
+        
         $filters = [
             'status' => $request->get('status'),
             'category' => $request->get('category'),
@@ -30,8 +57,8 @@ class SupportTicketController extends Controller
             'search' => $request->get('search'),
         ];
 
-        $tickets = $this->ticketService->getUserTickets(Auth::id(), $filters);
-        $stats = $this->ticketService->getTicketStats(Auth::id());
+        $tickets = $this->ticketService->getUserTickets($sellerId, $filters);
+        $stats = $this->ticketService->getTicketStats($sellerId);
 
         return view('seller.support.index', compact('tickets', 'stats', 'filters'));
     }
@@ -50,8 +77,9 @@ class SupportTicketController extends Controller
     public function store(CreateTicketRequest $request)
     {
         try {
+            $sellerId = $this->getSellerId();
             $data = $request->validated();
-            $data['user_id'] = Auth::id();
+            $data['user_id'] = $sellerId;
 
             // Handle file uploads jika ada
             if ($request->hasFile('attachments')) {
@@ -76,11 +104,15 @@ class SupportTicketController extends Controller
      */
     public function show(int $id)
     {
-        $ticket = $this->ticketService->getTicketDetail($id, Auth::id());
+        $sellerId = $this->getSellerId();
+        $ticket = $this->ticketService->getTicketDetail($id, $sellerId);
 
         if (!$ticket) {
             abort(404, 'Tiket tidak ditemukan');
         }
+
+        // Cek kepemilikan tiket
+        abort_unless($ticket->user_id === $sellerId, 403, 'Anda tidak memiliki akses ke tiket ini.');
 
         // Mark admin responses sebagai read
         foreach ($ticket->responses as $response) {
@@ -97,11 +129,15 @@ class SupportTicketController extends Controller
      */
     public function addResponse(AddResponseRequest $request, int $id)
     {
-        $ticket = $this->ticketService->getTicketDetail($id, Auth::id());
+        $sellerId = $this->getSellerId();
+        $ticket = $this->ticketService->getTicketDetail($id, $sellerId);
 
         if (!$ticket) {
             abort(404, 'Tiket tidak ditemukan');
         }
+
+        // Cek kepemilikan tiket
+        abort_unless($ticket->user_id === $sellerId, 403, 'Anda tidak memiliki akses ke tiket ini.');
 
         if ($ticket->isClosed()) {
             return back()->with('error', 'Tidak dapat menambahkan respons ke tiket yang sudah ditutup.');
@@ -109,7 +145,7 @@ class SupportTicketController extends Controller
 
         try {
             $data = $request->validated();
-            $data['user_id'] = Auth::id();
+            $data['user_id'] = $sellerId;
             $data['is_admin_response'] = false;
 
             // Handle file uploads jika ada
@@ -141,6 +177,7 @@ class SupportTicketController extends Controller
         }
 
         try {
+            $sellerId = $this->getSellerId();
             $pickupRequest = $this->ticketService->findPickupRequest($identifier);
 
             if (!$pickupRequest) {
@@ -150,8 +187,8 @@ class SupportTicketController extends Controller
                 ]);
             }
 
-            // Cek apakah pickup request milik user yang login
-            if ($pickupRequest->user_id !== Auth::id()) {
+            // Cek apakah pickup request milik seller yang login
+            if ($pickupRequest->user_id !== $sellerId) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Pickup request tidak ditemukan'
@@ -184,7 +221,8 @@ class SupportTicketController extends Controller
     public function getUnreadCount()
     {
         try {
-            $count = $this->ticketService->getUnreadResponsesCount(Auth::id());
+            $sellerId = $this->getSellerId();
+            $count = $this->ticketService->getUnreadResponsesCount($sellerId);
             
             return response()->json([
                 'success' => true,
@@ -203,11 +241,15 @@ class SupportTicketController extends Controller
      */
     public function reopen(int $id)
     {
-        $ticket = $this->ticketService->getTicketDetail($id, Auth::id());
+        $sellerId = $this->getSellerId();
+        $ticket = $this->ticketService->getTicketDetail($id, $sellerId);
 
         if (!$ticket) {
             abort(404, 'Tiket tidak ditemukan');
         }
+
+        // Cek kepemilikan tiket
+        abort_unless($ticket->user_id === $sellerId, 403, 'Anda tidak memiliki akses ke tiket ini.');
 
         if (!$ticket->canBeReopened()) {
             return back()->with('error', 'Tiket ini tidak dapat dibuka kembali');
