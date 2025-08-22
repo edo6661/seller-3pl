@@ -16,6 +16,8 @@ class UpdatePickupRequestRequest extends FormRequest
         return [
             'address_id' => 'required_if:delivery_type,pickup|nullable|exists:user_addresses,id',
             'delivery_type' => ['required', Rule::in(['pickup', 'drop_off'])],
+            'recipient_latitude' => 'nullable|numeric',
+            'recipient_longitude' => 'nullable|numeric',
             'recipient_name' => 'required|string|max:255',
             'recipient_phone' => 'required|string|max:20',
             'recipient_city' => 'required|string|max:100',

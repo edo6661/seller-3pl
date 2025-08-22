@@ -173,8 +173,10 @@ class PickupRequestService
                 'courier_service' => $data['courier_service'] ?? null,
                 'notes' => $data['notes'] ?? null,
             ];
-            if ($pickupRequest->isPickupType()) {
+            if ($data['delivery_type'] === 'pickup') {
                 $updateData['address_id'] = $data['address_id'] ?? null;
+            } else {
+                $updateData['address_id'] = null; 
             }
             $pickupRequest->update($updateData);
             if (isset($data['items'])) {
