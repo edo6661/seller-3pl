@@ -4,11 +4,11 @@
         <div class="mb-8">
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
-                    <h1 class="text-3xl font-bold text-neutral-900">Detail {{ $pickupRequest->delivery_type === 'pickup' ? 'Pickup' : 'Drop Off' }} Request</h1>
+                    <h1 class="text-3xl font-bold text-neutral-900">Detail {{ $pickupRequest->delivery_type->value === 'pickup' ? 'Pickup' : 'Drop Off' }} Request</h1>
                     <p class="mt-2 text-neutral-600">
                         Kode: <span class="font-mono bg-neutral-100 px-2 py-1 rounded">{{ $pickupRequest->pickup_code }}</span>
-                        <span class="ml-3 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {{ $pickupRequest->delivery_type === 'pickup' ? 'bg-blue-100 text-blue-800' : 'bg-orange-100 text-orange-800' }}">
-                            {{ $pickupRequest->delivery_type === 'pickup' ? 'Pickup' : 'Drop Off' }}
+                        <span class="ml-3 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {{ $pickupRequest->delivery_type->value === 'pickup' ? 'bg-blue-100 text-blue-800' : 'bg-orange-100 text-orange-800' }}">
+                            {{ $pickupRequest->delivery_type->value === 'pickup' ? 'Pickup' : 'Drop Off' }}
                         </span>
                     </p>
                 </div>
@@ -374,7 +374,7 @@
                                 </form>
                             @endif
                             <form method="POST" action="{{ route('seller.pickup-request.cancel', $pickupRequest->id) }}"
-                                onsubmit="return confirm('Yakin ingin membatalkan {{ $pickupRequest->delivery_type === 'pickup' ? 'pickup' : 'drop off' }} request ini?')" class="w-full">
+                                onsubmit="return confirm('Yakin ingin membatalkan {{ $pickupRequest->delivery_type->value === 'pickup' ? 'pickup' : 'drop off' }} request ini?')" class="w-full">
                                 @csrf
                                 <button type="submit" class="w-full px-4 py-2 bg-error text-white rounded-lg hover:bg-error-600 transition-colors shadow-sm flex items-center justify-center gap-2">
                                     <i class="fas fa-times-circle"></i>

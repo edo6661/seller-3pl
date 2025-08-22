@@ -129,7 +129,7 @@
                             <tr>
                                 <th
                                     class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
-                                    Kode Pickup
+                                    Kode / Tipe
                                 </th>
                                 <th
                                     class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">
@@ -160,6 +160,11 @@
                                         <div class="text-sm font-medium text-neutral-900">
                                             {{ $pickupRequest->pickup_code }}
                                         </div>
+                                        <div class="text-xs mt-1">
+                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {{ $pickupRequest->delivery_type->value === 'pickup' ? 'bg-blue-100 text-blue-800' : 'bg-orange-100 text-orange-800' }}">
+                                                {{ $pickupRequest->delivery_type->value === 'pickup' ? 'Pickup' : 'Drop Off' }}
+                                            </span>
+                                        </div>
                                         @if ($pickupRequest->courier_tracking_number)
                                             <div class="text-xs text-neutral-500 mt-1">
                                                 <i class="fas fa-barcode mr-1"></i>
@@ -169,10 +174,13 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm font-medium text-neutral-900">
-                                            {{ $pickupRequest->pickupAddress->name ?? 'N/A' }}
+                                            {{ $pickupRequest->recipient_name }}
                                         </div>
                                         <div class="text-xs text-neutral-500 mt-1">
-                                            <i class="fas fa-phone mr-1"></i> {{ $pickupRequest->pickupAddress->phone ?? 'N/A' }}
+                                            <i class="fas fa-phone mr-1"></i> {{ $pickupRequest->recipient_phone }}
+                                        </div>
+                                        <div class="text-xs text-neutral-500">
+                                            <i class="fas fa-map-marker-alt mr-1"></i> {{ $pickupRequest->recipient_city }}
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
@@ -237,7 +245,7 @@
                                             @if ($pickupRequest->canBeCancelled())
                                                 <form method="POST"
                                                     action="{{ route('seller.pickup-request.cancel', $pickupRequest->id) }}"
-                                                    onsubmit="return confirm('Yakin ingin membatalkan pickup request ini?')"
+                                                    onsubmit="return confirm('Yakin ingin membatalkan {{ $pickupRequest->delivery_type->value === 'pickup' ? 'pickup' : 'drop off' }} request ini?')"
                                                     class="inline">
                                                     @csrf
                                                     <button type="submit"

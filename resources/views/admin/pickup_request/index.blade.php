@@ -181,46 +181,44 @@
                     <table class="min-w-full divide-y divide-neutral-200">
                         <thead class="bg-neutral-50">
                             <tr>
-                                <th
-                                    class="px-6 py-4 text-left text-xs font-semibold text-neutral-700 uppercase tracking-wider">
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-neutral-700 uppercase tracking-wider">
                                     <i class="fas fa-barcode mr-2"></i>
                                     Kode & User
                                 </th>
-                                <th
-                                    class="px-6 py-4 text-left text-xs font-semibold text-neutral-700 uppercase tracking-wider">
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-neutral-700 uppercase tracking-wider">
                                     <i class="fas fa-user-check mr-2"></i>
                                     Penerima
                                 </th>
-                                <th
-                                    class="px-6 py-4 text-left text-xs font-semibold text-neutral-700 uppercase tracking-wider">
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-neutral-700 uppercase tracking-wider">
                                     <i class="fas fa-user mr-2"></i>
                                     Pengirim
                                 </th>
-                                <th
-                                    class="px-6 py-4 text-left text-xs font-semibold text-neutral-700 uppercase tracking-wider">
-                                    <i class="fas fa-info-circle mr-2"></i>
-                                    Status
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-neutral-700 uppercase tracking-wider">
+                                    <i class="fas fa-truck mr-2"></i>
+                                    Tipe & Status
                                 </th>
-                                <th
-                                    class="px-6 py-4 text-left text-xs font-semibold text-neutral-700 uppercase tracking-wider">
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-neutral-700 uppercase tracking-wider">
                                     <i class="fas fa-credit-card mr-2"></i>
                                     Payment
                                 </th>
-                                <th
-                                    class="px-6 py-4 text-left text-xs font-semibold text-neutral-700 uppercase tracking-wider">
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-neutral-700 uppercase tracking-wider">
                                     <i class="fas fa-money-bill mr-2"></i>
-                                    Total
+                                    Total & Items
                                 </th>
-                                <th
-                                    class="px-6 py-4 text-left text-xs font-semibold text-neutral-700 uppercase tracking-wider">
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-neutral-700 uppercase tracking-wider">
                                     <i class="fas fa-calendar mr-2"></i>
-                                    Tanggal
+                                    Tanggal & Jadwal
+                                </th>
+                                <th class="px-6 py-4 text-left text-xs font-semibold text-neutral-700 uppercase tracking-wider">
+                                    <i class="fas fa-cog mr-2"></i>
+                                    Aksi
                                 </th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-neutral-200">
                             @foreach ($pickupRequests as $pickupRequest)
                                 <tr class="hover:bg-neutral-50 transition-colors duration-200">
+                                    {{-- Kode & User --}}
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm font-semibold text-neutral-900">
                                             <i class="fas fa-barcode text-primary mr-2"></i>
@@ -236,36 +234,57 @@
                                                 {{ $pickupRequest->courier_tracking_number }}
                                             </div>
                                         @endif
+                                        @if ($pickupRequest->courier_service)
+                                            <div class="text-xs text-secondary-500 mt-1">
+                                                <i class="fas fa-truck text-secondary-400 mr-1"></i>
+                                                {{ $pickupRequest->courier_service }}
+                                            </div>
+                                        @endif
                                     </td>
+
+                                    {{-- Penerima --}}
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm font-medium text-neutral-900">
                                             <i class="fas fa-user-check text-success mr-1"></i>
-                                            {{ $pickupRequest->pickupAddress->name ?? 'N/A' }}
+                                            {{ $pickupRequest->recipient_name ?? 'N/A' }}
                                         </div>
                                         <div class="text-sm text-neutral-600">
                                             <i class="fas fa-phone text-neutral-400 mr-1"></i>
-                                            {{ $pickupRequest->pickupAddress->phone ?? 'N/A' }}
+                                            {{ $pickupRequest->recipient_phone ?? 'N/A' }}
                                         </div>
-                                        <div class="text-xs text-neutral-500">
+                                        <div class="text-xs text-neutral-500 mt-1">
+                                            <i class="fas fa-map-marker-alt text-neutral-400 mr-1"></i>
+                                            {{ $pickupRequest->recipient_city ?? 'N/A' }}
+                                        </div>
+                                        
+                                    </td>
+
+                                    {{-- Pengirim --}}
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-neutral-900">
+                                            <i class="fas fa-user text-primary mr-1"></i>
+                                            {{ $pickupRequest->pickupAddress->name ?? $pickupRequest->user->name ?? 'N/A' }}
+                                        </div>
+                                        <div class="text-sm text-neutral-600">
+                                            <i class="fas fa-phone text-neutral-400 mr-1"></i>
+                                            {{ $pickupRequest->pickupAddress->phone ?? $pickupRequest->user->phone ?? 'N/A' }}
+                                        </div>
+                                        <div class="text-xs text-neutral-500 mt-1">
                                             <i class="fas fa-map-marker-alt text-neutral-400 mr-1"></i>
                                             {{ $pickupRequest->pickupAddress->city ?? 'N/A' }}
                                         </div>
                                     </td>
+
+                                    {{-- Tipe & Status --}}
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm font-medium text-neutral-900">
-                                            <i class="fas fa-user text-primary mr-1"></i>
-                                            {{ $pickupRequest->pickup_name }}
+                                        {{-- Delivery Type --}}
+                                        <div class="mb-2">
+                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {{ $pickupRequest->delivery_type === 'pickup' ? 'bg-blue-100 text-blue-800' : 'bg-orange-100 text-orange-800' }}">
+                                                <i class="fas {{ $pickupRequest->delivery_type === 'pickup' ? 'fa-truck-pickup' : 'fa-shipping-fast' }} mr-1"></i>
+                                                {{ $pickupRequest->delivery_type === 'pickup' ? 'Pickup' : 'Drop Off' }}
+                                            </span>
                                         </div>
-                                        <div class="text-sm text-neutral-600">
-                                            <i class="fas fa-phone text-neutral-400 mr-1"></i>
-                                            {{ $pickupRequest->pickup_phone }}
-                                        </div>
-                                        <div class="text-xs text-neutral-500">
-                                            <i class="fas fa-map-marker-alt text-neutral-400 mr-1"></i>
-                                            {{ $pickupRequest->pickup_city }}
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        {{-- Status --}}
                                         @php
                                             $statusConfig = [
                                                 'pending' => [
@@ -333,26 +352,29 @@
                                                 'label' => ucfirst($pickupRequest->status),
                                             ];
                                         @endphp
-                                        <span
-                                            class="inline-flex items-center px-3 py-1 text-xs font-medium rounded-full border {{ $config['bg'] }} {{ $config['text'] }} {{ $config['border'] }}">
+                                        <span class="inline-flex items-center px-3 py-1 text-xs font-medium rounded-full border {{ $config['bg'] }} {{ $config['text'] }} {{ $config['border'] }}">
                                             <i class="{{ $config['icon'] }} mr-1"></i>
                                             {{ $config['label'] }}
                                         </span>
                                     </td>
+
+                                    {{-- Payment --}}
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         @php
                                             $paymentConfig = [
                                                 'cod' => [
-                                                    'bg' => 'bg-secondary-50',
-                                                    'text' => 'text-secondary-700',
-                                                    'border' => 'border-secondary-200',
-                                                    'icon' => 'fas fa-wallet',
+                                                    'bg' => 'bg-warning-50',
+                                                    'text' => 'text-warning-700',
+                                                    'border' => 'border-warning-200',
+                                                    'icon' => 'fas fa-money-bill-wave',
+                                                    'label' => 'COD'
                                                 ],
                                                 'wallet' => [
                                                     'bg' => 'bg-success-50',
                                                     'text' => 'text-success-700',
                                                     'border' => 'border-success-200',
-                                                    'icon' => 'fas fa-mobile-alt',
+                                                    'icon' => 'fas fa-wallet',
+                                                    'label' => 'Wallet'
                                                 ],
                                             ];
                                             $paymentCfg = $paymentConfig[$pickupRequest->payment_method] ?? [
@@ -360,14 +382,16 @@
                                                 'text' => 'text-neutral-700',
                                                 'border' => 'border-neutral-200',
                                                 'icon' => 'fas fa-credit-card',
+                                                'label' => ucfirst($pickupRequest->payment_method)
                                             ];
                                         @endphp
-                                        <span
-                                            class="inline-flex items-center px-3 py-1 text-xs font-medium rounded-full border {{ $paymentCfg['bg'] }} {{ $paymentCfg['text'] }} {{ $paymentCfg['border'] }}">
+                                        <span class="inline-flex items-center px-3 py-1 text-xs font-medium rounded-full border {{ $paymentCfg['bg'] }} {{ $paymentCfg['text'] }} {{ $paymentCfg['border'] }}">
                                             <i class="{{ $paymentCfg['icon'] }} mr-1"></i>
-                                            {{ ucfirst($pickupRequest->payment_method) }}
+                                            {{ $paymentCfg['label'] }}
                                         </span>
                                     </td>
+
+                                    {{-- Total & Items --}}
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm font-semibold text-neutral-900">
                                             <i class="fas fa-money-bill text-primary mr-1"></i>
@@ -377,26 +401,66 @@
                                             <i class="fas fa-box text-neutral-400 mr-1"></i>
                                             {{ $pickupRequest->items->count() }} item(s)
                                         </div>
-                                        <div class="text-xs text-neutral-500">
+                                        <div class="text-xs text-neutral-500 mt-1">
                                             <i class="fas fa-tag text-neutral-400 mr-1"></i>
                                             Produk: Rp {{ number_format($pickupRequest->product_total, 0, ',', '.') }}
                                         </div>
+                                        @if($pickupRequest->shipping_cost > 0)
+                                            <div class="text-xs text-neutral-500">
+                                                <i class="fas fa-truck text-neutral-400 mr-1"></i>
+                                                Kirim: Rp {{ number_format($pickupRequest->shipping_cost, 0, ',', '.') }}
+                                            </div>
+                                        @endif
+                                        @if($pickupRequest->service_fee > 0)
+                                            <div class="text-xs text-neutral-500">
+                                                <i class="fas fa-cogs text-neutral-400 mr-1"></i>
+                                                Layanan: Rp {{ number_format($pickupRequest->service_fee, 0, ',', '.') }}
+                                            </div>
+                                        @endif
                                     </td>
+
+                                    {{-- Tanggal & Jadwal --}}
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-600">
-                                        <div class="flex items-center">
+                                        {{-- Tanggal Dibuat --}}
+                                        <div class="flex items-center mb-1">
                                             <i class="fas fa-calendar text-neutral-400 mr-1"></i>
                                             {{ $pickupRequest->created_at->format('d M Y') }}
                                         </div>
-                                        <div class="text-xs text-neutral-500 mt-1">
+                                        <div class="text-xs text-neutral-500">
                                             <i class="fas fa-clock text-neutral-400 mr-1"></i>
                                             {{ $pickupRequest->created_at->format('H:i') }}
                                         </div>
+                                        
+                                        {{-- Jadwal Pickup jika ada --}}
                                         @if ($pickupRequest->pickup_scheduled_at)
-                                            <div class="text-xs text-secondary-600 mt-1">
+                                            <div class="text-xs text-secondary-600 mt-2 bg-secondary-50 px-2 py-1 rounded">
                                                 <i class="fas fa-calendar-check text-secondary-400 mr-1"></i>
                                                 Jadwal: {{ $pickupRequest->pickup_scheduled_at->format('d M H:i') }}
                                             </div>
                                         @endif
+
+                                        {{-- Tanggal Picked Up jika ada --}}
+                                        @if ($pickupRequest->picked_up_at)
+                                            <div class="text-xs text-primary-600 mt-1">
+                                                <i class="fas fa-truck-pickup text-primary-400 mr-1"></i>
+                                                Diambil: {{ $pickupRequest->picked_up_at->format('d M H:i') }}
+                                            </div>
+                                        @endif
+
+                                        {{-- Tanggal Delivered jika ada --}}
+                                        @if ($pickupRequest->delivered_at)
+                                            <div class="text-xs text-success-600 mt-1">
+                                                <i class="fas fa-check-circle text-success-400 mr-1"></i>
+                                                Terkirim: {{ $pickupRequest->delivered_at->format('d M H:i') }}
+                                            </div>
+                                        @endif
+                                    </td>
+
+                                    {{-- Aksi --}}
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <div class="flex items-center space-x-3">
+                                            
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach

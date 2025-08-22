@@ -68,10 +68,10 @@ class User extends Authenticatable
         return $this->hasMany(PickupRequest::class);
     }
 
-    public function withdrawalRequests()
-    {
-        return $this->hasMany(WithdrawRequest::class);
-    }
+    // public function withdrawalRequests()
+    // {
+    //     return $this->hasMany(WithdrawRequest::class);
+    // }
 
     public function notifications()
     {
