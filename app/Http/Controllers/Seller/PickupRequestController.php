@@ -7,6 +7,7 @@ use App\Requests\PickupRequest\UpdatePickupRequestRequest;
 use App\Services\PickupRequestService;
 use App\Services\ProductService;
 use App\Services\WalletService;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 class PickupRequestController extends Controller
@@ -20,37 +21,53 @@ class PickupRequestController extends Controller
         $this->productService = $productService;
         $this->walletService = $walletService;
     }
+    private function getSellerId()
+    {
+        $user = auth()->user();
+        $membership = $user->memberOf()->first();
+        if ($membership) {
+            return $membership->seller_id;
+        }
+        if ($user->isSeller()) {
+            return $user->id;
+        }
+        abort(403, 'Akses tidak diizinkan.');
+    }
+    private function getSeller(): User
+    {
+        $sellerId = $this->getSellerId();
+        return User::findOrFail($sellerId);
+    }
     public function index(Request $request)
     {
-        $userId = Auth::id();
+        $sellerId = $this->getSellerId(); 
         $search = $request->get('search');
         $status = $request->get('status');
         if ($search) {
-            $pickupRequests = $this->pickupRequestService->searchPickupRequests($search, $userId);
+            $pickupRequests = $this->pickupRequestService->searchPickupRequests($search, $sellerId);
         } elseif ($status) {
-            $pickupRequests = $this->pickupRequestService->getPickupRequestsByStatus($userId, $status);
+            $pickupRequests = $this->pickupRequestService->getPickupRequestsByStatus($sellerId, $status);
         } else {
-            $pickupRequests = $this->pickupRequestService->getUserPickupRequests($userId);
+            $pickupRequests = $this->pickupRequestService->getUserPickupRequests($sellerId);
         }
-        $stats = $this->pickupRequestService->getPickupRequestStats($userId);
-        $revenue = $this->pickupRequestService->getTotalRevenue($userId);
+        $stats = $this->pickupRequestService->getPickupRequestStats($sellerId);
+        $revenue = $this->pickupRequestService->getTotalRevenue($sellerId);
         return view('seller.pickup-request.index', compact('pickupRequests', 'stats', 'revenue', 'search', 'status'));
     }
     public function create()
     {
-        $user = Auth::user();
-        $products = $this->productService->getActiveProducts($user->id);
-        $wallet = $this->walletService->getOrCreateWallet(
-            $user
-        );
-        $addresses = $user->addresses()->get();
+        $seller = $this->getSeller(); 
+        $products = $this->productService->getActiveProducts($seller->id);
+        $wallet = $this->walletService->getOrCreateWallet($seller);
+        $addresses = $seller->addresses()->get();
         return view('seller.pickup-request.create', compact('products', 'wallet','addresses'));
     }
     public function checkWalletBalance(Request $request)
     {
         try {
             $totalAmount = $request->input('total_amount');
-            $wallet = $this->walletService->getOrCreateWallet(auth()->user());
+            $seller = $this->getSeller(); 
+            $wallet = $this->walletService->getOrCreateWallet($seller);
             $hasSufficientBalance = $wallet->hasSufficientBalance($totalAmount);
             return response()->json([
                 'success' => true,
@@ -74,15 +91,13 @@ class PickupRequestController extends Controller
     {
         try {
             $data = $request->validated();
-            $data['user_id'] = auth()->id();
+            $data['user_id'] = $this->getSellerId();
+            $data['seller'] = $this->getSeller();
             $data['requested_at'] = now();
-            
             $pickupRequest = $this->pickupRequestService->createPickupRequest($data);
-            
             return redirect()
                 ->route('seller.pickup-request.show', $pickupRequest)
                 ->with('success', 'Pickup request berhasil dibuat!');
-                
         } catch (\Exception $e) {
             return back()
                 ->withInput()
@@ -91,33 +106,34 @@ class PickupRequestController extends Controller
     }
     public function show($id)
     {
+        $sellerId = $this->getSellerId(); 
         $pickupRequest = $this->pickupRequestService->getPickupRequestById($id);
-        if (!$pickupRequest || $pickupRequest->user_id !== Auth::id()) {
+        if (!$pickupRequest || $pickupRequest->user_id !== $sellerId) {
             abort(404);
         }
         return view('seller.pickup-request.show', compact('pickupRequest'));
     }
     public function edit($id)
     {
-        
+        $sellerId = $this->getSellerId(); 
         $pickupRequest = $this->pickupRequestService->getPickupRequestById($id);
-        if (!$pickupRequest || $pickupRequest->user_id !== Auth::id()) {
+        if (!$pickupRequest || $pickupRequest->user_id !== $sellerId) {
             abort(404);
         }
         if (!$pickupRequest->canBeCancelled()) {
             return back()->with('error', 'Pickup request ini tidak dapat diedit karena statusnya.');
         }
-        $user = Auth::user(); 
-        $products = $this->productService->getActiveProducts($user->id);
-        $wallet = $this->walletService->getOrCreateWallet($user);
-        $addresses = $user->addresses()->get();
-
+        $seller = $this->getSeller(); 
+        $products = $this->productService->getActiveProducts($seller->id);
+        $wallet = $this->walletService->getOrCreateWallet($seller);
+        $addresses = $seller->addresses()->get();
         return view('seller.pickup-request.edit', compact('pickupRequest', 'products', 'wallet', 'addresses'));
     }
     public function update(UpdatePickupRequestRequest $request, $id)
     {
+        $sellerId = $this->getSellerId(); 
         $pickupRequest = $this->pickupRequestService->getPickupRequestById($id);
-        if (!$pickupRequest || $pickupRequest->user_id !== Auth::id()) {
+        if (!$pickupRequest || $pickupRequest->user_id !== $sellerId) {
             abort(404);
         }
         if (!$pickupRequest->canBeCancelled()) {
@@ -136,8 +152,9 @@ class PickupRequestController extends Controller
     }
     public function cancel($id)
     {
+        $sellerId = $this->getSellerId(); 
         $pickupRequest = $this->pickupRequestService->getPickupRequestById($id);
-        if (!$pickupRequest || $pickupRequest->user_id !== Auth::id()) {
+        if (!$pickupRequest || $pickupRequest->user_id !== $sellerId) {
             abort(404);
         }
         try {
@@ -149,8 +166,9 @@ class PickupRequestController extends Controller
     }
     public function confirm($id)
     {
+        $sellerId = $this->getSellerId(); 
         $pickupRequest = $this->pickupRequestService->getPickupRequestById($id);
-        if (!$pickupRequest || $pickupRequest->user_id !== Auth::id()) {
+        if (!$pickupRequest || $pickupRequest->user_id !== $sellerId) {
             abort(404);
         }
         try {
@@ -162,8 +180,9 @@ class PickupRequestController extends Controller
     }
     public function schedulePickup(SchedulePickupRequest $request, $id)
     {
+        $sellerId = $this->getSellerId(); 
         $pickupRequest = $this->pickupRequestService->getPickupRequestById($id);
-        if (!$pickupRequest || $pickupRequest->user_id !== Auth::id()) {
+        if (!$pickupRequest || $pickupRequest->user_id !== $sellerId) {
             abort(404);
         }
         try {
@@ -175,25 +194,23 @@ class PickupRequestController extends Controller
     }
     public function dashboard()
     {
-        $userId = Auth::id();
-        $stats = $this->pickupRequestService->getPickupRequestStats($userId);
-        $revenue = $this->pickupRequestService->getTotalRevenue($userId);
-        $monthlyStats = $this->pickupRequestService->getMonthlyStats($userId);
-        $recentPickupRequests = $this->pickupRequestService->getUserPickupRequests($userId)->take(5);
+        $sellerId = $this->getSellerId(); 
+        $stats = $this->pickupRequestService->getPickupRequestStats($sellerId);
+        $revenue = $this->pickupRequestService->getTotalRevenue($sellerId);
+        $monthlyStats = $this->pickupRequestService->getMonthlyStats($sellerId);
+        $recentPickupRequests = $this->pickupRequestService->getUserPickupRequests($sellerId)->take(5);
         return view('seller.pickup-request.dashboard', compact('stats', 'revenue', 'monthlyStats', 'recentPickupRequests'));
     }
     public function startDelivery($id)
     {
+        $sellerId = $this->getSellerId(); 
         $pickupRequest = $this->pickupRequestService->getPickupRequestById($id);
-        
-        if (!$pickupRequest || $pickupRequest->user_id !== Auth::id()) {
+        if (!$pickupRequest || $pickupRequest->user_id !== $sellerId) {
             abort(404);
         }
-        
         if (!$pickupRequest->isDropOffType() || $pickupRequest->status !== 'confirmed') {
             return back()->with('error', 'Request ini tidak dapat dimulai pengirimannya');
         }
-        
         try {
             $this->pickupRequestService->markAsInTransit($id);
             return back()->with('success', 'Pengiriman berhasil dimulai');

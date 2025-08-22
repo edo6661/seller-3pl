@@ -29,7 +29,9 @@ class PickupRequestService
             }
             $totalAmount = $productTotal + $data['shipping_cost'] + ($data['service_fee'] ?? 0);
             if ($data['payment_method'] === 'wallet') {
-                $wallet = $this->walletService->getOrCreateWallet(auth()->user());
+                $wallet = $this->walletService->getOrCreateWallet(
+                    $data['seller']
+                );
                 if (!$wallet->hasSufficientBalance($totalAmount)) {
                     throw new \Exception('Saldo wallet tidak mencukupi. Saldo Anda: ' . $wallet->getFormattedAvailableBalanceAttribute() . ', Total yang dibutuhkan: Rp ' . number_format($totalAmount, 0, ',', '.'));
                 }
@@ -73,7 +75,9 @@ class PickupRequestService
                 ]);
             }
             if ($data['payment_method'] === 'wallet') {
-                $wallet = $this->walletService->getOrCreateWallet(auth()->user());
+                $wallet = $this->walletService->getOrCreateWallet(
+                    $data['seller']
+                );
                 $wallet->deductBalance(
                     $totalAmount,
                     'Pembayaran Pickup Request #' . $pickupRequest->pickup_code,
