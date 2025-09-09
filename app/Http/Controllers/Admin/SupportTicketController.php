@@ -117,6 +117,9 @@ class SupportTicketController extends Controller
     /**
      * Menambahkan respons admin ke tiket
      */
+    /**
+ * @param \Illuminate\Http\Request $request
+ */
     public function addResponse(AdminResponseRequest $request, int $id)
     {
         $ticket = $this->ticketService->getTicketDetail($id);

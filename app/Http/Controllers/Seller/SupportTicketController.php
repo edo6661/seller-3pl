@@ -8,6 +8,7 @@ use App\Requests\SupportTicket\CreateTicketRequest;
 use App\Services\SupportTicketService;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class SupportTicketController extends Controller
 {
@@ -23,7 +24,7 @@ class SupportTicketController extends Controller
      */
     private function getSellerId()
     {
-        $user = auth()->user();
+        $user = Auth::user();
         $membership = $user->memberOf()->first();
         if ($membership) {
             return $membership->seller_id;
@@ -74,6 +75,9 @@ class SupportTicketController extends Controller
     /**
      * Menyimpan tiket baru
      */
+    /**
+ * @param \Illuminate\Http\Request $request
+ */
     public function store(CreateTicketRequest $request)
     {
         try {
@@ -82,6 +86,7 @@ class SupportTicketController extends Controller
             $data['user_id'] = $sellerId;
 
             // Handle file uploads jika ada
+            
             if ($request->hasFile('attachments')) {
                 $data['attachments'] = $request->file('attachments');
             }
@@ -127,6 +132,9 @@ class SupportTicketController extends Controller
     /**
      * Menambahkan respons ke tiket
      */
+    /**
+ * @param \Illuminate\Http\Request $request
+ */
     public function addResponse(AddResponseRequest $request, int $id)
     {
         $sellerId = $this->getSellerId();

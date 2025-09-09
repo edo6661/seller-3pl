@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Conversation;
 use App\Services\ChatService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class ChatController extends Controller
 {
@@ -19,7 +21,7 @@ class ChatController extends Controller
     public function index(Request $request)
     {
         try {
-            $user = auth()->user();
+            $user = Auth::user();
             $search = $request->get('search');
             
             if ($search) {
@@ -33,7 +35,7 @@ class ChatController extends Controller
             return view('chat.index', compact('conversations', 'unreadCount', 'search'));
         } catch (\Exception $e) {
             Log::error('Gagal memuat daftar chat: ' . $e->getMessage(), [
-                'user_id' => auth()->id(),
+                'user_id' => Auth::id(),
             ]);
             
             return redirect()->back()->with('error', 'Gagal memuat daftar chat. Silakan coba lagi.');
@@ -43,7 +45,7 @@ class ChatController extends Controller
     public function show(Conversation $conversation)
     {
         try {
-            $user = auth()->user();
+            $user = Auth::user();
             
             if (!$this->chatService->canUserAccessConversation($user, $conversation)) {
                 abort(403, 'Anda tidak memiliki akses ke percakapan ini.');
@@ -57,7 +59,7 @@ class ChatController extends Controller
             return view('chat.show', compact('conversation', 'messages', 'otherParticipant'));
         } catch (\Exception $e) {
             Log::error('Gagal memuat percakapan: ' . $e->getMessage(), [
-                'user_id' => auth()->id(),
+                'user_id' => Auth::id(),
                 'conversation_id' => $conversation->id,
             ]);
             
@@ -75,7 +77,7 @@ class ChatController extends Controller
         ]);
 
         try {
-            $user = auth()->user();
+            $user = Auth::user();
             
             if (!$this->chatService->canUserSendMessage($user, $conversation)) {
                 abort(403, 'Anda tidak dapat mengirim pesan di percakapan ini.');
@@ -99,7 +101,7 @@ class ChatController extends Controller
             return redirect()->route('chat.show', $conversation)->with('success', 'Pesan berhasil dikirim!');
         } catch (\Exception $e) {
             Log::error('Gagal mengirim pesan: ' . $e->getMessage(), [
-                'user_id' => auth()->id(),
+                'user_id' => Auth::id(),
                 'conversation_id' => $conversation->id,
                 'content' => $request->content,
             ]);
@@ -119,7 +121,7 @@ class ChatController extends Controller
     public function getOlderMessages(Request $request, Conversation $conversation)
     {
         try {
-            $user = auth()->user();
+            $user = Auth::user();
             
             if (!$this->chatService->canUserAccessConversation($user, $conversation)) {
                 abort(403, 'Anda tidak memiliki akses ke percakapan ini.');
@@ -151,7 +153,7 @@ class ChatController extends Controller
             ]);
         } catch (\Exception $e) {
             Log::error('Gagal memuat pesan lama: ' . $e->getMessage(), [
-                'user_id' => auth()->id(),
+                'user_id' => Auth::id(),
                 'conversation_id' => $conversation->id,
                 'before_id' => $request->get('before'),
             ]);
@@ -166,7 +168,7 @@ class ChatController extends Controller
     public function startChat()
     {
         try {
-            $user = auth()->user();
+            $user = Auth::user();
             
             if (!$user->isSeller()) {
                 abort(403, 'Hanya seller yang dapat memulai chat dengan admin.');
@@ -178,7 +180,7 @@ class ChatController extends Controller
             return redirect()->route('chat.show', $conversation);
         } catch (\Exception $e) {
             Log::error('Gagal memulai chat: ' . $e->getMessage(), [
-                'user_id' => auth()->id(),
+                'user_id' => Auth::id(),
             ]);
             
             return redirect()->back()->with('error', 'Gagal memulai chat dengan admin. Silakan coba lagi.');
@@ -188,7 +190,7 @@ class ChatController extends Controller
     public function markAsRead(Conversation $conversation)
     {
         try {
-            $user = auth()->user();
+            $user = Auth::user();
             
             if (!$this->chatService->canUserAccessConversation($user, $conversation)) {
                 abort(403, 'Anda tidak memiliki akses ke percakapan ini.');
@@ -199,7 +201,7 @@ class ChatController extends Controller
             return response()->json(['success' => true]);
         } catch (\Exception $e) {
             Log::error('Gagal menandai pesan sebagai dibaca: ' . $e->getMessage(), [
-                'user_id' => auth()->id(),
+                'user_id' => Auth::id(),
                 'conversation_id' => $conversation->id,
             ]);
             
@@ -210,7 +212,7 @@ class ChatController extends Controller
     public function getUnreadCount()
     {
         try {
-            $user = auth()->user();
+            $user = Auth::user();
             if (!$user) {
                 return response()->json(['success' => false, 'count' => 0], 401);
             }
@@ -222,7 +224,7 @@ class ChatController extends Controller
             ]);
         } catch (\Exception $e) {
             Log::error('Gagal mengambil unread count: ' . $e->getMessage(), [
-                'user_id' => auth()->id(),
+                'user_id' => Auth::id(),
             ]);
             
             return response()->json([
@@ -231,10 +233,13 @@ class ChatController extends Controller
             ], 500);
         }
     }
+    /**
+ * @param \Illuminate\Http\Request $request
+ */
     public function getConversationsData(Request $request)
     {
         try {
-            $user = auth()->user();
+            $user = Auth::user();
             $search = $request->get('search');
             
             if ($search) {
@@ -271,7 +276,7 @@ class ChatController extends Controller
             ]);
         } catch (\Exception $e) {
             Log::error('Gagal memuat data conversations: ' . $e->getMessage(), [
-                'user_id' => auth()->id(),
+                'user_id' => Auth::id(),
             ]);
             
             return response()->json([
@@ -285,7 +290,7 @@ class ChatController extends Controller
     public function getMessagesData(Conversation $conversation)
     {
         try {
-            $user = auth()->user();
+            $user = Auth::user();
             
             if (!$this->chatService->canUserAccessConversation($user, $conversation)) {
                 abort(403, 'Anda tidak memiliki akses ke percakapan ini.');
@@ -315,7 +320,7 @@ class ChatController extends Controller
             ]);
         } catch (\Exception $e) {
             Log::error('Gagal memuat messages: ' . $e->getMessage(), [
-                'user_id' => auth()->id(),
+                'user_id' => Auth::id(),
                 'conversation_id' => $conversation->id,
             ]);
             
@@ -330,7 +335,7 @@ class ChatController extends Controller
     public function startChatJson()
     {
         try {
-            $user = auth()->user();
+            $user = Auth::user();
             
             if (!$user->isSeller()) {
                 return response()->json([
@@ -358,7 +363,7 @@ class ChatController extends Controller
             ]);
         } catch (\Exception $e) {
             Log::error('Gagal memulai chat: ' . $e->getMessage(), [
-                'user_id' => auth()->id(),
+                'user_id' => Auth::id(),
             ]);
             
             return response()->json([

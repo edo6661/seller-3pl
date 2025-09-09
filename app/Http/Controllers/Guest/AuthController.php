@@ -30,7 +30,9 @@ class AuthController extends Controller
     {
         return view('guest.auth.login');
     }
-
+/**
+ * @param \Illuminate\Http\Request $request
+ */
     public function loginSubmit(LoginRequest $request): RedirectResponse
     {
         try {
@@ -61,7 +63,9 @@ class AuthController extends Controller
     {
         return view('guest.auth.register');
     }
-
+/**
+ * @param \Illuminate\Http\Request $request
+ */
     public function registerSubmit(RegisterRequest $request): RedirectResponse
     {
         try {

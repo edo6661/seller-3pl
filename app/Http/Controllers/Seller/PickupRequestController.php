@@ -23,7 +23,7 @@ class PickupRequestController extends Controller
     }
     private function getSellerId()
     {
-        $user = auth()->user();
+        $user = Auth::user();
         $membership = $user->memberOf()->first();
         if ($membership) {
             return $membership->seller_id;

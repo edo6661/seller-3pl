@@ -6,6 +6,7 @@ use App\Requests\UpdateProductRequest;
 use App\Services\ProductService;
 use App\Services\ProductExportService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 class ProductController extends Controller
 {
@@ -18,7 +19,7 @@ class ProductController extends Controller
     }
      private function getSellerId()
     {
-        $user = auth()->user();
+        $user = Auth::user();
         $membership = $user->memberOf()->first();
         if ($membership) {
             return $membership->seller_id;
@@ -44,18 +45,21 @@ class ProductController extends Controller
     {
         return view('seller.products.create');
     }
+    /**
+ * @param \Illuminate\Http\Request $request
+ */
     public function store(StoreProductRequest $request)
     {
         try {
             $this->productService->createProduct(
-                array_merge($request->validated(), ['user_id' => auth()->id()])
+                array_merge($request->validated(), ['user_id' => Auth::id()])
             );
             return redirect()
                 ->route('seller.products.index')
                 ->with('success', 'Produk berhasil ditambahkan!');
         } catch (\Exception $e) {
             Log::error('Gagal menambahkan produk: ' . $e->getMessage(), [
-                'user_id' => auth()->id(),
+                'user_id' => Auth::id(),
                 'data' => $request->all(),
             ]);
             return redirect()
@@ -67,7 +71,7 @@ class ProductController extends Controller
     public function show(int $id)
     {
         $product = $this->productService->getProductById($id);
-        if (!$product || $product->user_id !== auth()->id()) {
+        if (!$product || $product->user_id !== Auth::id()) {
             abort(404, 'Produk tidak ditemukan.');
         }
         return view('seller.products.show', compact('product'));
@@ -75,7 +79,7 @@ class ProductController extends Controller
     public function edit(int $id)
     {
         $product = $this->productService->getProductById($id);
-        if (!$product || $product->user_id !== auth()->id()) {
+        if (!$product || $product->user_id !== Auth::id()) {
             abort(404, 'Produk tidak ditemukan.');
         }
         return view('seller.products.edit', compact('product'));
@@ -84,7 +88,7 @@ class ProductController extends Controller
     {
         try {
             $product = $this->productService->getProductById($id);
-            if (!$product || $product->user_id !== auth()->id()) {
+            if (!$product || $product->user_id !== Auth::id()) {
                 abort(404, 'Produk tidak ditemukan.');
             }
             $this->productService->updateProduct($id, $request->validated());
@@ -102,7 +106,7 @@ class ProductController extends Controller
     {
         try {
             $product = $this->productService->getProductById($id);
-            if (!$product || $product->user_id !== auth()->id()) {
+            if (!$product || $product->user_id !== Auth::id()) {
                 abort(404, 'Produk tidak ditemukan.');
             }
             $deleted = $this->productService->deleteProduct($id);
@@ -125,7 +129,7 @@ class ProductController extends Controller
     {
         try {
             $product = $this->productService->getProductById($id);
-            if (!$product || $product->user_id !== auth()->id()) {
+            if (!$product || $product->user_id !== Auth::id()) {
                 abort(404, 'Produk tidak ditemukan.');
             }
             $updatedProduct = $this->productService->toggleProductStatus($id);
@@ -148,13 +152,13 @@ class ProductController extends Controller
                     ->back()
                     ->with('error', 'Tidak ada produk yang dipilih.');
             }
-            $deletedCount = $this->productService->bulkDeleteProducts($productIds, auth()->id());
+            $deletedCount = $this->productService->bulkDeleteProducts($productIds, Auth::id());
             return redirect()
                 ->route('seller.products.index')
                 ->with('success', "{$deletedCount} produk berhasil dihapus!");
         } catch (\Exception $e) {
             Log::error('Gagal menghapus produk secara bulk: ' . $e->getMessage(), [
-                'user_id' => auth()->id(),
+                'user_id' => Auth::id(),
                 'product_ids' => $request->input('product_ids', []),
             ]);
             return redirect()
@@ -177,14 +181,14 @@ class ProductController extends Controller
                     ->back()
                     ->with('error', 'Aksi tidak valid.');
             }
-            $updatedCount = $this->productService->bulkToggleProductStatus($productIds, $action, auth()->id());
+            $updatedCount = $this->productService->bulkToggleProductStatus($productIds, $action, Auth::id());
             $statusText = $action === 'activate' ? 'diaktifkan' : 'dinonaktifkan';
             return redirect()
                 ->route('seller.products.index')
                 ->with('success', "{$updatedCount} produk berhasil {$statusText}!");
         } catch (\Exception $e) {
             Log::error('Gagal mengubah status produk secara bulk: ' . $e->getMessage(), [
-                'user_id' => auth()->id(),
+                'user_id' => Auth::id(),
                 'product_ids' => $request->input('product_ids', []),
                 'action' => $request->input('action'),
             ]);
@@ -197,16 +201,16 @@ class ProductController extends Controller
     {
         try {
             $search = $request->get('search');
-            $userId = auth()->id();
+            $userId = Auth::id();
             if ($search) {
                 $products = $this->productService->searchProducts($search, $userId);
             } else {
                 $products = $this->productService->getUserProducts($userId);
             }
-            return $this->exportService->exportToExcel($products, auth()->user()->name);
+            return $this->exportService->exportToExcel($products, Auth::user()->name);
         } catch (\Exception $e) {
             Log::error('Gagal export produk: ' . $e->getMessage(), [
-                'user_id' => auth()->id(),
+                'user_id' => Auth::id(),
                 'search' => $search,
             ]);
             return redirect()
@@ -223,11 +227,11 @@ class ProductController extends Controller
                     ->back()
                     ->with('error', 'Tidak ada produk yang dipilih untuk diexport.');
             }
-            $products = $this->productService->getProductsByIds($productIds, auth()->id());
-            return $this->exportService->exportToExcel($products, auth()->user()->name);
+            $products = $this->productService->getProductsByIds($productIds, Auth::id());
+            return $this->exportService->exportToExcel($products, Auth::user()->name);
         } catch (\Exception $e) {
             Log::error('Gagal export produk terpilih: ' . $e->getMessage(), [
-                'user_id' => auth()->id(),
+                'user_id' => Auth::id(),
                 'product_ids' => $request->input('product_ids', []),
             ]);
             return redirect()

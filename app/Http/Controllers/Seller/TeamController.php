@@ -5,6 +5,7 @@ use App\Models\TeamMember;
 use App\Models\User;
 use App\Services\TeamService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 class TeamController extends Controller
 {
@@ -18,7 +19,7 @@ class TeamController extends Controller
      */
     private function getSellerId()
     {
-        $user = auth()->user();
+        $user = Auth::user();
         $membership = $user->memberOf()->first();
         if ($membership) {
             return $membership->seller_id;

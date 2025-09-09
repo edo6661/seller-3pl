@@ -4,12 +4,13 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\UserAddress;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 class AddressController extends Controller
 {
     private function getSellerId()
     {
-        $user = auth()->user();
+        $user = Auth::user();
         $membership = $user->memberOf()->first();
         if ($membership) {
             return $membership->seller_id;

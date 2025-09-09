@@ -9,6 +9,7 @@ use App\Requests\Profile\ResubmitVerificationRequest as ProfileResubmitVerificat
 use App\Requests\Profile\UpdateProfileRequest;
 use App\Services\ProfileService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class ProfileController extends Controller
@@ -26,14 +27,14 @@ class ProfileController extends Controller
     public function index()
     {
         try {
-            $userId = auth()->id();
+            $userId = Auth::id();
             $profileData = $this->profileService->getUserProfile($userId);
             $completionPercentage = $this->profileService->getProfileCompletionPercentage($userId);
-            $isPasswordExists = auth()->user()->password !== null;
+            $isPasswordExists = Auth::user()->password !== null;
             return view('profile.index', compact('profileData', 'completionPercentage', 'isPasswordExists'));
         } catch (\Exception $e) {
             Log::error('Error loading profile: ' . $e->getMessage(), [
-                'user_id' => auth()->id()
+                'user_id' => Auth::id()
             ]);
             
             return redirect()->back()->with('error', 'Terjadi kesalahan saat memuat profil.');
@@ -46,18 +47,18 @@ class ProfileController extends Controller
     public function edit()
     {
         try {
-            $userId = auth()->id();
+            $userId = Auth::id();
             $profileData = $this->profileService->getUserProfile($userId);
             
             
-            if (auth()->user()->isSeller()) {
+            if (Auth::user()->isSeller()) {
                 $this->profileService->getOrCreateSellerProfile($userId);
             }
             
             return view('profile.edit', compact('profileData'));
         } catch (\Exception $e) {
             Log::error('Error loading profile edit form: ' . $e->getMessage(), [
-                'user_id' => auth()->id()
+                'user_id' => Auth::id()
             ]);
             
             return redirect()->back()->with('error', 'Terjadi kesalahan saat memuat form edit profil.');
@@ -67,10 +68,13 @@ class ProfileController extends Controller
     /**
      * Update the user's profile
      */
+    /**
+ * @param \Illuminate\Http\Request $request
+ */
     public function update(UpdateProfileRequest $request)
     {
         try {
-            $userId = auth()->id();
+            $userId = Auth::id();
             $data = $request->validated();
             
             
@@ -93,7 +97,7 @@ class ProfileController extends Controller
                 
         } catch (\Exception $e) {
             Log::error('Error updating profile: ' . $e->getMessage(), [
-                'user_id' => auth()->id(),
+                'user_id' => Auth::id(),
                 'data' => $request->except(['password', 'password_confirmation'])
             ]);
             
@@ -109,7 +113,7 @@ class ProfileController extends Controller
      */
     public function updateCoordinates(Request $request)
     {
-        if (!auth()->user()->isSeller()) {
+        if (!Auth::user()->isSeller()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Hanya seller yang dapat mengupdate koordinat'
@@ -123,7 +127,7 @@ class ProfileController extends Controller
 
         try {
             $this->profileService->updateCoordinates(
-                auth()->id(),
+                Auth::id(),
                 $request->latitude,
                 $request->longitude
             );
@@ -134,7 +138,7 @@ class ProfileController extends Controller
             ]);
         } catch (\Exception $e) {
             Log::error('Error updating coordinates: ' . $e->getMessage(), [
-                'user_id' => auth()->id(),
+                'user_id' => Auth::id(),
                 'latitude' => $request->latitude,
                 'longitude' => $request->longitude
             ]);
@@ -152,7 +156,7 @@ class ProfileController extends Controller
     public function getCompletionStatus()
     {
         try {
-            $userId = auth()->id();
+            $userId = Auth::id();
             $percentage = $this->profileService->getProfileCompletionPercentage($userId);
             
             return response()->json([
@@ -173,7 +177,7 @@ class ProfileController extends Controller
             return view('profile.change-password');
         } catch (\Exception $e) {
             Log::error('Error loading change password form: ' . $e->getMessage(), [
-                'user_id' => auth()->id()
+                'user_id' => Auth::id()
             ]);
             
             return redirect()->back()->with('error', 'Terjadi kesalahan saat memuat form ganti password.');
@@ -186,7 +190,7 @@ class ProfileController extends Controller
     public function changePassword(ChangePasswordRequest $request)
     {
         try {
-            $userId = auth()->id();
+            $userId = Auth::id();
             $data = $request->validated();
             
             $this->profileService->changePassword(
@@ -201,7 +205,7 @@ class ProfileController extends Controller
                 
         } catch (\Exception $e) {
             Log::error('Error changing password: ' . $e->getMessage(), [
-                'user_id' => auth()->id()
+                'user_id' => Auth::id()
             ]);
             
             return redirect()
@@ -211,7 +215,7 @@ class ProfileController extends Controller
     }
     public function resubmitVerificationForm()
     {
-        $user = auth()->user();
+        $user = Auth::user();
 
         // Pastikan hanya seller yang ditolak yang bisa akses halaman ini
         if (!$user->isSeller() || $user->sellerProfile->verification_status !== SellerVerificationStatus::REJECTED) {
@@ -227,7 +231,7 @@ class ProfileController extends Controller
      */
     public function processResubmission(ProfileResubmitVerificationRequest $request)
     {
-        $this->profileService->resubmitDocuments(auth()->id(), $request->validated());
+        $this->profileService->resubmitDocuments(Auth::id(), $request->validated());
 
         return redirect()->route('profile.index')->with('success', 'Dokumen berhasil diajukan ulang dan akan segera ditinjau oleh admin.');
     }

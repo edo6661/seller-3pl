@@ -27,7 +27,7 @@ class WalletController extends Controller
     // TAMBAHKAN HELPER METHOD INI SEPERTI DI AddressController
     private function getSellerId()
     {
-        $user = auth()->user();
+        $user = Auth::user();
         $membership = $user->memberOf()->first();
         if ($membership) {
             return $membership->seller_id;
@@ -84,6 +84,9 @@ class WalletController extends Controller
     /**
      * Proses top up - Buat transaksi baru
      */
+    /**
+ * @param \App\Http\Requests\TopUpRequest $request
+ */
     public function topUpSubmit(TopUpRequest $request): RedirectResponse
     {
         try {
@@ -191,6 +194,9 @@ class WalletController extends Controller
     /**
      * Upload bukti pembayaran
      */
+    /**
+ * @param \App\Http\Requests\TopUpRequest $request
+ */
     public function uploadPaymentProof(PaymentProofUploadRequest $request, string $referenceId): RedirectResponse
     {
         try {
@@ -257,6 +263,9 @@ class WalletController extends Controller
     /**
      * Proses withdraw
      */
+    /**
+ * @param \App\Http\Requests\TopUpRequest $request
+ */
     public function withdrawSubmit(WithdrawRequest $request): RedirectResponse
     {
         try {
