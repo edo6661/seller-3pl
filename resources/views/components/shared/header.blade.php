@@ -31,10 +31,12 @@
             <div class="flex items-center">
                 <a href="{{ route('guest.home') }}" class="flex items-center space-x-2">
                     <div
-                        class="w-8 h-8 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-shipping-fast text-white text-sm"></i>
+                        class="w-13 h-13 bg-gray-100 rounded-lg flex items-center justify-center">
+                        {{-- <i class="fas fa-shipping-fast text-white text-sm"></i> --}}
+                       <img src="{{ asset('storage/img/logo.png') }}" alt="PusatKirim Logo" class="h-13 w-13">
+
                     </div>
-                    <span class="text-2xl font-bold text-neutral-800">ShipApp</span>
+                    <span class="text-2xl font-bold text-neutral-800">PusatKirim</span>
                 </a>
             </div>
 
