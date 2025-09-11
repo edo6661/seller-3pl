@@ -3,6 +3,7 @@
 namespace App\Events;
 
 use App\Models\PickupRequest;
+use App\Models\User;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
@@ -14,14 +15,15 @@ class PickupRequestCreated implements ShouldBroadcast
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public function __construct(
-        public PickupRequest $pickupRequest
+        public PickupRequest $pickupRequest,
+        public User $requester
     ) {}
 
     public function broadcastOn(): array
     {
         return [
-            new Channel('admin-notifications'),
-            new Channel('user.' . $this->pickupRequest->user_id),
+            new Channel('user.' . $this->requester->id),
+            new Channel('admin-notifications')
         ];
     }
 
@@ -30,14 +32,16 @@ class PickupRequestCreated implements ShouldBroadcast
         return [
             'id' => $this->pickupRequest->id,
             'pickup_code' => $this->pickupRequest->pickup_code,
-            'user_name' => $this->pickupRequest->user->name,
+            'user_name' => $this->requester->name,
+            'user_id' => $this->requester->id,
             'total_amount' => $this->pickupRequest->total_amount,
             'status' => $this->pickupRequest->status,
+            'delivery_type' => $this->pickupRequest->delivery_type,
             'created_at' => $this->pickupRequest->created_at->toISOString(),
             'notification' => [
                 'type' => 'pickup_created',
-                'title' => 'Pickup Request Baru Dibuat',
-                'message' => "Pickup request {$this->pickupRequest->pickup_code} telah dibuat dan menunggu konfirmasi.",
+                'title' => 'Pickup Request Baru',
+                'message' => "Pickup request {$this->pickupRequest->pickup_code} dari {$this->requester->name} telah dibuat dan menunggu konfirmasi.",
                 'icon' => 'fas fa-truck',
                 'color' => 'primary'
             ]

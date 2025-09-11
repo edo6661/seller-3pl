@@ -43,6 +43,7 @@ class ServiceProvider extends BaseServiceProvider
         AdminDashboardService::class => AdminDashboardService::class,
         ProductExportService::class => ProductExportService::class,
         TeamService::class => TeamService::class,
+        NotificationService::class => NotificationService::class,
     ];
 
     /**
@@ -84,6 +85,7 @@ class ServiceProvider extends BaseServiceProvider
             AdminDashboardService::class,
             ProductExportService::class,
             TeamService::class,
+            NotificationService::class,
 
         ];
     }

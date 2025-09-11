@@ -22,6 +22,7 @@ class NotificationService
     }
     public function createNotification(array $data): Notification
     {
+        Log::info('Creating notification', $data);
         return Notification::create($data);
     }
     public function createForUser(int $userId, string $type, string $title, string $message, array $additionalData = []): Notification

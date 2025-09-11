@@ -96,11 +96,16 @@ class PickupRequestController extends Controller
             $data['user_id'] = $this->getSellerId();
             $data['seller'] = $this->getSeller();
             $data['requested_at'] = now();
+
             $pickupRequest = $this->pickupRequestService->createPickupRequest($data);
-            event(new PickupRequestCreated($pickupRequest));
+            
+            // Event ini akan trigger listener yang hanya mengirim notifikasi ke admin
+            event(new PickupRequestCreated($pickupRequest, $data['seller']));
+
             return redirect()
                 ->route('seller.pickup-request.show', $pickupRequest)
-                ->with('success', 'Pickup request berhasil dibuat dan notifikasi telah dikirim!');
+                ->with('success', 'Pickup request berhasil dibuat! Admin akan segera memproses permintaan Anda.');
+                
         } catch (\Exception $e) {
             return back()
                 ->withInput()

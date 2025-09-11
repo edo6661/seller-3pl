@@ -11,13 +11,18 @@
               x-transition:enter="transform ease-out duration-200"
               x-transition:enter-start="scale-0 opacity-0"
               x-transition:enter-end="scale-100 opacity-100"
-              class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center min-w-[20px]">
+              class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center min-w-[20px]"
+               x-cloak
+              >
         </span>
         <span x-show="hasNewNotification" 
               x-transition:enter="transform ease-out duration-200"
               x-transition:enter-start="scale-0 opacity-0"
               x-transition:enter-end="scale-100 opacity-100"
-              class="absolute -top-1 -right-1 bg-red-500 rounded-full h-3 w-3 animate-ping">
+              class="absolute -top-1 -right-1 bg-red-500 rounded-full h-3 w-3 animate-ping"
+               x-cloak
+              
+              >
         </span>
     </button>
     <!-- ... rest of the template remains the same ... -->
