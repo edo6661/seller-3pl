@@ -2,14 +2,20 @@
 namespace App\Providers;
 
 use App\Events\MessageSent;
+use App\Events\NewChatNotification;
 use App\Events\PasswordResetRequested;
 use App\Events\PaymentStatusChanged;
+use App\Events\PickupRequestCreated;
+use App\Events\PickupRequestStatusUpdated;
 use App\Events\UserRegistered;
 use App\Events\UserStoppedTyping;
 use App\Events\UserTyping;
 use App\Events\WithdrawRequestCreated;
 use App\Events\WithdrawRequestStatusChanged;
 use App\Listeners\MessageSentListener;
+use App\Listeners\NewChatNotificationListener;
+use App\Listeners\PickupRequestCreatedListener;
+use App\Listeners\PickupRequestStatusUpdatedListener;
 use App\Listeners\SendEmailVerificationNotification;
 use App\Listeners\SendPasswordResetNotification;
 use App\Listeners\SendPaymentNotification;
@@ -29,11 +35,22 @@ class EventServiceProvider extends ServiceProvider
         PaymentStatusChanged::class => [
             SendPaymentNotification::class,
         ],
-        WithdrawRequestCreated::class => [
-            SendWithdrawRequestCreatedNotification::class,
+        // WithdrawRequestCreated::class => [
+        //     SendWithdrawRequestCreatedNotification::class,
+        // ],
+        // WithdrawRequestStatusChanged::class => [
+        //     SendWithdrawRequestStatusChangedNotification::class,
+        // ],
+        PickupRequestCreated::class => [
+            PickupRequestCreatedListener::class,
         ],
-        WithdrawRequestStatusChanged::class => [
-            SendWithdrawRequestStatusChangedNotification::class,
+        
+        PickupRequestStatusUpdated::class => [
+            PickupRequestStatusUpdatedListener::class,
+        ],
+        
+        NewChatNotification::class => [
+            NewChatNotificationListener::class,
         ],
         MessageSent::class => [
             MessageSentListener::class,

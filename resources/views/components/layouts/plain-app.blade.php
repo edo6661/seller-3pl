@@ -7,9 +7,9 @@
         <main class="min-h-screen">
             {{ $slot }}
         </main>
-        @auth
+        {{-- @auth
             <x-shared.chat />
-        @endauth
+        @endauth --}}
         <x-shared.footer/>
     </body>
 </html>

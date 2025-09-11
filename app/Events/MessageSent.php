@@ -28,13 +28,6 @@ class MessageSent implements ShouldBroadcast
             $channels[] = new Channel('admin-notifications');
             $channels[] = new Channel('admin-global');
         }
-        Log::info('Broadcasting message to channels', [
-            'message_id' => $this->message->id,
-            'sender_id' => $this->message->sender_id,
-            'sender_role' => $this->message->sender->role->value,
-            'receiver_id' => $receiverId,
-            'channels' => array_map(fn($ch) => $ch->name, $channels)
-        ]);
         return $channels;
     }
     public function broadcastWith(): array

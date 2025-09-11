@@ -8,6 +8,8 @@ use App\Services\PickupRequestService;
 use App\Services\ProductService;
 use App\Services\WalletService;
 use App\Models\User;
+use App\Events\PickupRequestCreated;
+use App\Events\PickupRequestStatusUpdated;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 class PickupRequestController extends Controller
@@ -95,9 +97,10 @@ class PickupRequestController extends Controller
             $data['seller'] = $this->getSeller();
             $data['requested_at'] = now();
             $pickupRequest = $this->pickupRequestService->createPickupRequest($data);
+            event(new PickupRequestCreated($pickupRequest));
             return redirect()
                 ->route('seller.pickup-request.show', $pickupRequest)
-                ->with('success', 'Pickup request berhasil dibuat!');
+                ->with('success', 'Pickup request berhasil dibuat dan notifikasi telah dikirim!');
         } catch (\Exception $e) {
             return back()
                 ->withInput()
@@ -140,7 +143,11 @@ class PickupRequestController extends Controller
             return back()->with('error', 'Pickup request ini tidak dapat diedit');
         }
         try {
+            $oldStatus = $pickupRequest->status;
             $updatedPickupRequest = $this->pickupRequestService->updatePickupRequest($id, $request->validated());
+            if ($oldStatus !== $updatedPickupRequest->status) {
+                event(new PickupRequestStatusUpdated($updatedPickupRequest, $oldStatus));
+            }
             return redirect()
                 ->route('seller.pickup-request.show', $updatedPickupRequest->id)
                 ->with('success', 'Pickup request berhasil diupdate');
@@ -158,8 +165,10 @@ class PickupRequestController extends Controller
             abort(404);
         }
         try {
-            $this->pickupRequestService->cancelPickupRequest($id);
-            return back()->with('success', 'Pickup request berhasil dibatalkan');
+            $oldStatus = $pickupRequest->status;
+            $cancelledRequest = $this->pickupRequestService->cancelPickupRequest($id);
+            event(new PickupRequestStatusUpdated($cancelledRequest, $oldStatus));
+            return back()->with('success', 'Pickup request berhasil dibatalkan dan notifikasi telah dikirim');
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());
         }
@@ -172,8 +181,10 @@ class PickupRequestController extends Controller
             abort(404);
         }
         try {
-            $this->pickupRequestService->confirmPickupRequest($id);
-            return back()->with('success', 'Pickup request berhasil dikonfirmasi');
+            $oldStatus = $pickupRequest->status;
+            $confirmedRequest = $this->pickupRequestService->confirmPickupRequest($id);
+            event(new PickupRequestStatusUpdated($confirmedRequest, $oldStatus));
+            return back()->with('success', 'Pickup request berhasil dikonfirmasi dan notifikasi telah dikirim');
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());
         }
@@ -186,8 +197,10 @@ class PickupRequestController extends Controller
             abort(404);
         }
         try {
-            $this->pickupRequestService->schedulePickup($id, $request->validated()['pickup_scheduled_at']);
-            return back()->with('success', 'Jadwal pickup berhasil diatur');
+            $oldStatus = $pickupRequest->status;
+            $scheduledRequest = $this->pickupRequestService->schedulePickup($id, $request->validated()['pickup_scheduled_at']);
+            event(new PickupRequestStatusUpdated($scheduledRequest, $oldStatus));
+            return back()->with('success', 'Jadwal pickup berhasil diatur dan notifikasi telah dikirim');
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());
         }
@@ -212,8 +225,10 @@ class PickupRequestController extends Controller
             return back()->with('error', 'Request ini tidak dapat dimulai pengirimannya');
         }
         try {
-            $this->pickupRequestService->markAsInTransit($id);
-            return back()->with('success', 'Pengiriman berhasil dimulai');
+            $oldStatus = $pickupRequest->status;
+            $inTransitRequest = $this->pickupRequestService->markAsInTransit($id);
+            event(new PickupRequestStatusUpdated($inTransitRequest, $oldStatus));
+            return back()->with('success', 'Pengiriman berhasil dimulai dan notifikasi telah dikirim');
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());
         }

@@ -22,11 +22,6 @@ class SendPasswordResetNotification implements ShouldQueue
             'token' => $token,
             'email' => $user->email
         ]);
-        Log::info('Sending password reset email', [
-            'user_id' => $user->id,
-            'email' => $user->email,
-            'reset_url' => $resetUrl
-        ]);
 
         Mail::to($user->email)->send(new PasswordResetMail($user, $resetUrl, $token));
     }

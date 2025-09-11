@@ -6,11 +6,11 @@
     showToast(type, message) {
         this.notificationType = type;
         this.notificationMessage = message;
-        this.showNotification = true;
-        setTimeout(() => this.showNotification = false, 5000);
     }
 }"
-    x-init="@if(session('success'))
+    x-init="
+    
+    @if(session('success'))
     showToast('success', '{{ session('success') }}');
     @endif
     @if(session('status'))
@@ -21,10 +21,13 @@
     @endif
     @if(session('warning'))
     showToast('warning', '{{ session('warning') }}');
-    @endif">
-    {{-- @auth
-        <x-shared.chat-notification :unreadCount="auth()->user()->getTotalUnreadMessages()" />
-    @endauth --}}
+    @endif
+    
+    
+    window.showHeaderToast = (type, message) => {
+        $data.showToast(type, message);
+    };
+    ">
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-16">
@@ -32,9 +35,7 @@
                 <a href="{{ route('guest.home') }}" class="flex items-center space-x-2">
                     <div
                         class="w-13 h-13 bg-gray-100 rounded-lg flex items-center justify-center">
-                        {{-- <i class="fas fa-shipping-fast text-white text-sm"></i> --}}
                        <img src="{{ asset('storage/img/logo.png') }}" alt="PusatKirim Logo" class="h-13 w-13">
-
                     </div>
                     <span class="text-2xl font-bold text-neutral-800">PusatKirim</span>
                 </a>
@@ -57,7 +58,6 @@
                 @endguest
 
                 @auth
-                
                     @if (auth()->user()->isAdmin())
                         <div class="flex items-center space-x-6">
                             <a href="{{ route('admin.dashboard') }}"
@@ -85,14 +85,13 @@
                                 <i class="fas fa-truck mr-2"></i>Pickup Requests
                             </a>
                             <a href="{{ route('chat.index') }}"
-                            class="block text-neutral-600 hover:text-primary-600 transition-colors duration-200 font-medium">
+                                class="text-neutral-600 hover:text-primary-600 transition-colors duration-200 font-medium">
                                 <i class="fas fa-comments mr-2"></i>Chat
                             </a>
                             <a href="{{ route('admin.support.index') }}"
                                 class="text-neutral-600 hover:text-primary-600 transition-colors duration-200 font-medium">
                                 <i class="fas fa-headset mr-2"></i>Support
                             </a>
-                           
                         </div>
                     @endif
 
@@ -132,6 +131,13 @@
                             </a>
                         </div>
                     @endif
+
+                    <!-- Notification Bell -->
+                    @php
+                        $notificationService = app(\App\Services\NotificationService::class);
+                        $unreadCount = $notificationService->getUnreadCount(auth()->id());
+                    @endphp
+                    <x-shared.notification-bell :unreadCount="$unreadCount" />
 
                     <div class="relative" x-data="{ userMenuOpen: false }">
                         <button @click="userMenuOpen = !userMenuOpen"
@@ -218,7 +224,6 @@
                             class="block text-neutral-600 hover:text-primary-600 transition-colors duration-200 font-medium">
                             <i class="fas fa-comments mr-2"></i>Chat
                         </a>
-                       
                     </div>
                 @endif
 
@@ -240,11 +245,11 @@
                             class="block text-neutral-600 hover:text-primary-600 transition-colors duration-200 font-medium">
                             <i class="fas fa-truck mr-2"></i>Requests
                         </a>
-                         <a href="{{ route('chat.start') }}"
+                        <a href="{{ route('chat.start') }}"
                             class="text-neutral-600 hover:text-primary-600 transition-colors duration-200 font-medium">
                             <i class="fas fa-comments mr-2"></i>Chat
                         </a>
-                         <a href="{{ route('seller.support.index') }}"
+                        <a href="{{ route('seller.support.index') }}"
                             class="text-neutral-600 hover:text-primary-600 transition-colors duration-200 font-medium">
                             <i class="fas fa-headset mr-2"></i>Support
                         </a>
@@ -285,13 +290,16 @@
     </div>
 
     {{-- Toast Notification --}}
-    <div x-cloak x-show="showNotification" x-transition:enter="transform ease-out duration-300 transition"
+    @auth
+        <div x-cloak x-show="showNotification" x-transition:enter="transform ease-out duration-300 transition"
         x-transition:enter-start="translate-y-2 opacity-0 sm:translate-y-0 sm:translate-x-2"
         x-transition:enter-end="translate-y-0 opacity-100 sm:translate-x-0"
         x-transition:leave="transition ease-in duration-100" x-transition:leave-start="opacity-100"
         x-transition:leave-end="opacity-0"
         class="fixed top-20 right-4 z-50 w-full bg-white border rounded-lg shadow-lg pointer-events-auto ring-1 ring-black ring-opacity-5 overflow-hidden"
-        style="display: none; max-width: 24rem;">
+        style="display: none; max-width: 24rem;"
+        x-cloak
+        >
         <div class="p-4">
             <div class="flex items-start">
                 <div class="flex-shrink-0">
@@ -304,10 +312,18 @@
                     <div x-show="notificationType === 'warning'" class="text-warning-600">
                         <i class="fas fa-exclamation-triangle text-xl"></i>
                     </div>
+                    <div x-show="notificationType === 'info'" class="text-blue-600">
+                        <i class="fas fa-info-circle text-xl"></i>
+                    </div>
                 </div>
                 <div class="ml-3 w-0 flex-1 pt-0.5">
                     <p x-text="notificationMessage" class="text-sm font-medium"
-                        :class="notificationType === 'success' ? 'text-success-800' : 'text-error-800'">
+                        :class="{
+                            'text-success-800': notificationType === 'success',
+                            'text-error-800': notificationType === 'error',
+                            'text-warning-800': notificationType === 'warning',
+                            'text-blue-800': notificationType === 'info'
+                        }">
                     </p>
                 </div>
                 <div class="ml-4 flex-shrink-0 flex">
@@ -318,13 +334,25 @@
                 </div>
             </div>
         </div>
-        <div class="h-1 w-full" :class="notificationType === 'success' ? 'bg-success-100' : 'bg-error-100'">
+        <div class="h-1 w-full" 
+             :class="{
+                'bg-success-100': notificationType === 'success',
+                'bg-error-100': notificationType === 'error',
+                'bg-warning-100': notificationType === 'warning',
+                'bg-blue-100': notificationType === 'info'
+             }">
             <div class="h-full animate-pulse"
-                :class="notificationType === 'success' ? 'bg-success-600' : 'bg-error-600'"
+                :class="{
+                    'bg-success-600': notificationType === 'success',
+                    'bg-error-600': notificationType === 'error',
+                    'bg-warning-600': notificationType === 'warning',
+                    'bg-blue-600': notificationType === 'info'
+                }"
                 style="animation: shrink 5s linear;">
             </div>
         </div>
     </div>
+    @endauth
 
     <style>
         @keyframes shrink {

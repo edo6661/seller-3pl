@@ -233,7 +233,6 @@ class ApiSellerWalletController extends Controller
      */
     public function midtransNotification(Request $request): JsonResponse
     {
-        Log::info('Midtrans Webhook Received:', $request->all());
         try {
             $result = $this->walletService->handleMidtransNotification($request->all());
             if ($result) {

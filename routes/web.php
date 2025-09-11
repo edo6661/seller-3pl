@@ -3,6 +3,7 @@
 use App\Collection\UserCollection;
 use App\Http\Controllers\Seller\DashboardController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\Team\TeamAuthController;
 use App\Http\Resources\UserResource;
@@ -47,5 +48,12 @@ Route::middleware(['auth'])->group(function () {
         require __DIR__ . '/seller/addresses.php';
         require __DIR__ . '/seller/support.php';
         require __DIR__ . '/seller/team.php';
+    });
+      Route::prefix('notifications')->group(function (): void {
+        Route::get('/', [NotificationController::class, 'index']);
+        Route::post('/{id}/read', [NotificationController::class, 'markAsRead']);
+        Route::post('/mark-all-read', [NotificationController::class, 'markAllAsRead']);
+        Route::delete('/clear-all', [NotificationController::class, 'clearAll']);
+        Route::get('/unread-count', [NotificationController::class, 'getUnreadCount']);
     });
 });
