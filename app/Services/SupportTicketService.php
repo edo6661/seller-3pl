@@ -2,9 +2,12 @@
 
 namespace App\Services;
 
+use App\Events\SupportTicketCreated;
+use App\Events\SupportTicketReplied;
 use App\Models\SupportTicket;
 use App\Models\TicketResponse;
 use App\Models\PickupRequest;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -48,7 +51,12 @@ class SupportTicketService
                 $data['attachments'] = $attachments;
             }
 
-            return SupportTicket::create($data);
+            $ticket = SupportTicket::create($data);
+            
+            $user = User::find($data['user_id']);
+            event(new SupportTicketCreated($ticket, $user));
+
+            return $ticket;
         });
     }
 
@@ -59,6 +67,8 @@ class SupportTicketService
     {
         return DB::transaction(function () use ($ticketId, $data) {
             $ticket = SupportTicket::findOrFail($ticketId);
+            $user = User::find($data['user_id']);
+
 
             // Handle file attachments untuk response
             if (!empty($data['attachments'])) {
@@ -89,6 +99,7 @@ class SupportTicketService
             } elseif (!$data['is_admin_response'] && $ticket->status === 'waiting_user') {
                 $ticket->update(['status' => 'in_progress']);
             }
+            event(new SupportTicketReplied($ticket, $response, $user));
 
             return $response;
         });

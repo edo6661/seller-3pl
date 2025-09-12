@@ -418,7 +418,7 @@
                 @endif
 
                 <!-- Timeline -->
-                <div class="bg-white rounded-xl shadow-md overflow-hidden border border-neutral-200">
+                <div class="bg-white rounded-xl shadow-md overflow-x-hidden border border-neutral-200">
                     <div class="px-6 py-4 bg-neutral-50 border-b border-neutral-200">
                         <h3 class="text-lg font-semibold text-neutral-900 flex items-center gap-2">
                             <i class="fas fa-history text-primary-500"></i>

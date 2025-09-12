@@ -248,7 +248,7 @@
                         <i class="fas fa-users text-xl"></i>
                     </div>
                     <h3 class="text-sm font-medium text-neutral-700">Tidak ada pengguna</h3>
-                    <p class="mt-1 text-sm text-neutral-500 max-w-md mx-auto">
+                    <p class="mt-1 text-sm text-neutral-500 mx-auto">
                         @if ($search)
                             Tidak ada pengguna yang cocok dengan pencarian "{{ $search }}".
                         @elseif($role || $status)

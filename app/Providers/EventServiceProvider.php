@@ -7,6 +7,8 @@ use App\Events\PasswordResetRequested;
 use App\Events\PaymentStatusChanged;
 use App\Events\PickupRequestCreated;
 use App\Events\PickupRequestStatusUpdated;
+use App\Events\SupportTicketCreated;
+use App\Events\SupportTicketReplied;
 use App\Events\UserRegistered;
 use App\Events\UserStoppedTyping;
 use App\Events\UserTyping;
@@ -21,6 +23,8 @@ use App\Listeners\SendPasswordResetNotification;
 use App\Listeners\SendPaymentNotification;
 use App\Listeners\SendWithdrawRequestCreatedNotification;
 use App\Listeners\SendWithdrawRequestStatusChangedNotification;
+use App\Listeners\SupportTicketCreatedListener;
+use App\Listeners\SupportTicketRepliedListener;
 use Illuminate\Support\ServiceProvider;
 
 class EventServiceProvider extends ServiceProvider
@@ -54,6 +58,12 @@ class EventServiceProvider extends ServiceProvider
         ],
         MessageSent::class => [
             MessageSentListener::class,
+        ],
+        SupportTicketCreated::class => [
+            SupportTicketCreatedListener::class,
+        ],
+        SupportTicketReplied::class => [
+            SupportTicketRepliedListener::class,
         ],
     ];
 

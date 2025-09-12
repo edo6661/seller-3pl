@@ -340,10 +340,10 @@
             @else
                 <div class="text-center py-12 bg-gradient-to-br from-neutral-50 to-white rounded-b-xl">
                     <div class="mx-auto h-16 w-16 flex items-center justify-center rounded-full bg-white text-neutral-400 mb-4 border border-neutral-200">
-                        <i class="fas fa-ticket-alt text-xl"></i>
+                    <i class="fas fa-ticket-alt text-xl"></i>
                     </div>
                     <h3 class="text-sm font-medium text-neutral-700">Tidak ada tiket support</h3>
-                    <p class="mt-1 text-sm text-neutral-500 max-w-md mx-auto">
+                    <p class="mt-1 text-sm text-neutral-500 mx-auto">
                         @if (array_filter($filters))
                             Tidak ada tiket yang cocok dengan filter yang dipilih.
                         @else
