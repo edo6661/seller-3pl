@@ -1,6 +1,7 @@
 <?php
 namespace App\Services;
 use App\Enums\WalletTransactionType;
+use App\Events\PickupRequestStatusUpdated; 
 use App\Models\PickupRequest;
 use App\Models\PickupRequestItem;
 use App\Models\Product;
@@ -94,7 +95,9 @@ class PickupRequestService
         if ($pickupRequest->status !== 'pending') {
             throw new \Exception('Hanya pickup request dengan status pending yang dapat dikonfirmasi');
         }
+        $oldStatus = $pickupRequest->status;
         $pickupRequest->update(['status' => 'confirmed']);
+        event(new PickupRequestStatusUpdated($pickupRequest, $oldStatus));
         return $pickupRequest;
     }
     public function schedulePickup(int $id, string $scheduledAt): PickupRequest
@@ -106,10 +109,12 @@ class PickupRequestService
         if (!$pickupRequest->canBeScheduled()) {
             throw new \Exception('Pickup request harus dikonfirmasi terlebih dahulu dan bertipe pickup');
         }
+        $oldStatus = $pickupRequest->status;
         $pickupRequest->update([
             'status' => 'pickup_scheduled',
             'pickup_scheduled_at' => $scheduledAt
         ]);
+        event(new PickupRequestStatusUpdated($pickupRequest, $oldStatus));
         return $pickupRequest;
     }
     public function markAsPickedUp(int $id, array $courierData = []): PickupRequest
@@ -121,6 +126,7 @@ class PickupRequestService
         if (!$pickupRequest->canBePickedUp()) {
             throw new \Exception('Status pickup request tidak memungkinkan untuk di-pickup');
         }
+        $oldStatus = $pickupRequest->status;
         $updateData = [
             'status' => 'picked_up',
             'picked_up_at' => now()
@@ -130,6 +136,7 @@ class PickupRequestService
             $updateData['courier_response'] = $courierData['response'] ?? null;
         }
         $pickupRequest->update($updateData);
+        event(new PickupRequestStatusUpdated($pickupRequest, $oldStatus));
         return $pickupRequest;
     }
     public function markAsInTransit(int $id): PickupRequest
@@ -141,12 +148,15 @@ class PickupRequestService
         if ($pickupRequest->isDropOffType() && !in_array($pickupRequest->status, ['confirmed', 'pending'])) {
             throw new \Exception('Drop off request harus dikonfirmasi terlebih dahulu');
         }
-        $pickupRequest->update(['status' => 'confirmed']);
+        $oldStatus = $pickupRequest->status;
+        $pickupRequest->update(['status' => 'in_transit']);
+        event(new PickupRequestStatusUpdated($pickupRequest, $oldStatus));
         return $pickupRequest;
     }
     public function markAsDelivered(int $id): PickupRequest
     {
         $pickupRequest = PickupRequest::findOrFail($id);
+        $oldStatus = $pickupRequest->status;
         $updateData = [
             'status' => 'delivered',
             'delivered_at' => now()
@@ -155,6 +165,35 @@ class PickupRequestService
             $updateData['cod_collected_at'] = now();
         }
         $pickupRequest->update($updateData);
+        event(new PickupRequestStatusUpdated($pickupRequest, $oldStatus));
+        return $pickupRequest;
+    }
+    public function markAsFailed(int $id, string $failureReason = null): PickupRequest
+    {
+        $pickupRequest = PickupRequest::findOrFail($id);
+        $oldStatus = $pickupRequest->status;
+        $updateData = [
+            'status' => 'failed'
+        ];
+        if ($failureReason) {
+            $updateData['notes'] = $failureReason;
+        }
+        $pickupRequest->update($updateData);
+        event(new PickupRequestStatusUpdated($pickupRequest, $oldStatus));
+        return $pickupRequest;
+    }
+    public function cancelPickupRequest(int $id): PickupRequest
+    {
+        $pickupRequest = PickupRequest::findOrFail($id);
+        if ($pickupRequest->statusAlreadyCancelled()) {
+            throw new \Exception('Pickup request sudah dibatalkan sebelumnya');
+        }
+        if (!$pickupRequest->canBeCancelled()) {
+            throw new \Exception('Pickup request tidak dapat dibatalkan');
+        }
+        $oldStatus = $pickupRequest->status;
+        $pickupRequest->update(['status' => 'cancelled']);
+        event(new PickupRequestStatusUpdated($pickupRequest, $oldStatus));
         return $pickupRequest;
     }
     public function updatePickupRequest(int $id, array $data): PickupRequest
@@ -218,18 +257,6 @@ class PickupRequestService
     public function getPickupRequestById(int $id): ?PickupRequest
     {
         return PickupRequest::with(['items.product', 'user', 'pickupAddress'])->find($id);
-    }
-    public function cancelPickupRequest(int $id): PickupRequest
-    {
-        $pickupRequest = PickupRequest::findOrFail($id);
-        if ($pickupRequest->statusAlreadyCancelled()) {
-            throw new \Exception('Pickup request sudah dibatalkan sebelumnya');
-        }
-        if (!$pickupRequest->canBeCancelled()) {
-            throw new \Exception('Pickup request tidak dapat dibatalkan');
-        }
-        $pickupRequest->update(['status' => 'cancelled']);
-        return $pickupRequest;
     }
     public function getPickupRequestStats(int $userId): array
     {

@@ -18,13 +18,13 @@
                         <i class="fas fa-arrow-left mr-2"></i>
                         Kembali
                     </a>
-                    @if ($pickupRequest->canBeCancelled())
+                    {{-- @if ($pickupRequest->canBeCancelled())
                         <a href="{{ route('seller.pickup-request.edit', $pickupRequest->id) }}"
                             class="inline-flex items-center px-4 py-2 bg-secondary text-white rounded-lg hover:bg-secondary-600 transition-colors shadow-sm">
                             <i class="fas fa-pen mr-2"></i>
                             Edit
                         </a>
-                    @endif
+                    @endif --}}
                 </div>
             </div>
         </div>
@@ -373,14 +373,14 @@
                                     </button>
                                 </form>
                             @endif
-                            <form method="POST" action="{{ route('seller.pickup-request.cancel', $pickupRequest->id) }}"
+                            {{-- <form method="POST" action="{{ route('seller.pickup-request.cancel', $pickupRequest->id) }}"
                                 onsubmit="return confirm('Yakin ingin membatalkan {{ $pickupRequest->delivery_type->value === 'pickup' ? 'pickup' : 'drop off' }} request ini?')" class="w-full">
                                 @csrf
                                 <button type="submit" class="w-full px-4 py-2 bg-error text-white rounded-lg hover:bg-error-600 transition-colors shadow-sm flex items-center justify-center gap-2">
                                     <i class="fas fa-times-circle"></i>
                                     Batalkan Request
                                 </button>
-                            </form>
+                            </form> --}}
                         </div>
                     </div>
                 @endif

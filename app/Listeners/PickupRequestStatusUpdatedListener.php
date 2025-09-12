@@ -1,43 +1,33 @@
 <?php
 namespace App\Listeners;
-
 use App\Events\PickupRequestStatusUpdated;
+use App\Models\User;
 use App\Services\NotificationService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;
-
 class PickupRequestStatusUpdatedListener implements ShouldQueue
 {
     use InteractsWithQueue;
-
     protected NotificationService $notificationService;
-
     public function __construct(NotificationService $notificationService)
     {
         $this->notificationService = $notificationService;
     }
-
     public function handle(PickupRequestStatusUpdated $event): void
     {
         $pickupRequest = $event->pickupRequest;
         $status = $pickupRequest->status;
-
-        // Buat notifikasi berdasarkan status
         $notification = $this->getNotificationForStatus($status, $pickupRequest->pickup_code);
-        
         if ($notification) {
-            // Notifikasi untuk user pemilik request
             $this->notificationService->createForUser(
                 $pickupRequest->user_id,
                 'pickup_status_updated',
                 $notification['title'],
                 $notification['message']
             );
-
-            // Notifikasi untuk admin jika diperlukan
             if ($this->shouldNotifyAdmin($status)) {
-                $admins = \App\Models\User::where('role', 'admin')->get();
+                $admins = User::where('role', 'admin')->get();
                 foreach ($admins as $admin) {
                     $this->notificationService->createForUser(
                         $admin->id,
@@ -49,7 +39,6 @@ class PickupRequestStatusUpdatedListener implements ShouldQueue
             }
         }
     }
-
     private function getNotificationForStatus(string $status, string $pickupCode): ?array
     {
         $notifications = [
@@ -86,15 +75,12 @@ class PickupRequestStatusUpdatedListener implements ShouldQueue
                 'admin_message' => "Pickup request {$pickupCode} gagal diproses dan memerlukan penanganan."
             ]
         ];
-
         return $notifications[$status] ?? null;
     }
-
     private function shouldNotifyAdmin(string $status): bool
     {
-        return in_array($status, ['delivered', 'cancelled', 'failed']);
+        return in_array($status, ['cancelled', 'failed']);
     }
-
     public function failed(PickupRequestStatusUpdated $event, \Throwable $exception): void
     {
         Log::error('Failed to process PickupRequestStatusUpdated event', [

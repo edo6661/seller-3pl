@@ -242,7 +242,7 @@
                                                 title="Detail">
                                                 <i class="fas fa-eye"></i>
                                             </a>
-                                            @if ($pickupRequest->canBeCancelled())
+                                            {{-- @if ($pickupRequest->canBeCancelled())
                                                 <form method="POST"
                                                     action="{{ route('seller.pickup-request.cancel', $pickupRequest->id) }}"
                                                     onsubmit="return confirm('Yakin ingin membatalkan {{ $pickupRequest->delivery_type->value === 'pickup' ? 'pickup' : 'drop off' }} request ini?')"
@@ -254,7 +254,7 @@
                                                         <i class="fas fa-times-circle"></i>
                                                     </button>
                                                 </form>
-                                            @endif
+                                            @endif --}}
                                         </div>
                                     </td>
                                 </tr>

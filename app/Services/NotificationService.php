@@ -80,10 +80,6 @@ class NotificationService
     public function getUnreadCount(int $userId): int
     {
         $count = Notification::where('user_id', $userId)->unread()->count();
-        Log::debug('Unread count retrieved', [
-            'user_id' => $userId,
-            'count' => $count
-        ]);
         return $count;
     }
     public function broadcastToSellers(string $type, string $title, string $message): int

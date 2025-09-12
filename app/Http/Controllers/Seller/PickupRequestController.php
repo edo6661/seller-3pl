@@ -99,7 +99,6 @@ class PickupRequestController extends Controller
 
             $pickupRequest = $this->pickupRequestService->createPickupRequest($data);
             
-            // Event ini akan trigger listener yang hanya mengirim notifikasi ke admin
             event(new PickupRequestCreated($pickupRequest, $data['seller']));
 
             return redirect()
