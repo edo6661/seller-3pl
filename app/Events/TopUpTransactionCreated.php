@@ -1,4 +1,5 @@
 <?php
+// app/Events/TopUpTransactionCreated.php
 namespace App\Events;
 
 use App\Models\User;
@@ -9,7 +10,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class WithdrawRequestCreated implements ShouldBroadcast
+class TopUpTransactionCreated implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -35,23 +36,21 @@ class WithdrawRequestCreated implements ShouldBroadcast
             'user_name' => $this->user->name,
             'user_id' => $this->user->id,
             'amount' => $this->transaction->amount,
-            'bank_name' => $this->transaction->bank_name,
-            'account_number' => $this->transaction->account_number,
             'type' => $this->transaction->type->value,
             'status' => $this->transaction->status->value,
             'created_at' => $this->transaction->created_at->toISOString(),
             'notification' => [
-                'type' => 'withdraw_request_created',
-                'title' => 'Permintaan Penarikan Baru',
-                'message' => "Permintaan penarikan sebesar {$this->transaction->formatted_amount} dari {$this->user->name} membutuhkan perhatian.",
-                'icon' => 'fas fa-money-bill-wave',
-                'color' => 'warning'
+                'type' => 'topup_transaction_created',
+                'title' => 'Permintaan Top Up Baru',
+                'message' => "Top Up sebesar {$this->transaction->formatted_amount} dari {$this->user->name} membutuhkan perhatian.",
+                'icon' => 'fas fa-wallet',
+                'color' => 'info'
             ]
         ];
     }
 
     public function broadcastAs(): string
     {
-        return 'wallet.withdraw.created';
+        return 'wallet.topup.created';
     }
 }

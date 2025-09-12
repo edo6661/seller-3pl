@@ -9,6 +9,8 @@ use App\Events\PickupRequestCreated;
 use App\Events\PickupRequestStatusUpdated;
 use App\Events\SupportTicketCreated;
 use App\Events\SupportTicketReplied;
+use App\Events\TopUpTransactionCreated;
+use App\Events\TransactionStatusChanged;
 use App\Events\UserRegistered;
 use App\Events\UserStoppedTyping;
 use App\Events\UserTyping;
@@ -25,6 +27,9 @@ use App\Listeners\SendWithdrawRequestCreatedNotification;
 use App\Listeners\SendWithdrawRequestStatusChangedNotification;
 use App\Listeners\SupportTicketCreatedListener;
 use App\Listeners\SupportTicketRepliedListener;
+use App\Listeners\TopUpTransactionCreatedListener;
+use App\Listeners\TransactionStatusChangedListener;
+use App\Listeners\WithdrawRequestCreatedListener;
 use Illuminate\Support\ServiceProvider;
 
 class EventServiceProvider extends ServiceProvider
@@ -39,12 +44,6 @@ class EventServiceProvider extends ServiceProvider
         PaymentStatusChanged::class => [
             SendPaymentNotification::class,
         ],
-        // WithdrawRequestCreated::class => [
-        //     SendWithdrawRequestCreatedNotification::class,
-        // ],
-        // WithdrawRequestStatusChanged::class => [
-        //     SendWithdrawRequestStatusChangedNotification::class,
-        // ],
         PickupRequestCreated::class => [
             PickupRequestCreatedListener::class,
         ],
@@ -64,6 +63,15 @@ class EventServiceProvider extends ServiceProvider
         ],
         SupportTicketReplied::class => [
             SupportTicketRepliedListener::class,
+        ],
+        TopUpTransactionCreated::class => [
+            TopUpTransactionCreatedListener::class,
+        ],
+        WithdrawRequestCreated::class => [
+            WithdrawRequestCreatedListener::class,
+        ],
+        TransactionStatusChanged::class => [
+            TransactionStatusChangedListener::class,
         ],
     ];
 
