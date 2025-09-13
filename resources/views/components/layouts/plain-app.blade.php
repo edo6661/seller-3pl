@@ -4,8 +4,17 @@
 
     <body>
         <x-shared.header/>
-        <main class="min-h-screen">
+        {{-- <main class="min-h-screen">
             {{ $slot }}
+        </main> --}}
+        <main class="lg:ml-64 min-h-screen bg-neutral-50">
+            <!-- Spacer untuk mobile header -->
+            <div class="lg:hidden h-16"></div>
+            
+            <!-- Container untuk content -->
+            <div class="p-4 lg:p-6">
+                {{ $slot }}
+            </div>
         </main>
         {{-- @auth
             <x-shared.chat />

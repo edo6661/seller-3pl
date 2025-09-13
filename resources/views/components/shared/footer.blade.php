@@ -1,4 +1,4 @@
-<footer class="bg-neutral-900 text-white">
+<footer class="bg-neutral-900 text-white lg:ml-64">
     <!-- Main Footer Content -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -9,7 +9,7 @@
                         class="w-8 h-8 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-lg flex items-center justify-center">
                         <i class="fas fa-shipping-fast text-white text-sm"></i>
                     </div>
-                    <span class="text-2xl font-bold">PusatKirim</span>
+                    <span class="text-2xl font-bold">PusatAntar</span>
                 </div>
                 <p class="text-neutral-400 text-sm leading-relaxed">
                     Platform pengiriman terpercaya yang menghubungkan penjual dengan layanan kurir profesional. Kirim
@@ -113,9 +113,9 @@
                     </div>
                     <div class="flex items-center space-x-3">
                         <i class="fas fa-envelope text-primary-400"></i>
-                        <a href="mailto:support@shipapp.com"
+                        <a href="mailto:support@pusatantar.com"
                             class="text-neutral-400 hover:text-primary-400 transition-colors duration-200 text-sm">
-                            support@pusatkirim.com
+                            support@pusatantar.com
                         </a>
                     </div>
                     <div class="flex items-start space-x-3">
@@ -136,7 +136,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div class="flex flex-col sm:flex-row justify-between items-center space-y-2 sm:space-y-0">
                 <p class="text-neutral-400 text-sm">
-                    © {{ date('Y') }} PusatKirim. Semua hak cipta dilindungi.
+                    © {{ date('Y') }} PusatAntar. Semua hak cipta dilindungi.
                 </p>
                 <div class="flex items-center space-x-6 text-sm">
                     <a href="#" class="text-neutral-400 hover:text-primary-400 transition-colors duration-200">
@@ -153,9 +153,9 @@
         </div>
     </div>
 
-    <!-- Back to Top Button -->
+    <!-- Back to Top Button - Disesuaikan dengan sidebar -->
     <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})"
-        class="fixed bottom-6 right-6 bg-primary-500 hover:bg-primary-600 text-white p-3 rounded-full shadow-lg transition-all duration-200 transform hover:scale-110"
+        class="fixed bottom-6 right-6 lg:right-6 bg-primary-500 hover:bg-primary-600 text-white p-3 rounded-full shadow-lg transition-all duration-200 transform hover:scale-110 z-30"
         x-data="{ show: false }" x-show="show" x-on:scroll.window="show = window.pageYOffset > 300" x-transition>
         <i class="fas fa-arrow-up"></i>
     </button>
