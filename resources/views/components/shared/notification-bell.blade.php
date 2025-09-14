@@ -1,114 +1,6 @@
 @props([
     'unreadCount' => 0
 ])
-<div class="relative" x-data="notificationManager()" x-init="init()">
-    <button @click="toggleNotifications()" 
-            class="relative p-2 text-neutral-600 hover:text-primary-600 transition-colors duration-200 rounded-lg hover:bg-neutral-100"
-            :class="{ 'text-primary-600 bg-primary-50': showNotifications }">
-        <i class="fas fa-bell text-lg"></i>
-        <span x-show="totalUnread > 0" 
-              x-text="totalUnread > 99 ? '99+' : totalUnread"
-              x-transition:enter="transform ease-out duration-200"
-              x-transition:enter-start="scale-0 opacity-0"
-              x-transition:enter-end="scale-100 opacity-100"
-              class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center min-w-[20px]"
-               x-cloak
-              >
-        </span>
-        <span x-show="hasNewNotification" 
-              x-transition:enter="transform ease-out duration-200"
-              x-transition:enter-start="scale-0 opacity-0"
-              x-transition:enter-end="scale-100 opacity-100"
-              class="absolute -top-1 -right-1 bg-red-500 rounded-full h-3 w-3 animate-ping"
-               x-cloak
-              >
-        </span>
-    </button>
-    <!-- ... rest of the template remains the same ... -->
-    <div x-show="showNotifications" 
-         x-cloak 
-         @click.away="showNotifications = false"
-         x-transition:enter="transform ease-out duration-200"
-         x-transition:enter-start="opacity-0 scale-95 translate-y-2"
-         x-transition:enter-end="opacity-100 scale-100 translate-y-0"
-         x-transition:leave="transform ease-in duration-150"
-         x-transition:leave-start="opacity-100 scale-100"
-         x-transition:leave-end="opacity-0 scale-95"
-         class="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-xl shadow-xl border border-neutral-200 z-50 max-h-96 overflow-hidden">
-        <!-- Header -->
-        <div class="flex items-center justify-between p-4 border-b border-neutral-200 bg-neutral-50">
-            <h3 class="text-lg font-semibold text-neutral-900">Notifikasi</h3>
-            <div class="flex items-center space-x-2">
-                <button @click="markAllAsRead()" 
-                        x-show="totalUnread > 0"
-                        :disabled="isLoading"
-                        class="text-sm text-primary-600 hover:text-primary-800 font-medium disabled:opacity-50">
-                    <span x-show="!isLoading">Tandai Semua Dibaca</span>
-                    <span x-show="isLoading">Loading...</span>
-                </button>
-                <button @click="clearAllNotifications()" 
-                        :disabled="isLoading"
-                        class="text-sm text-neutral-500 hover:text-neutral-700 disabled:opacity-50">
-                    <i class="fas fa-trash text-xs"></i>
-                </button>
-            </div>
-        </div>
-        <!-- Loading state -->
-        <div x-show="isLoading && notifications.length === 0" class="p-8 text-center">
-            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
-            <p class="text-neutral-500 text-sm mt-2">Memuat notifikasi...</p>
-        </div>
-        <!-- Error state -->
-        <div x-show="error && !isLoading" class="p-8 text-center">
-            <div class="text-red-400 text-4xl mb-3">
-                <i class="fas fa-exclamation-triangle"></i>
-            </div>
-            <p class="text-red-500 text-sm mb-3" x-text="error"></p>
-            <button @click="loadNotifications()" 
-                    class="text-primary-600 hover:text-primary-800 text-sm font-medium">
-                Coba Lagi
-            </button>
-        </div>
-        <!-- Notifications list -->
-        <div class="max-h-80 overflow-y-auto" x-show="!isLoading && !error">
-            <template x-for="notification in notifications" :key="notification.id">
-                <div class="p-4 border-b border-neutral-100 hover:bg-neutral-50 transition-colors cursor-pointer"
-                     :class="{ 'bg-blue-50': !notification.read_at }"
-                     @click="handleNotificationClick(notification)">
-                    <div class="flex items-start space-x-3">
-                        <div class="flex-shrink-0 mt-1">
-                            <div class="w-8 h-8 rounded-full flex items-center justify-center"
-                                 :class="getNotificationColor(notification.type)">
-                                <i :class="getNotificationIcon(notification.type)" class="text-sm"></i>
-                            </div>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <p class="text-sm font-medium text-neutral-900" x-text="notification.title"></p>
-                            <p class="text-sm text-neutral-600 mt-1" x-text="notification.message"></p>
-                            <p class="text-xs text-neutral-400 mt-2" x-text="formatTime(notification.created_at)"></p>
-                        </div>
-                        <div class="flex-shrink-0" x-show="!notification.read_at">
-                            <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
-                        </div>
-                    </div>
-                </div>
-            </template>
-            <!-- Empty state -->
-            <div x-show="notifications.length === 0 && !isLoading && !error" class="p-8 text-center">
-                <div class="text-neutral-300 text-4xl mb-3">
-                    <i class="fas fa-bell-slash"></i>
-                </div>
-                <p class="text-neutral-500 text-sm">Tidak ada notifikasi</p>
-            </div>
-        </div>
-        <!-- Footer -->
-        <div class="p-3 border-t border-neutral-200 bg-neutral-50" x-show="!isLoading && !error">
-            <a href="#" class="block text-center text-sm text-primary-600 hover:text-primary-800 font-medium">
-                Lihat Semua Notifikasi
-            </a>
-        </div>
-    </div>
-</div>
 <script>
 function notificationManager() {
     return {
@@ -135,7 +27,8 @@ function notificationManager() {
             }
         },
         getAuthToken() {
-            return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            const token = document.querySelector('meta[name="csrf-token"]');
+            return token ? token.getAttribute('content') : null;
         },
         getCookie(name) {
             const value = `; ${document.cookie}`;
@@ -209,7 +102,6 @@ function notificationManager() {
                 this.hasNewNotification = true;
                 this.playNotificationSound();
                 this.showToastNotification(notification);
-            } else {
             }
         },
         showToastNotification(notification) {
@@ -231,7 +123,7 @@ function notificationManager() {
                         'Accept': 'application/json',
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${this.authToken}`,
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                        'X-CSRF-TOKEN': this.authToken
                     }
                 });
                 if (!response.ok) {
@@ -247,9 +139,7 @@ function notificationManager() {
                 if (data.success) {
                     this.notifications = data.notifications || [];
                     this.totalUnread = data.unread_count || 0;
-                        count: this.notifications.length,
-                        unread_count: this.totalUnread
-                    });
+                    
                 } else {
                     throw new Error(data.message || 'Gagal memuat notifikasi');
                 }
@@ -269,7 +159,7 @@ function notificationManager() {
                         'Accept': 'application/json',
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${this.authToken}`,
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                        'X-CSRF-TOKEN': this.authToken
                     }
                 });
                 if (response.ok) {
@@ -295,7 +185,7 @@ function notificationManager() {
                         'Accept': 'application/json',
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${this.authToken}`,
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                        'X-CSRF-TOKEN': this.authToken
                     }
                 });
                 if (response.ok) {
@@ -325,7 +215,7 @@ function notificationManager() {
                         'Accept': 'application/json',
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${this.authToken}`,
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                        'X-CSRF-TOKEN': this.authToken
                     }
                 });
                 if (response.ok) {
@@ -421,3 +311,102 @@ function notificationManager() {
     }
 }
 </script>
+<div class="relative" x-data="notificationManager()" x-init="init()">
+    <button @click="toggleNotifications()" 
+            class="relative p-2 text-neutral-600 hover:text-primary-600 transition-colors duration-200 rounded-lg hover:bg-neutral-100"
+            :class="{ 'text-primary-600 bg-primary-50': showNotifications }">
+        <i class="fas fa-bell text-lg"></i>
+        <span x-show="totalUnread > 0" 
+              x-text="totalUnread > 99 ? '99+' : totalUnread"
+              x-transition:enter="transform ease-out duration-200"
+              x-transition:enter-start="scale-0 opacity-0"
+              x-transition:enter-end="scale-100 opacity-100"
+              class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center min-w-[20px]"
+               x-cloak>
+        </span>
+        <span x-show="hasNewNotification" 
+              x-transition:enter="transform ease-out duration-200"
+              x-transition:enter-start="scale-0 opacity-0"
+              x-transition:enter-end="scale-100 opacity-100"
+              class="absolute -top-1 -right-1 bg-red-500 rounded-full h-3 w-3 animate-ping"
+               x-cloak>
+        </span>
+    </button>
+    <div x-show="showNotifications" 
+         x-cloak 
+         @click.away="showNotifications = false"
+         x-transition:enter="transform ease-out duration-200"
+         x-transition:enter-start="opacity-0 scale-95 translate-y-2"
+         x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+         x-transition:leave="transform ease-in duration-150"
+         x-transition:leave-start="opacity-100 scale-100"
+         x-transition:leave-end="opacity-0 scale-95"
+         class="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-xl shadow-xl border border-neutral-200 z-50 max-h-96 overflow-hidden">
+        <div class="flex items-center justify-between p-4 border-b border-neutral-200 bg-neutral-50">
+            <h3 class="text-lg font-semibold text-neutral-900">Notifikasi</h3>
+            <div class="flex items-center space-x-2">
+                <button @click="markAllAsRead()" 
+                        x-show="totalUnread > 0"
+                        :disabled="isLoading"
+                        class="text-sm text-primary-600 hover:text-primary-800 font-medium disabled:opacity-50">
+                    <span x-show="!isLoading">Tandai Semua Dibaca</span>
+                    <span x-show="isLoading">Loading...</span>
+                </button>
+                <button @click="clearAllNotifications()" 
+                        :disabled="isLoading"
+                        class="text-sm text-neutral-500 hover:text-neutral-700 disabled:opacity-50">
+                    <i class="fas fa-trash text-xs"></i>
+                </button>
+            </div>
+        </div>
+        <div x-show="isLoading && notifications.length === 0" class="p-8 text-center">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
+            <p class="text-neutral-500 text-sm mt-2">Memuat notifikasi...</p>
+        </div>
+        <div x-show="error && !isLoading" class="p-8 text-center">
+            <div class="text-red-400 text-4xl mb-3">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <p class="text-red-500 text-sm mb-3" x-text="error"></p>
+            <button @click="loadNotifications()" 
+                    class="text-primary-600 hover:text-primary-800 text-sm font-medium">
+                Coba Lagi
+            </button>
+        </div>
+        <div class="max-h-80 overflow-y-auto" x-show="!isLoading && !error">
+            <template x-for="notification in notifications" :key="notification.id">
+                <div class="p-4 border-b border-neutral-100 hover:bg-neutral-50 transition-colors cursor-pointer"
+                     :class="{ 'bg-blue-50': !notification.read_at }"
+                     @click="handleNotificationClick(notification)">
+                    <div class="flex items-start space-x-3">
+                        <div class="flex-shrink-0 mt-1">
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center"
+                                 :class="getNotificationColor(notification.type)">
+                                <i :class="getNotificationIcon(notification.type)" class="text-sm"></i>
+                            </div>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-neutral-900" x-text="notification.title"></p>
+                            <p class="text-sm text-neutral-600 mt-1" x-text="notification.message"></p>
+                            <p class="text-xs text-neutral-400 mt-2" x-text="formatTime(notification.created_at)"></p>
+                        </div>
+                        <div class="flex-shrink-0" x-show="!notification.read_at">
+                            <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+            <div x-show="notifications.length === 0 && !isLoading && !error" class="p-8 text-center">
+                <div class="text-neutral-300 text-4xl mb-3">
+                    <i class="fas fa-bell-slash"></i>
+                </div>
+                <p class="text-neutral-500 text-sm">Tidak ada notifikasi</p>
+            </div>
+        </div>
+        <div class="p-3 border-t border-neutral-200 bg-neutral-50" x-show="!isLoading && !error">
+            <a href="#" class="block text-center text-sm text-primary-600 hover:text-primary-800 font-medium">
+                Lihat Semua Notifikasi
+            </a>
+        </div>
+    </div>
+</div>
