@@ -244,59 +244,57 @@
         </header>
 
         <!-- Desktop Header -->
-        <header class="hidden lg:flex sticky top-0 bg-white shadow-md border-b border-neutral-200 z-20">
-            <div class="flex-1 flex items-center justify-end px-6 py-[17.5px]">
-                @auth
-                <div class="flex items-center space-x-4">
-                    <div>
-                        @php
-                            $notificationService = app(\App\Services\NotificationService::class);
-                            $unreadCount = $notificationService->getUnreadCount(auth()->id());
-                        @endphp
-                        <x-shared.notification-bell :unreadCount="$unreadCount" />
-                    </div>
+        @auth
+            <header class="hidden lg:flex sticky top-0 bg-white shadow-md border-b border-neutral-200 z-20">
+                <div class="flex-1 flex items-center justify-end px-6 py-[17.5px]">
+                    @auth
+                    <div class="flex items-center space-x-4">
+                        <div>
+                            @php
+                                $notificationService = app(\App\Services\NotificationService::class);
+                                $unreadCount = $notificationService->getUnreadCount(auth()->id());
+                            @endphp
+                            <x-shared.notification-bell :unreadCount="$unreadCount" />
+                        </div>
 
-                    <div x-data="{ userMenuOpen: false }" class="relative">
-                        <button @click="userMenuOpen = !userMenuOpen" class="flex items-center space-x-2">
-                            <div class="w-9 h-9 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full flex items-center justify-center shadow-sm">
-                                <i class="fas fa-user text-white text-sm"></i>
+                        <div x-data="{ userMenuOpen: false }" class="relative">
+                            <button @click="userMenuOpen = !userMenuOpen" class="flex items-center space-x-2">
+                                <div class="w-9 h-9 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full flex items-center justify-center shadow-sm">
+                                    <i class="fas fa-user text-white text-sm"></i>
+                                </div>
+                                <div class="text-left">
+                                    <p class="font-semibold text-sm text-neutral-800 truncate">{{ auth()->user()->name }}</p>
+                                </div>
+                                <i class="fas fa-chevron-down text-neutral-400 text-xs transition-transform duration-200" :class="{ 'rotate-180': userMenuOpen }"></i>
+                            </button>
+        
+                            <div x-show="userMenuOpen" x-cloak @click.away="userMenuOpen = false" 
+                                x-transition:enter="transition ease-out duration-200"
+                                x-transition:enter-start="opacity-0 transform scale-95"
+                                x-transition:enter-end="opacity-100 transform scale-100"
+                                x-transition:leave="transition ease-in duration-150"
+                                x-transition:leave-start="opacity-100 transform scale-100"
+                                x-transition:leave-end="opacity-0 transform scale-95"
+                                class="absolute top-full right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-neutral-200 py-2">
+                                <a href="{{ route('profile.index') }}" class="flex items-center px-4 py-2 text-neutral-700 hover:bg-neutral-50 transition-colors duration-200">
+                                    <i class="fas fa-user mr-3 text-sm w-5"></i>
+                                    <span class="font-medium text-sm">Profile</span>
+                                </a>
+                                <hr class="my-1 border-neutral-200">
+                                <form action="{{ route('logout') }}" method="POST" class="block">
+                                    @csrf
+                                    <button type="submit" class="w-full flex items-center px-4 py-2 text-error-600 hover:bg-error-50 transition-colors duration-200">
+                                        <i class="fas fa-sign-out-alt mr-3 text-sm w-5"></i>
+                                        <span class="font-medium text-sm">Logout</span>
+                                    </button>
+                                </form>
                             </div>
-                            <div class="text-left">
-                                <p class="font-semibold text-sm text-neutral-800 truncate">{{ auth()->user()->name }}</p>
-                            </div>
-                            <i class="fas fa-chevron-down text-neutral-400 text-xs transition-transform duration-200" :class="{ 'rotate-180': userMenuOpen }"></i>
-                        </button>
-    
-                        <div x-show="userMenuOpen" x-cloak @click.away="userMenuOpen = false" 
-                             x-transition:enter="transition ease-out duration-200"
-                             x-transition:enter-start="opacity-0 transform scale-95"
-                             x-transition:enter-end="opacity-100 transform scale-100"
-                             x-transition:leave="transition ease-in duration-150"
-                             x-transition:leave-start="opacity-100 transform scale-100"
-                             x-transition:leave-end="opacity-0 transform scale-95"
-                             class="absolute top-full right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-neutral-200 py-2">
-                            <a href="{{ route('profile.index') }}" class="flex items-center px-4 py-2 text-neutral-700 hover:bg-neutral-50 transition-colors duration-200">
-                                <i class="fas fa-user mr-3 text-sm w-5"></i>
-                                <span class="font-medium text-sm">Profile</span>
-                            </a>
-                            <hr class="my-1 border-neutral-200">
-                            <form action="{{ route('logout') }}" method="POST" class="block">
-                                @csrf
-                                <button type="submit" class="w-full flex items-center px-4 py-2 text-error-600 hover:bg-error-50 transition-colors duration-200">
-                                    <i class="fas fa-sign-out-alt mr-3 text-sm w-5"></i>
-                                    <span class="font-medium text-sm">Logout</span>
-                                </button>
-                            </form>
                         </div>
                     </div>
+                    @endauth
                 </div>
-                @endauth
-            </div>
-        </header>
-
-        <main class="p-6">
-            {{-- Main content goes here --}}
-        </main>
+            </header>
+        @endauth
     </div>
 </div>
 

@@ -30,9 +30,7 @@ class AuthController extends Controller
     {
         return view('guest.auth.login');
     }
-/**
- * @param \Illuminate\Http\Request $request
- */
+
     public function loginSubmit(LoginRequest $request): RedirectResponse
     {
         try {
@@ -63,9 +61,7 @@ class AuthController extends Controller
     {
         return view('guest.auth.register');
     }
-/**
- * @param \Illuminate\Http\Request $request
- */
+
     public function registerSubmit(RegisterRequest $request): RedirectResponse
     {
         try {
@@ -140,7 +136,7 @@ class AuthController extends Controller
             return redirect()
                 ->route('guest.auth.forgot-password')
                 ->with('error', 'Link reset password tidak valid.');
-    }
+        }
 
         // Verifikasi apakah token masih valid
         if (!$this->authService->isValidResetToken($token, $email)) {
@@ -192,47 +188,75 @@ class AuthController extends Controller
         }
     }
 
+    // PERBAIKAN UTAMA: Menambahkan pesan sukses setelah verifikasi email
     public function verifyEmail(Request $request): RedirectResponse
     {
         try {
-            $this->emailVerificationService->verifyEmail(
-                $request->route('id'),
-                $request->route('hash')
-            );
+            $userId = $request->route('id');
+            $hash = $request->route('hash');
+            
+            $this->emailVerificationService->verifyEmail($userId, $hash);
+            
+            // Ambil user untuk pesan personal
+            $user = User::find($userId);
+            $userName = $user ? $user->name : 'Pengguna';
             
             return redirect()
                 ->route('guest.auth.login')
-                ->with('success', 'Email berhasil diverifikasi. Silakan login.');
+                ->with('success', "Selamat {$userName}! Email Anda berhasil diverifikasi. Sekarang Anda dapat masuk ke akun Anda.");
                 
         } catch (ValidationException $e) {
+            // Ambil pesan error yang spesifik
+            $errorMessage = collect($e->errors())->flatten()->first();
+            
             return redirect()
                 ->route('guest.auth.login')
-                ->with('error', $e->getMessage());
+                ->with('error', $errorMessage);
         } catch (\Exception $e) {
             return redirect()
                 ->route('guest.auth.login')
-                ->with('error', 'Terjadi kesalahan saat verifikasi email.');
+                ->with('error', 'Terjadi kesalahan saat verifikasi email. Silakan coba lagi atau hubungi administrator.');
         }
     }
 
-    public function resendVerification(Request $request): RedirectResponse
+    public function resendVerification(Request $request)
     {
         $request->validate([
             'email' => 'required|email|exists:users,email'
+        ], [
+            'email.required' => 'Email wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
+            'email.exists' => 'Email tidak terdaftar dalam sistem.'
         ]);
 
         try {
             $this->emailVerificationService->resendVerificationEmail($request->email);
             
+            // Check if it's AJAX request
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Email verifikasi telah dikirim ulang ke ' . $request->email
+                ]);
+            }
+            
             return back()
-                ->with('success', 'Email verifikasi telah dikirim ulang.');
+                ->with('success', 'Email verifikasi telah dikirim ulang ke ' . $request->email . '. Silakan periksa kotak masuk dan folder spam Anda.');
                 
         } catch (ValidationException $e) {
-            return back()
-                ->withErrors($e->errors());
-        } catch (\Exception $e) {
-            return back()
-                ->with('error', 'Terjadi kesalahan saat mengirim email verifikasi.');
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => collect($e->errors())->flatten()->first()
+                ], 422);
+            }
+            
+            return back()->withErrors($e->errors());
+            
+        }catch (\Exception $e) {
+                return back()
+                    ->with('error', 'Terjadi kesalahan saat mengirim email verifikasi. Silakan coba lagi.');
+            }
         }
-    }
+    
 }

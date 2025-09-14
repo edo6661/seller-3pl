@@ -31,7 +31,10 @@ class EmailVerificationService
             ]);
         }
 
-        $user->markEmailAsVerified();
+        // Verifikasi email
+        $user->forceFill([
+            'email_verified_at' => now(),
+        ])->save();
         
         return true;
     }

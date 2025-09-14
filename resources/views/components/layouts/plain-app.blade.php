@@ -12,7 +12,7 @@
             <div class="lg:hidden h-16"></div>
             
             <!-- Container untuk content -->
-            <div class="p-4 lg:p-6">
+            <div class="">
                 {{ $slot }}
             </div>
         </main>
