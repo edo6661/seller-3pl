@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\SellerVerificationStatus;
 use App\Models\SellerProfile;
 
 class SellerProfileService
@@ -23,7 +24,7 @@ class SellerProfileService
         return $profile;
     }
 
-    public function getOrCreateProfile(int $userId): SellerProfile
+     public function getOrCreateProfile(int $userId): SellerProfile
     {
         $profile = $this->getUserProfile($userId);
         
@@ -34,7 +35,7 @@ class SellerProfileService
                 'city' => '',
                 'province' => '',
                 'postal_code' => '',
-                
+                'verification_status' => SellerVerificationStatus::PENDING, 
             ]);
         }
         
