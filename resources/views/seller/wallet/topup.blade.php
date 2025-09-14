@@ -1,149 +1,200 @@
 <x-layouts.plain-app>
-    <div class="container mx-auto px-4 py-8 max-w-2xl">
+    <div class="container mx-auto px-4 py-8">
         <!-- Header -->
         <div class="mb-8">
             <div class="flex items-center mb-4">
-                <a href="{{ route('seller.wallet.index') }}" class="text-blue-600 hover:text-blue-800 mr-4">
-                    ← Kembali
+                <a href="{{ route('seller.wallet.index') }}"
+                    class="text-secondary-600 hover:text-secondary-800 mr-4 transition flex items-center">
+                    <i class="fas fa-arrow-left mr-2"></i> Kembali
                 </a>
-                <h1 class="text-3xl font-bold text-gray-800">Top Up Saldo</h1>
+                <h1 class="text-2xl font-bold text-neutral-900">Top Up Saldo</h1>
             </div>
-            <p class="text-gray-600">Isi saldo dompet Anda dengan mudah dan aman</p>
+            <p class="text-neutral-600">Isi saldo dompet Anda dengan transfer bank manual</p>
         </div>
 
         <!-- Current Balance -->
-        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+        <div class="bg-primary-50 border border-primary-200 rounded-xl p-5 mb-6 shadow-sm">
             <div class="flex justify-between items-center">
-                <span class="text-sm font-medium text-blue-800">Saldo Saat Ini:</span>
-                <span class="text-lg font-bold text-blue-900">{{ $wallet->formatted_balance }}</span>
+                <span class="text-sm font-medium text-primary-800 flex items-center">
+                    <i class="fas fa-wallet mr-2"></i> Saldo Saat Ini:
+                </span>
+                <span class="text-lg font-bold text-primary-900">{{ $wallet->formatted_balance }}</span>
             </div>
         </div>
 
-        <!-- Error Messages -->
-        @if ($errors->any())
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
-                <ul class="list-disc list-inside">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
+        <!-- Resumable Requests -->
+        @if($resumableRequests->count() > 0)
+            <div class="bg-warning-50 border border-warning-200 rounded-xl p-5 mb-6 shadow-sm">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0 pt-0.5">
+                        <i class="fas fa-exclamation-triangle text-warning-500 text-xl"></i>
+                    </div>
+                    <div class="ml-4 flex-1">
+                        <h3 class="text-base font-medium text-warning-800">
+                            Permintaan Belum Selesai ({{ $resumableRequests->count() }})
+                        </h3>
+                        <div class="mt-2 text-sm text-warning-700">
+                            <p>Anda memiliki permintaan top up yang belum diselesaikan:</p>
+                            <div class="mt-3 space-y-3">
+                                @foreach($resumableRequests as $request)
+                                <div class="bg-warning-100 rounded-lg p-3">
+                                    <div class="flex justify-between items-center">
+                                        <div>
+                                            <div class="font-medium text-warning-900">{{ $request->formatted_amount }}</div>
+                                            <div class="text-xs text-warning-700">
+                                                {{ $request->reference_id }} • {{ $request->created_at->format('d/m/Y H:i') }}
+                                            </div>
+                                            <div class="text-xs text-warning-600 mt-1">
+                                                Status: 
+                                                <span class="font-medium">
+                                                    @if(!$request->bank_name)
+                                                        Menunggu pilih bank
+                                                    @elseif(!$request->payment_proof_path)
+                                                        Menunggu upload bukti
+                                                    @endif
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="text-right space-x-2">
+                                            <a href="{{ route('seller.wallet.topup.resume', $request->reference_id) }}" 
+                                               class="bg-warning-600 text-white px-3 py-1.5 rounded text-xs font-medium hover:bg-warning-700 transition inline-flex items-center">
+                                                <i class="fas fa-play mr-1"></i> Lanjutkan
+                                            </a>
+                                            <form action="{{ route('seller.wallet.topup.cancel', $request->reference_id) }}" 
+                                                  method="POST" class="inline">
+                                                @csrf
+                                                <button type="submit" 
+                                                        onclick="return confirm('Yakin ingin membatalkan permintaan {{ $request->reference_id }}?')"
+                                                        class="bg-gray-500 text-white px-3 py-1.5 rounded text-xs font-medium hover:bg-gray-600 transition inline-flex items-center">
+                                                    <i class="fas fa-times mr-1"></i> Batal
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         @endif
 
-        @if (session('error'))
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
-                {{ session('error') }}
+        <!-- Recent Top Up Requests -->
+        @if($topUpRequests->count() > 0)
+        <div class="bg-white rounded-xl shadow-sm border border-neutral-200 p-6 mb-6">
+            <h3 class="text-lg font-semibold text-neutral-900 mb-4">Permintaan Top Up Terbaru</h3>
+            <div class="space-y-3">
+                @foreach($topUpRequests as $request)
+                <div class="flex justify-between items-center p-3 bg-neutral-50 rounded-lg">
+                    <div>
+                        <div class="font-medium text-neutral-900">{{ $request->formatted_amount }}</div>
+                        <div class="text-sm text-neutral-500">{{ $request->reference_id }} • {{ $request->created_at->format('d/m/Y H:i') }}</div>
+                        @if($request->bank_name)
+                            <div class="text-xs text-neutral-400">{{ $request->bank_name }} - {{ $request->bank_account_number }}</div>
+                        @endif
+                    </div>
+                    <div class="text-right">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                            {{ $request->status->color() === 'success' ? 'bg-success-100 text-success-700' :
+                               ($request->status->color() === 'warning' ? 'bg-warning-100 text-warning-700' :
+                               ($request->status->color() === 'danger' ? 'bg-error-100 text-error-700' : 'bg-info-100 text-info-700')) }}">
+                            {{ $request->status_label }}
+                        </span>
+                        <div class="mt-1 flex space-x-2">
+                            <a href="{{ route('seller.wallet.transaction.detail', $request->id) }}" 
+                               class="text-xs text-secondary-600 hover:text-secondary-800">Detail</a>
+                        </div>
+                    </div>
+                </div>
+                @endforeach
             </div>
+        </div>
         @endif
 
         <!-- Top Up Form -->
-        <form action="{{ route('seller.wallet.topup.submit') }}" method="POST" class="bg-white rounded-lg shadow-md p-6">
+        <form action="{{ route('seller.wallet.topup.submit') }}" method="POST"
+            class="bg-white rounded-xl shadow-lg p-6">
             @csrf
-            
+
             <!-- Amount Input -->
             <div class="mb-6">
-                <label for="amount" class="block text-sm font-medium text-gray-700 mb-2">
-                    Jumlah Top Up <span class="text-red-500">*</span>
+                <label for="amount" class="block text-sm font-medium text-neutral-700 mb-2">
+                    Jumlah Top Up <span class="text-error-500">*</span>
                 </label>
                 <div class="relative">
-                    <span class="absolute left-3 top-3 text-gray-500">Rp</span>
-                    <input type="number" 
-                           id="amount" 
-                           name="amount" 
-                           class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                           placeholder="10000"
-                           min="10000"
-                           max="10000000"
-                           value="{{ old('amount') }}"
-                           required>
+                    <span class="absolute left-3 top-3 text-neutral-500">Rp</span>
+                    <input type="number" id="amount" name="amount"
+                        class="w-full pl-12 pr-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition"
+                        placeholder="10000" min="10000" max="10000000" value="{{ old('amount') }}" required>
                 </div>
-                <p class="text-sm text-gray-500 mt-1">Minimum Rp 10.000 - Maksimum Rp 10.000.000</p>
+                <p class="text-sm text-neutral-500 mt-1">Minimum Rp 10.000 - Maksimum Rp 10.000.000</p>
+                @error('amount')
+                    <p class="text-sm text-error-600 mt-1">{{ $message }}</p>
+                @enderror
             </div>
 
             <!-- Quick Amount Buttons -->
             <div class="mb-6">
-                <label class="block text-sm font-medium text-gray-700 mb-3">Pilih Cepat:</label>
-                <div class="grid grid-cols-3 gap-3">
-                    <button type="button" onclick="setAmount(50000)" 
-                            class="quick-amount-btn bg-gray-100 hover:bg-blue-100 border border-gray-300 px-4 py-2 rounded-lg text-sm font-medium transition">
+                <label class="block text-sm font-medium text-neutral-700 mb-3">Pilih Cepat:</label>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    <button type="button" onclick="setAmount(50000)"
+                        class="quick-amount-btn bg-neutral-100 hover:bg-primary-100 border border-neutral-300 px-4 py-2.5 rounded-lg text-sm font-medium transition hover:border-primary-300">
                         Rp 50.000
                     </button>
-                    <button type="button" onclick="setAmount(100000)" 
-                            class="quick-amount-btn bg-gray-100 hover:bg-blue-100 border border-gray-300 px-4 py-2 rounded-lg text-sm font-medium transition">
+                    <button type="button" onclick="setAmount(100000)"
+                        class="quick-amount-btn bg-neutral-100 hover:bg-primary-100 border border-neutral-300 px-4 py-2.5 rounded-lg text-sm font-medium transition hover:border-primary-300">
                         Rp 100.000
                     </button>
-                    <button type="button" onclick="setAmount(200000)" 
-                            class="quick-amount-btn bg-gray-100 hover:bg-blue-100 border border-gray-300 px-4 py-2 rounded-lg text-sm font-medium transition">
+                    <button type="button" onclick="setAmount(200000)"
+                        class="quick-amount-btn bg-neutral-100 hover:bg-primary-100 border border-neutral-300 px-4 py-2.5 rounded-lg text-sm font-medium transition hover:border-primary-300">
                         Rp 200.000
                     </button>
-                    <button type="button" onclick="setAmount(500000)" 
-                            class="quick-amount-btn bg-gray-100 hover:bg-blue-100 border border-gray-300 px-4 py-2 rounded-lg text-sm font-medium transition">
+                    <button type="button" onclick="setAmount(500000)"
+                        class="quick-amount-btn bg-neutral-100 hover:bg-primary-100 border border-neutral-300 px-4 py-2.5 rounded-lg text-sm font-medium transition hover:border-primary-300">
                         Rp 500.000
                     </button>
-                    <button type="button" onclick="setAmount(1000000)" 
-                            class="quick-amount-btn bg-gray-100 hover:bg-blue-100 border border-gray-300 px-4 py-2 rounded-lg text-sm font-medium transition">
+                    <button type="button" onclick="setAmount(1000000)"
+                        class="quick-amount-btn bg-neutral-100 hover:bg-primary-100 border border-neutral-300 px-4 py-2.5 rounded-lg text-sm font-medium transition hover:border-primary-300">
                         Rp 1.000.000
                     </button>
-                    <button type="button" onclick="setAmount(2000000)" 
-                            class="quick-amount-btn bg-gray-100 hover:bg-blue-100 border border-gray-300 px-4 py-2 rounded-lg text-sm font-medium transition">
+                    <button type="button" onclick="setAmount(2000000)"
+                        class="quick-amount-btn bg-neutral-100 hover:bg-primary-100 border border-neutral-300 px-4 py-2.5 rounded-lg text-sm font-medium transition hover:border-primary-300">
                         Rp 2.000.000
                     </button>
                 </div>
             </div>
 
-            <!-- Payment Methods (Optional) -->
-            <div class="mb-6">
-                <label class="block text-sm font-medium text-gray-700 mb-3">Metode Pembayaran (Opsional):</label>
-                <div class="space-y-2">
-                    <label class="flex items-center">
-                        <input type="checkbox" name="payment_methods[]" value="credit_card" class="mr-2">
-                        <span class="text-sm">Kartu Kredit</span>
-                    </label>
-                    <label class="flex items-center">
-                        <input type="checkbox" name="payment_methods[]" value="bank_transfer" class="mr-2">
-                        <span class="text-sm">Transfer Bank</span>
-                    </label>
-                    <label class="flex items-center">
-                        <input type="checkbox" name="payment_methods[]" value="gopay" class="mr-2">
-                        <span class="text-sm">GoPay</span>
-                    </label>
-                    <label class="flex items-center">
-                        <input type="checkbox" name="payment_methods[]" value="shopeepay" class="mr-2">
-                        <span class="text-sm">ShopeePay</span>
-                    </label>
-                </div>
-                <p class="text-sm text-gray-500 mt-1">Kosongkan untuk menampilkan semua metode pembayaran</p>
-            </div>
-
             <!-- Submit Button -->
-            <div class="flex space-x-4">
-                <button type="submit" 
-                        class="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                    Lanjutkan Pembayaran
+            <div class="flex flex-col sm:flex-row gap-3">
+                <button type="submit"
+                    class="flex-1 bg-primary-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-primary-700 transition shadow-md hover:shadow-lg focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 flex items-center justify-center">
+                    <i class="fas fa-plus mr-2"></i> Buat Permintaan Top Up
                 </button>
-                <a href="{{ route('seller.wallet.index') }}" 
-                   class="px-6 py-3 border border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition">
+                <a href="{{ route('seller.wallet.index') }}"
+                    class="px-6 py-3 border border-neutral-300 rounded-lg font-semibold text-neutral-700 hover:bg-neutral-50 transition text-center">
                     Batal
                 </a>
             </div>
         </form>
 
         <!-- Info Box -->
-        <div class="mt-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <div class="mt-6 bg-info-50 border border-info-200 rounded-xl p-5">
             <div class="flex">
-                <div class="flex-shrink-0">
-                    <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
-                    </svg>
+                <div class="flex-shrink-0 pt-0.5">
+                    <i class="fas fa-info-circle text-info-500 text-xl"></i>
                 </div>
-                <div class="ml-3">
-                    <h3 class="text-sm font-medium text-yellow-800">Informasi Penting</h3>
-                    <div class="mt-2 text-sm text-yellow-700">
-                        <ul class="list-disc list-inside space-y-1">
-                            <li>Proses top up biasanya selesai dalam 5-10 menit</li>
-                            <li>Saldo akan otomatis masuk setelah pembayaran berhasil</li>
-                            <li>Pastikan melengkapi pembayaran dalam batas waktu yang ditentukan</li>
-                        </ul>
+                <div class="ml-4">
+                    <h3 class="text-base font-medium text-info-800">Cara Top Up Manual</h3>
+                    <div class="mt-2 text-sm text-info-700">
+                        <ol class="list-decimal list-inside space-y-1.5">
+                            <li>Klik tombol "Buat Permintaan Top Up" di atas</li>
+                            <li>Pilih rekening bank tujuan transfer</li>
+                            <li>Lakukan transfer sesuai jumlah yang diminta</li>
+                            <li>Upload bukti transfer untuk verifikasi</li>
+                            <li>Admin akan memverifikasi dalam 1x24 jam</li>
+                            <li>Saldo akan otomatis masuk setelah verifikasi</li>
+                        </ol>
                     </div>
                 </div>
             </div>
@@ -153,20 +204,19 @@
     <script>
         function setAmount(amount) {
             document.getElementById('amount').value = amount;
-            
+
             // Update button styles
             document.querySelectorAll('.quick-amount-btn').forEach(btn => {
-                btn.classList.remove('bg-blue-100', 'border-blue-300');
-                btn.classList.add('bg-gray-100', 'border-gray-300');
+                btn.classList.remove('bg-primary-100', 'border-primary-300', 'text-primary-800');
+                btn.classList.add('bg-neutral-100', 'border-neutral-300');
             });
-            
-            event.target.classList.remove('bg-gray-100', 'border-gray-300');
-            event.target.classList.add('bg-blue-100', 'border-blue-300');
+
+            event.target.classList.remove('bg-neutral-100', 'border-neutral-300');
+            event.target.classList.add('bg-primary-100', 'border-primary-300', 'text-primary-800');
         }
 
         // Format number input
         document.getElementById('amount').addEventListener('input', function(e) {
-            // Remove any non-digit characters except for the decimal point
             this.value = this.value.replace(/[^0-9]/g, '');
         });
     </script>

@@ -16,7 +16,8 @@ class LoginRequest extends FormRequest
         return [
             'email' => 'required|email|max:255',
             'password' => 'required|string|min:6',
-            'remember' => 'boolean'
+            'remember' => 'boolean',
+            'device-name' => 'string|max:255|nullable',
         ];
     }
 
@@ -29,7 +30,8 @@ class LoginRequest extends FormRequest
             'password.required' => 'Password wajib diisi.',
             'password.string' => 'Password harus berupa teks.',
             'password.min' => 'Password minimal 6 karakter.',
-            'remember.boolean' => 'Remember me harus berupa true atau false.'
+            'remember.boolean' => 'Remember me harus berupa true atau false.',
+            'device-name.string' => 'Nama perangkat harus berupa teks.',
         ];
     }
 

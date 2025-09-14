@@ -1,13 +1,21 @@
 <?php
 namespace App\Providers;
 
+use App\Services\AdminDashboardService;
+use App\Services\ApiAuthService;
 use App\Services\AuthService;
 use App\Services\BuyerRatingService;
 use App\Services\EmailVerificationService;
 use App\Services\MidtransService;
 use App\Services\NotificationService;
+use App\Services\PasswordResetService;
+use App\Services\PickupRequestService;
 use App\Services\PickupService;
+use App\Services\ProductExportService;
 use App\Services\ProductService;
+use App\Services\ProfileService;
+use App\Services\TeamService;
+use App\Services\UserService;
 use App\Services\WalletService;
 use App\Services\WithdrawService;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
@@ -20,14 +28,22 @@ class ServiceProvider extends BaseServiceProvider
      * @var array<string, string>
      */
     public array $singletons = [
-        ProductService::class => ProductService::class,
-        WalletService::class => WalletService::class,
-        NotificationService::class => NotificationService::class,
-        BuyerRatingService::class => BuyerRatingService::class,
         AuthService::class => AuthService::class,
+        BuyerRatingService::class => BuyerRatingService::class,
         EmailVerificationService::class => EmailVerificationService::class,
-        MidtransService::class => MidtransService::class,
-        
+        NotificationService::class => NotificationService::class,
+        PasswordResetService::class => PasswordResetService::class,
+        PickupService::class => PickupService::class,
+        PickupRequestService::class => PickupRequestService::class,
+        ProductService::class => ProductService::class,
+        ProfileService::class => ProfileService::class,
+        UserService::class => UserService::class,
+        WalletService::class => WalletService::class,
+        ApiAuthService::class => ApiAuthService::class,
+        AdminDashboardService::class => AdminDashboardService::class,
+        ProductExportService::class => ProductExportService::class,
+        TeamService::class => TeamService::class,
+        NotificationService::class => NotificationService::class,
     ];
 
     /**
@@ -36,27 +52,6 @@ class ServiceProvider extends BaseServiceProvider
     public function register(): void
     {
         
-        $this->app->singleton(PickupService::class, function ($app) {
-            return new PickupService(
-                $app->make(BuyerRatingService::class),
-                $app->make(NotificationService::class),
-                $app->make(WalletService::class)
-            );
-        });
-
-        $this->app->singleton(WithdrawService::class, function ($app) {
-            return new WithdrawService(
-                $app->make(WalletService::class),
-                $app->make(NotificationService::class)
-            );
-        });
-        $this->app->singleton(AuthService::class, function ($app) {
-            return new AuthService(
-                $app->make(EmailVerificationService::class),
-            );
-        });
-
-
     }
 
     /**
@@ -75,15 +70,23 @@ class ServiceProvider extends BaseServiceProvider
     public function provides(): array
     {
         return [
-            ProductService::class,
-            PickupService::class,
-            WalletService::class,
-            NotificationService::class,
-            BuyerRatingService::class,
-            WithdrawService::class,
             AuthService::class,
+            BuyerRatingService::class,
             EmailVerificationService::class,
-            MidtransService::class,
+            NotificationService::class,
+            PasswordResetService::class,
+            PickupService::class,
+            PickupRequestService::class,
+            ProductService::class,
+            ProfileService::class,
+            UserService::class,
+            WalletService::class,
+            ApiAuthService::class,
+            AdminDashboardService::class,
+            ProductExportService::class,
+            TeamService::class,
+            NotificationService::class,
+
         ];
     }
 }

@@ -11,36 +11,38 @@ class StorePickupRequestRequest extends FormRequest
         return true;
     }
 
-    public function rules(): array
-    {
-        return [
-            'recipient_name' => 'required|string|max:255',
-            'recipient_phone' => 'required|string|max:20',
-            'recipient_city' => 'required|string|max:100',
-            'recipient_province' => 'required|string|max:100',
-            'recipient_postal_code' => 'required|string|max:10',
-            'recipient_address' => 'required|string|max:500',
-            'pickup_name' => 'required|string|max:255',
-            'pickup_phone' => 'required|string|max:20',
-            'pickup_city' => 'required|string|max:100',
-            'pickup_province' => 'required|string|max:100',
-            'pickup_postal_code' => 'required|string|max:10',
-            'pickup_address' => 'required|string|max:500',
-            'pickup_scheduled_at' => 'nullable|date|after:now',
-            'payment_method' => ['required', Rule::in(['balance', 'wallet', 'cod'])],
-            'shipping_cost' => 'required|numeric|min:0',
-            'service_fee' => 'nullable|numeric|min:0',
-            'courier_service' => 'nullable|string|max:100',
-            'notes' => 'nullable|string|max:1000',
-            'items' => 'required|array|min:1',
-            'items.*.product_id' => 'required|exists:products,id',
-            'items.*.quantity' => 'required|integer|min:1',
-        ];
-    }
+     public function rules(): array
+        {
+            return [
+                'address_id' => 'required_if:delivery_type,pickup|nullable|exists:user_addresses,id',
+                'delivery_type' => ['required', Rule::in(['pickup', 'drop_off'])],
+                'recipient_latitude' => 'nullable|numeric',
+                'recipient_longitude' => 'nullable|numeric',
+                'recipient_name' => 'required|string|max:255',
+                'recipient_phone' => 'required|string|max:20',
+                'recipient_city' => 'required|string|max:100',
+                'recipient_province' => 'required|string|max:100',
+                'recipient_postal_code' => 'required|string|max:10',
+                'recipient_address' => 'required|string|max:500',
+                'recipient_scheduled_at' => 'nullable|date|after:now',
+                'pickup_latitude' => 'nullable|numeric',
+                'pickup_longitude' => 'nullable|numeric',
+                'payment_method' => ['required', Rule::in(['wallet', 'cod'])],
+                'shipping_cost' => 'required|numeric|min:0',
+                'service_fee' => 'nullable|numeric|min:0',
+                'courier_service' => 'nullable|string|max:100',
+                'notes' => 'nullable|string|max:1000',
+                'items' => 'required|array|min:1',
+                'items.*.product_id' => 'required|exists:products,id',
+                'items.*.quantity' => 'required|integer|min:1',
+            ];
+        }
 
     public function messages(): array
     {
         return [
+            'delivery_type.required' => 'Metode pengiriman wajib dipilih.',
+            'delivery_type.in' => 'Metode pengiriman tidak valid.',
             'recipient_name.required' => 'Nama penerima wajib diisi.',
             'recipient_name.string' => 'Nama penerima harus berupa teks.',
             'recipient_name.max' => 'Nama penerima maksimal 255 karakter.',
@@ -59,28 +61,10 @@ class StorePickupRequestRequest extends FormRequest
             'recipient_address.required' => 'Alamat penerima wajib diisi.',
             'recipient_address.string' => 'Alamat penerima harus berupa teks.',
             'recipient_address.max' => 'Alamat penerima maksimal 500 karakter.',
-            'pickup_name.required' => 'Nama pickup wajib diisi.',
-            'pickup_name.string' => 'Nama pickup harus berupa teks.',
-            'pickup_name.max' => 'Nama pickup maksimal 255 karakter.',
-            'pickup_phone.required' => 'Nomor telepon pickup wajib diisi.',
-            'pickup_phone.string' => 'Nomor telepon pickup harus berupa teks.',
-            'pickup_phone.max' => 'Nomor telepon pickup maksimal 20 karakter.',
-            'pickup_city.required' => 'Kota pickup wajib diisi.',
-            'pickup_city.string' => 'Kota pickup harus berupa teks.',
-            'pickup_city.max' => 'Kota pickup maksimal 100 karakter.',
-            'pickup_province.required' => 'Provinsi pickup wajib diisi.',
-            'pickup_province.string' => 'Provinsi pickup harus berupa teks.',
-            'pickup_province.max' => 'Provinsi pickup maksimal 100 karakter.',
-            'pickup_postal_code.required' => 'Kode pos pickup wajib diisi.',
-            'pickup_postal_code.string' => 'Kode pos pickup harus berupa teks.',
-            'pickup_postal_code.max' => 'Kode pos pickup maksimal 10 karakter.',
-            'pickup_address.required' => 'Alamat pickup wajib diisi.',
-            'pickup_address.string' => 'Alamat pickup harus berupa teks.',
-            'pickup_address.max' => 'Alamat pickup maksimal 500 karakter.',
             'pickup_scheduled_at.date' => 'Jadwal pickup harus berupa tanggal yang valid.',
             'pickup_scheduled_at.after' => 'Jadwal pickup harus setelah waktu sekarang.',
             'payment_method.required' => 'Metode pembayaran wajib dipilih.',
-            'payment_method.in' => 'Metode pembayaran harus salah satu dari: balance, wallet, atau cod.',
+            'payment_method.in' => 'Metode pembayaran harus salah satu dari: wallet, atau cod.',
             'shipping_cost.required' => 'Biaya pengiriman wajib diisi.',
             'shipping_cost.numeric' => 'Biaya pengiriman harus berupa angka.',
             'shipping_cost.min' => 'Biaya pengiriman tidak boleh kurang dari 0.',

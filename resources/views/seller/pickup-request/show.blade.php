@@ -1,48 +1,44 @@
 <x-layouts.plain-app>
     <x-slot name="title">Detail Pickup Request - {{ $pickupRequest->pickup_code }}</x-slot>
-
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!-- Header -->
         <div class="mb-8">
-            <div class="flex items-center justify-between">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
-                    <h1 class="text-3xl font-bold text-gray-900">Detail Pickup Request</h1>
-                    <p class="mt-2 text-gray-600">{{ $pickupRequest->pickup_code }}</p>
+                    <h1 class="text-3xl font-bold text-neutral-900">Detail {{ $pickupRequest->delivery_type->value === 'pickup' ? 'Pickup' : 'Drop Off' }} Request</h1>
+                    <p class="mt-2 text-neutral-600">
+                        Kode: <span class="font-mono bg-neutral-100 px-2 py-1 rounded">{{ $pickupRequest->pickup_code }}</span>
+                        <span class="ml-3 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {{ $pickupRequest->delivery_type->value === 'pickup' ? 'bg-blue-100 text-blue-800' : 'bg-orange-100 text-orange-800' }}">
+                            {{ $pickupRequest->delivery_type->value === 'pickup' ? 'Pickup' : 'Drop Off' }}
+                        </span>
+                    </p>
                 </div>
-                <div class="flex space-x-3">
-                    <a href="{{ route('seller.pickup-request.index') }}" 
-                       class="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-                        </svg>
+                <div class="flex flex-wrap gap-2">
+                    <a href="{{ route('seller.pickup-request.index') }}"
+                        class="inline-flex items-center px-4 py-2 bg-neutral-600 text-white rounded-lg hover:bg-neutral-700 transition-colors shadow-sm">
+                        <i class="fas fa-arrow-left mr-2"></i>
                         Kembali
                     </a>
-                    @if($pickupRequest->canBeCancelled())
-                        <a href="{{ route('seller.pickup-request.edit', $pickupRequest->id) }}" 
-                           class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5"/>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m18 9-4 4-3-3"/>
-                            </svg>
+                    {{-- @if ($pickupRequest->canBeCancelled())
+                        <a href="{{ route('seller.pickup-request.edit', $pickupRequest->id) }}"
+                            class="inline-flex items-center px-4 py-2 bg-secondary text-white rounded-lg hover:bg-secondary-600 transition-colors shadow-sm">
+                            <i class="fas fa-pen mr-2"></i>
                             Edit
                         </a>
-                    @endif
+                    @endif --}}
                 </div>
             </div>
         </div>
-
-        <!-- Status Badge -->
         <div class="mb-8">
             @php
                 $statusColors = [
-                    'pending' => 'bg-yellow-100 text-yellow-800 border-yellow-200',
-                    'confirmed' => 'bg-blue-100 text-blue-800 border-blue-200',
-                    'pickup_scheduled' => 'bg-purple-100 text-purple-800 border-purple-200',
-                    'picked_up' => 'bg-indigo-100 text-indigo-800 border-indigo-200',
-                    'in_transit' => 'bg-orange-100 text-orange-800 border-orange-200',
-                    'delivered' => 'bg-green-100 text-green-800 border-green-200',
-                    'failed' => 'bg-red-100 text-red-800 border-red-200',
-                    'cancelled' => 'bg-gray-100 text-gray-800 border-gray-200',
+                    'pending' => 'bg-warning-100 text-warning-800 border-warning-200',
+                    'confirmed' => 'bg-secondary-100 text-secondary-800 border-secondary-200',
+                    'pickup_scheduled' => 'bg-primary-100 text-primary-800 border-primary-200',
+                    'picked_up' => 'bg-primary-200 text-primary-800 border-primary-300',
+                    'in_transit' => 'bg-primary-300 text-primary-900 border-primary-400',
+                    'delivered' => 'bg-success-100 text-success-800 border-success-200',
+                    'failed' => 'bg-error-100 text-error-800 border-error-200',
+                    'cancelled' => 'bg-neutral-100 text-neutral-800 border-neutral-200',
                 ];
                 $statusLabels = [
                     'pending' => 'Menunggu Konfirmasi',
@@ -55,81 +51,134 @@
                     'cancelled' => 'Dibatalkan',
                 ];
             @endphp
-            <div class="inline-flex items-center px-4 py-2 rounded-lg border {{ $statusColors[$pickupRequest->status] ?? 'bg-gray-100 text-gray-800 border-gray-200' }}">
-                <span class="text-lg font-semibold">
-                    {{ $statusLabels[$pickupRequest->status] ?? ucfirst($pickupRequest->status) }}
+            <div class="inline-flex items-center px-4 py-2 rounded-lg border text-lg font-semibold {{ $statusColors[$pickupRequest->status] ?? 'bg-neutral-100 text-neutral-800 border-neutral-200' }}">
+                <span class="mr-2">
+                    @switch($pickupRequest->status)
+                        @case('pending')
+                            <i class="fas fa-clock"></i>
+                        @break
+                        @case('confirmed')
+                            <i class="fas fa-check-circle"></i>
+                        @break
+                        @case('pickup_scheduled')
+                            <i class="fas fa-calendar-check"></i>
+                        @break
+                        @case('picked_up')
+                            <i class="fas fa-truck-pickup"></i>
+                        @break
+                        @case('in_transit')
+                            <i class="fas fa-truck-moving"></i>
+                        @break
+                        @case('delivered')
+                            <i class="fas fa-check-circle"></i>
+                        @break
+                        @case('failed')
+                            <i class="fas fa-exclamation-circle"></i>
+                        @break
+                        @case('cancelled')
+                            <i class="fas fa-ban"></i>
+                        @break
+                    @endswitch
                 </span>
+                {{ $statusLabels[$pickupRequest->status] ?? ucfirst($pickupRequest->status) }}
             </div>
         </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Main Content -->
-            <div class="lg:col-span-2 space-y-8">
-                <!-- Pickup Details -->
-                <div class="bg-white rounded-lg shadow">
-                    <div class="px-6 py-4 border-b border-gray-200">
-                        <h3 class="text-lg font-semibold text-gray-900">Informasi Pickup</h3>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2 space-y-6">
+                <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="px-6 py-4 bg-neutral-50 border-b border-neutral-200">
+                        <h3 class="text-lg font-semibold text-neutral-900 flex items-center gap-2">
+                            <i class="fas fa-map-marker-alt text-primary-500"></i>
+                            Informasi Alamat
+                        </h3>
                     </div>
                     <div class="p-6">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <h4 class="text-sm font-medium text-gray-700 mb-3">Alamat Pickup</h4>
-                                <div class="bg-gray-50 rounded-lg p-4">
-                                    <p class="font-medium text-gray-900">{{ $pickupRequest->pickup_name }}</p>
-                                    <p class="text-sm text-gray-600">{{ $pickupRequest->pickup_phone }}</p>
-                                    <p class="text-sm text-gray-600 mt-2">{{ $pickupRequest->full_pickup_address }}</p>
+                        <div class="grid grid-cols-1 {{ $pickupRequest->isPickupType() ? 'md:grid-cols-2' : 'md:grid-cols-1' }} gap-4">
+                            <div class="space-y-3">
+                                <h4 class="text-sm font-medium text-neutral-700 flex items-center gap-1">
+                                    <i class="fas fa-home text-primary-400"></i>
+                                    Alamat Penerima
+                                </h4>
+                                <div class="bg-primary-50 rounded-lg p-4 border border-primary-100">
+                                    <p class="font-medium text-neutral-900">{{ $pickupRequest->recipient_name }}</p>
+                                    <p class="text-sm text-neutral-600 mt-1">
+                                        <i class="fas fa-phone-alt text-primary-400 mr-1"></i>
+                                        {{ $pickupRequest->recipient_phone }}
+                                    </p>
+                                    <p class="text-sm text-neutral-600 mt-2 flex items-start">
+                                        <i class="fas fa-map-pin text-primary-400 mr-2 mt-1"></i>
+                                        {{ $pickupRequest->full_recipient_address }}
+                                    </p>
                                 </div>
                             </div>
-                            <div>
-                                <h4 class="text-sm font-medium text-gray-700 mb-3">Alamat Tujuan</h4>
-                                <div class="bg-gray-50 rounded-lg p-4">
-                                    <p class="font-medium text-gray-900">{{ $pickupRequest->recipient_name }}</p>
-                                    <p class="text-sm text-gray-600">{{ $pickupRequest->recipient_phone }}</p>
-                                    <p class="text-sm text-gray-600 mt-2">{{ $pickupRequest->full_recipient_address }}</p>
+                            @if($pickupRequest->isPickupType())
+                            <div class="space-y-3">
+                                <h4 class="text-sm font-medium text-neutral-700 flex items-center gap-1">
+                                    <i class="fas fa-truck text-secondary-400"></i>
+                                    Alamat Pickup
+                                </h4>
+                                <div class="bg-secondary-50 rounded-lg p-4 border border-secondary-100">
+                                    @if($pickupRequest->pickupAddress)
+                                        <p class="font-medium text-neutral-900">{{ $pickupRequest->pickupAddress->name }}</p>
+                                        <p class="text-sm text-neutral-600 mt-1">
+                                            <i class="fas fa-phone-alt text-secondary-400 mr-1"></i>
+                                            {{ $pickupRequest->pickupAddress->phone }}
+                                        </p>
+                                        <p class="text-sm text-neutral-600 mt-2 flex items-start">
+                                            <i class="fas fa-map-pin text-secondary-400 mr-2 mt-1"></i>
+                                            {{ $pickupRequest->pickupAddress->full_address }}
+                                        </p>
+                                    @else
+                                        <p class="text-sm text-neutral-500 italic">Alamat pickup tidak tersedia</p>
+                                    @endif
+                                </div>
+                            </div>
+                            @endif
+                        </div>
+                        @if($pickupRequest->isDropOffType())
+                        <div class="mt-4 p-3 bg-orange-50 rounded-lg border border-orange-200">
+                            <div class="flex items-start">
+                                <i class="fas fa-info-circle text-orange-500 mt-1 mr-2"></i>
+                                <div class="text-sm text-orange-700">
+                                    <strong>Drop Off Service:</strong> Paket akan dikirim langsung ke alamat penerima tanpa proses pickup.
                                 </div>
                             </div>
                         </div>
+                        @endif
                     </div>
                 </div>
-
-                <!-- Items List -->
-                <div class="bg-white rounded-lg shadow">
-                    <div class="px-6 py-4 border-b border-gray-200">
-                        <h3 class="text-lg font-semibold text-gray-900">Daftar Produk</h3>
+                <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="px-6 py-4 bg-neutral-50 border-b border-neutral-200">
+                        <h3 class="text-lg font-semibold text-neutral-900 flex items-center gap-2">
+                            <i class="fas fa-boxes text-primary-500"></i>
+                            Daftar Produk
+                        </h3>
                     </div>
                     <div class="p-6">
                         <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
+                            <table class="min-w-full divide-y divide-neutral-200">
+                                <thead class="bg-neutral-50">
                                     <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Produk</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Qty</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Berat</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Harga</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Produk</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Qty</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Berat</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Harga</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-neutral-500 uppercase tracking-wider">Total</th>
                                     </tr>
                                 </thead>
-                                <tbody class="bg-white divide-y divide-gray-200">
-                                    @foreach($pickupRequest->items as $item)
-                                        <tr>
+                                <tbody class="bg-white divide-y divide-neutral-200">
+                                    @foreach ($pickupRequest->items as $item)
+                                        <tr class="hover:bg-neutral-50 transition-colors">
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                <div class="text-sm font-medium text-gray-900">{{ $item->product->name }}</div>
-                                                @if($item->product->description)
-                                                    <div class="text-sm text-gray-500">{{ $item->product->description }}</div>
+                                                <div class="text-sm font-medium text-neutral-900">{{ $item->product->name }}</div>
+                                                @if ($item->product->description)
+                                                    <div class="text-xs text-neutral-500 mt-1">{{ $item->product->description }}</div>
                                                 @endif
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                {{ number_format($item->quantity) }}
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                {{ number_format($item->total_weight, 2) }} kg
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                Rp {{ number_format($item->price_per_pcs, 0, ',', '.') }}
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                Rp {{ number_format($item->total_price, 0, ',', '.') }}
-                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-900">{{ number_format($item->quantity) }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-900">{{ number_format($item->total_weight, 2) }} kg</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-neutral-900">Rp {{ number_format($item->price_per_pcs, 0, ',', '.') }}</td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-neutral-900">Rp {{ number_format($item->total_price, 0, ',', '.') }}</td>
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -137,80 +186,81 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Timeline -->
-                <div class="bg-white rounded-lg shadow">
-                    <div class="px-6 py-4 border-b border-gray-200">
-                        <h3 class="text-lg font-semibold text-gray-900">Timeline</h3>
+                <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="px-6 py-4 bg-neutral-50 border-b border-neutral-200">
+                        <h3 class="text-lg font-semibold text-neutral-900 flex items-center gap-2">
+                            <i class="fas fa-history text-primary-500"></i>
+                            Timeline
+                        </h3>
                     </div>
                     <div class="p-6">
                         <div class="flow-root">
                             <ul class="-mb-8">
                                 <li>
                                     <div class="relative pb-8">
-                                        <div class="relative flex space-x-3">
-                                            <div class="flex items-center justify-center w-8 h-8 bg-blue-100 rounded-full">
-                                                <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/>
-                                                </svg>
+                                        <div class="relative flex items-start">
+                                            <div class="flex items-center justify-center w-10 h-10 bg-secondary-100 rounded-full ring-8 ring-white">
+                                                <i class="fas fa-calendar-plus text-secondary-600"></i>
                                             </div>
-                                            <div class="min-w-0 flex-1">
-                                                <div class="text-sm font-medium text-gray-900">Request Dibuat</div>
-                                                <div class="text-sm text-gray-500">{{ $pickupRequest->requested_at->format('d M Y H:i') }}</div>
+                                            <div class="min-w-0 flex-1 pl-4">
+                                                <div class="text-sm font-medium text-neutral-900">Request Dibuat</div>
+                                                <div class="text-sm text-neutral-500 mt-1">
+                                                    <i class="far fa-clock mr-1"></i>
+                                                    {{ $pickupRequest->requested_at->format('d M Y H:i') }}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </li>
-                                
-                                @if($pickupRequest->pickup_scheduled_at)
+                                @if ($pickupRequest->isPickupType() && $pickupRequest->pickup_scheduled_at)
                                     <li>
                                         <div class="relative pb-8">
-                                            <div class="relative flex space-x-3">
-                                                <div class="flex items-center justify-center w-8 h-8 bg-purple-100 rounded-full">
-                                                    <svg class="w-4 h-4 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/>
-                                                    </svg>
+                                            <div class="relative flex items-start">
+                                                <div class="flex items-center justify-center w-10 h-10 bg-primary-100 rounded-full ring-8 ring-white">
+                                                    <i class="fas fa-calendar-check text-primary-600"></i>
                                                 </div>
-                                                <div class="min-w-0 flex-1">
-                                                    <div class="text-sm font-medium text-gray-900">Pickup Dijadwalkan</div>
-                                                    <div class="text-sm text-gray-500">{{ $pickupRequest->pickup_scheduled_at->format('d M Y H:i') }}</div>
+                                                <div class="min-w-0 flex-1 pl-4">
+                                                    <div class="text-sm font-medium text-neutral-900">Pickup Dijadwalkan</div>
+                                                    <div class="text-sm text-neutral-500 mt-1">
+                                                        <i class="far fa-clock mr-1"></i>
+                                                        {{ $pickupRequest->pickup_scheduled_at->format('d M Y H:i') }}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </li>
                                 @endif
-
-                                @if($pickupRequest->picked_up_at)
+                                @if ($pickupRequest->isPickupType() && $pickupRequest->picked_up_at)
                                     <li>
                                         <div class="relative pb-8">
-                                            <div class="relative flex space-x-3">
-                                                <div class="flex items-center justify-center w-8 h-8 bg-indigo-100 rounded-full">
-                                                    <svg class="w-4 h-4 text-indigo-600" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/>
-                                                        <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1V8a1 1 0 00-1-1h-3z"/>
-                                                    </svg>
+                                            <div class="relative flex items-start">
+                                                <div class="flex items-center justify-center w-10 h-10 bg-primary-200 rounded-full ring-8 ring-white">
+                                                    <i class="fas fa-truck-pickup text-primary-700"></i>
                                                 </div>
-                                                <div class="min-w-0 flex-1">
-                                                    <div class="text-sm font-medium text-gray-900">Sudah Diambil</div>
-                                                    <div class="text-sm text-gray-500">{{ $pickupRequest->picked_up_at->format('d M Y H:i') }}</div>
+                                                <div class="min-w-0 flex-1 pl-4">
+                                                    <div class="text-sm font-medium text-neutral-900">Sudah Diambil</div>
+                                                    <div class="text-sm text-neutral-500 mt-1">
+                                                        <i class="far fa-clock mr-1"></i>
+                                                        {{ $pickupRequest->picked_up_at->format('d M Y H:i') }}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </li>
                                 @endif
-
-                                @if($pickupRequest->delivered_at)
+                                @if ($pickupRequest->delivered_at)
                                     <li>
                                         <div class="relative">
-                                            <div class="relative flex space-x-3">
-                                                <div class="flex items-center justify-center w-8 h-8 bg-green-100 rounded-full">
-                                                    <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                                    </svg>
+                                            <div class="relative flex items-start">
+                                                <div class="flex items-center justify-center w-10 h-10 bg-success-100 rounded-full ring-8 ring-white">
+                                                    <i class="fas fa-check-circle text-success-600"></i>
                                                 </div>
-                                                <div class="min-w-0 flex-1">
-                                                    <div class="text-sm font-medium text-gray-900">Terkirim</div>
-                                                    <div class="text-sm text-gray-500">{{ $pickupRequest->delivered_at->format('d M Y H:i') }}</div>
+                                                <div class="min-w-0 flex-1 pl-4">
+                                                    <div class="text-sm font-medium text-neutral-900">Terkirim</div>
+                                                    <div class="text-sm text-neutral-500 mt-1">
+                                                        <i class="far fa-clock mr-1"></i>
+                                                        {{ $pickupRequest->delivered_at->format('d M Y H:i') }}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -221,170 +271,155 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Sidebar -->
-            <div class="space-y-8">
-                <!-- Cost Summary -->
-                <div class="bg-white rounded-lg shadow">
-                    <div class="px-6 py-4 border-b border-gray-200">
-                        <h3 class="text-lg font-semibold text-gray-900">Ringkasan Biaya</h3>
+            <div class="space-y-6">
+                <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="px-6 py-4 bg-neutral-50 border-b border-neutral-200">
+                        <h3 class="text-lg font-semibold text-neutral-900 flex items-center gap-2">
+                            <i class="fas fa-receipt text-primary-500"></i>
+                            Ringkasan Biaya
+                        </h3>
                     </div>
                     <div class="p-6">
-                        <div class="space-y-4">
+                        <div class="space-y-3">
                             <div class="flex justify-between text-sm">
-                                <span class="text-gray-600">Subtotal Produk</span>
+                                <span class="text-neutral-600">Subtotal Produk</span>
                                 <span class="font-medium">Rp {{ number_format($pickupRequest->product_total, 0, ',', '.') }}</span>
                             </div>
                             <div class="flex justify-between text-sm">
-                                <span class="text-gray-600">Biaya Pengiriman</span>
+                                <span class="text-neutral-600">Biaya Pengiriman</span>
                                 <span class="font-medium">Rp {{ number_format($pickupRequest->shipping_cost, 0, ',', '.') }}</span>
                             </div>
-                            @if($pickupRequest->service_fee > 0)
+                            @if ($pickupRequest->service_fee > 0)
                                 <div class="flex justify-between text-sm">
-                                    <span class="text-gray-600">Biaya Layanan</span>
+                                    <span class="text-neutral-600">Biaya Layanan</span>
                                     <span class="font-medium">Rp {{ number_format($pickupRequest->service_fee, 0, ',', '.') }}</span>
                                 </div>
                             @endif
-                            <div class="border-t pt-4">
+                            <div class="border-t border-neutral-200 pt-3 mt-3">
                                 <div class="flex justify-between text-lg font-semibold">
                                     <span>Total</span>
-                                    <span>Rp {{ number_format($pickupRequest->total_amount, 0, ',', '.') }}</span>
+                                    <span class="text-primary-600">Rp {{ number_format($pickupRequest->total_amount, 0, ',', '.') }}</span>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <!-- Payment Method -->
-                <div class="bg-white rounded-lg shadow">
-                    <div class="px-6 py-4 border-b border-gray-200">
-                        <h3 class="text-lg font-semibold text-gray-900">Metode Pembayaran</h3>
+                <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="px-6 py-4 bg-neutral-50 border-b border-neutral-200">
+                        <h3 class="text-lg font-semibold text-neutral-900 flex items-center gap-2">
+                            <i class="fas fa-credit-card text-primary-500"></i>
+                            Metode Pembayaran
+                        </h3>
                     </div>
                     <div class="p-6">
                         <div class="flex items-center">
-                            @if($pickupRequest->payment_method === 'cod')
-                                <div class="p-2 bg-orange-100 rounded-lg mr-3">
-                                    <svg class="w-5 h-5 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"/>
-                                        <path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd"/>
-                                    </svg>
+                            @if ($pickupRequest->payment_method === 'cod')
+                                <div class="p-3 bg-warning-100 rounded-lg mr-4 text-warning-600">
+                                    <i class="fas fa-money-bill-wave text-xl"></i>
                                 </div>
                                 <div>
-                                    <div class="text-sm font-medium text-gray-900">Cash on Delivery (COD)</div>
-                                    <div class="text-sm text-gray-500">Bayar saat terima</div>
+                                    <div class="text-sm font-medium text-neutral-900">Cash on Delivery (COD)</div>
+                                    <div class="text-xs text-neutral-500">Bayar saat terima</div>
                                 </div>
-                            @elseif($pickupRequest->payment_method === 'balance')
-                                <div class="p-2 bg-blue-100 rounded-lg mr-3">
-                                    <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4z"/>
-                                        <path d="M6 6h8v2H6V6z"/>
-                                        <path d="M6 10h8v2H6v-2z"/>
-                                    </svg>
+                            @elseif($pickupRequest->payment_method === 'wallet')
+                                <div class="p-3 bg-success-100 rounded-lg mr-4 text-success-600">
+                                    <i class="fas fa-wallet text-xl"></i>
                                 </div>
                                 <div>
-                                    <div class="text-sm font-medium text-gray-900">Saldo</div>
-                                    <div class="text-sm text-gray-500">Dibayar dari saldo</div>
+                                    <div class="text-sm font-medium text-neutral-900">Wallet</div>
+                                    <div class="text-xs text-neutral-500">Dibayar dari saldo</div>
                                 </div>
                             @else
-                                <div class="p-2 bg-green-100 rounded-lg mr-3">
-                                    <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4z"/>
-                                    </svg>
+                                <div class="p-3 bg-secondary-100 rounded-lg mr-4 text-secondary-600">
+                                    <i class="fas fa-credit-card text-xl"></i>
                                 </div>
                                 <div>
-                                    <div class="text-sm font-medium text-gray-900">{{ ucfirst($pickupRequest->payment_method) }}</div>
+                                    <div class="text-sm font-medium text-neutral-900">{{ ucfirst($pickupRequest->payment_method) }}</div>
                                 </div>
                             @endif
                         </div>
                     </div>
                 </div>
-
-                <!-- Actions -->
-                @if($pickupRequest->canBeCancelled())
-                    <div class="bg-white rounded-lg shadow">
-                        <div class="px-6 py-4 border-b border-gray-200">
-                            <h3 class="text-lg font-semibold text-gray-900">Aksi</h3>
+                @if ($pickupRequest->canBeCancelled())
+                    <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                        <div class="px-6 py-4 bg-neutral-50 border-b border-neutral-200">
+                            <h3 class="text-lg font-semibold text-neutral-900 flex items-center gap-2">
+                                <i class="fas fa-bolt text-primary-500"></i>
+                                Aksi
+                            </h3>
                         </div>
                         <div class="p-6 space-y-3">
-                            @if($pickupRequest->status === 'pending')
+                            @if ($pickupRequest->status === 'pending')
                                 <form method="POST" action="{{ route('seller.pickup-request.confirm', $pickupRequest->id) }}" class="w-full">
                                     @csrf
-                                    <button type="submit" class="w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+                                    <button type="submit" class="w-full px-4 py-2 bg-success text-white rounded-lg hover:bg-success-600 transition-colors shadow-sm flex items-center justify-center gap-2">
+                                        <i class="fas fa-check-circle"></i>
                                         Konfirmasi Request
                                     </button>
                                 </form>
                             @endif
-
-                            @if($pickupRequest->status === 'confirmed')
+                            @if ($pickupRequest->isPickupType() && $pickupRequest->canBeScheduled())
                                 <form method="POST" action="{{ route('seller.pickup-request.schedule', $pickupRequest->id) }}" class="w-full">
                                     @csrf
                                     <div class="mb-3">
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Jadwal Pickup</label>
-                                        <input type="datetime-local" name="pickup_scheduled_at" required 
-                                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                        <label class="block text-sm font-medium text-neutral-700 mb-1">Jadwal Pickup</label>
+                                        <input type="datetime-local" name="pickup_scheduled_at" required
+                                            class="w-full rounded-lg border-neutral-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 text-sm"
+                                            min="{{ now()->addMinutes(30)->format('Y-m-d\TH:i') }}">
                                     </div>
-                                    <button type="submit" class="w-full px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700">
+                                    <button type="submit" class="w-full px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-600 transition-colors shadow-sm flex items-center justify-center gap-2">
+                                        <i class="fas fa-calendar-check"></i>
                                         Jadwalkan Pickup
                                     </button>
                                 </form>
                             @endif
-
-                            <form method="POST" action="{{ route('seller.pickup-request.cancel', $pickupRequest->id) }}" 
-                                  onsubmit="return confirm('Yakin ingin membatalkan pickup request ini?')" class="w-full">
+                            {{-- <form method="POST" action="{{ route('seller.pickup-request.cancel', $pickupRequest->id) }}"
+                                onsubmit="return confirm('Yakin ingin membatalkan {{ $pickupRequest->delivery_type->value === 'pickup' ? 'pickup' : 'drop off' }} request ini?')" class="w-full">
                                 @csrf
-                                <button type="submit" class="w-full px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
+                                <button type="submit" class="w-full px-4 py-2 bg-error text-white rounded-lg hover:bg-error-600 transition-colors shadow-sm flex items-center justify-center gap-2">
+                                    <i class="fas fa-times-circle"></i>
                                     Batalkan Request
                                 </button>
-                            </form>
+                            </form> --}}
                         </div>
                     </div>
                 @endif
-
-                <!-- Tracking Info -->
-                @if($pickupRequest->courier_tracking_number)
-                    <div class="bg-white rounded-lg shadow">
-                        <div class="px-6 py-4 border-b border-gray-200">
-                            <h3 class="text-lg font-semibold text-gray-900">Tracking</h3>
+                @if ($pickupRequest->courier_tracking_number)
+                    <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                        <div class="px-6 py-4 bg-neutral-50 border-b border-neutral-200">
+                            <h3 class="text-lg font-semibold text-neutral-900 flex items-center gap-2">
+                                <i class="fas fa-truck text-primary-500"></i>
+                                Tracking
+                            </h3>
                         </div>
                         <div class="p-6">
-                            <div class="text-sm">
-                                <span class="text-gray-600">Nomor Resi:</span>
-                                <span class="font-mono font-medium">{{ $pickupRequest->courier_tracking_number }}</span>
+                            <div class="text-sm flex items-center gap-2">
+                                <span class="text-neutral-600">Nomor Resi:</span>
+                                <span class="font-mono font-medium bg-neutral-100 px-2 py-1 rounded">{{ $pickupRequest->courier_tracking_number }}</span>
                             </div>
-                            @if($pickupRequest->courier_service)
-                                <div class="text-sm mt-2">
-                                    <span class="text-gray-600">Kurir:</span>
-                                    <span class="font-medium">{{ $pickupRequest->courier_service }}</span>
+                            @if ($pickupRequest->courier_service)
+                                <div class="text-sm mt-3 flex items-center gap-2">
+                                    <span class="text-neutral-600">Kurir:</span>
+                                    <span class="font-medium bg-secondary-100 text-secondary-800 px-2 py-1 rounded">{{ $pickupRequest->courier_service }}</span>
                                 </div>
                             @endif
                         </div>
                     </div>
                 @endif
-
-                <!-- Notes -->
-                @if($pickupRequest->notes)
-                    <div class="bg-white rounded-lg shadow">
-                        <div class="px-6 py-4 border-b border-gray-200">
-                            <h3 class="text-lg font-semibold text-gray-900">Catatan</h3>
+                @if ($pickupRequest->notes)
+                    <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                        <div class="px-6 py-4 bg-neutral-50 border-b border-neutral-200">
+                            <h3 class="text-lg font-semibold text-neutral-900 flex items-center gap-2">
+                                <i class="fas fa-sticky-note text-primary-500"></i>
+                                Catatan
+                            </h3>
                         </div>
                         <div class="p-6">
-                            <p class="text-sm text-gray-700">{{ $pickupRequest->notes }}</p>
+                            <p class="text-sm text-neutral-700 bg-neutral-50 p-3 rounded-lg border border-neutral-200">{{ $pickupRequest->notes }}</p>
                         </div>
                     </div>
                 @endif
             </div>
         </div>
     </div>
-
-    @if(session('success'))
-        <div class="fixed top-4 right-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded shadow-lg z-50" role="alert">
-            <span class="block sm:inline">{{ session('success') }}</span>
-        </div>
-    @endif
-
-    @if(session('error'))
-        <div class="fixed top-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded shadow-lg z-50" role="alert">
-            <span class="block sm:inline">{{ session('error') }}</span>
-        </div>
-    @endif
 </x-layouts.plain-app>

@@ -3,63 +3,50 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
+use App\Services\UserService;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 class UserController extends Controller
 {
+    protected UserService $userService;
+
+    public function __construct(UserService $userService)
+    {
+        $this->userService = $userService;
+    }
+
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request): View
     {
-        return view('admin.user.index');
+        $search = $request->get('search');
+        $role = $request->get('role');
+        $status = $request->get('status');
+        
+        $users = $this->userService->getAllUsers($search, $role, $status);
+        $stats = $this->userService->getUserStats();
+        
+        return view('admin.user.index', compact('users', 'stats', 'search', 'role', 'status'));
+    }
+    public function approve(User $user)
+    {
+        $this->userService->approveVerification($user);
+
+        return redirect()->route('admin.users.index')->with('success', 'Verifikasi seller berhasil disetujui.');
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Menolak verifikasi seller.
      */
-    public function create()
+    public function reject(Request $request, User $user)
     {
-        return view('admin.user.create');
-    }
+        $request->validate(['notes' => 'required|string|max:500']);
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
+        $this->userService->rejectVerification($user, $request->input('notes'));
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        return view('admin.user.show', ['id' => $id]);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        return view('admin.user.edit', ['id' => $id]);
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return redirect()->route('admin.users.index')->with('success', 'Verifikasi seller berhasil ditolak.');
     }
 }

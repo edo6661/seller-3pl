@@ -27,14 +27,6 @@ class SendWithdrawRequestStatusChangedNotification implements ShouldQueue
                     $event->newStatus
                 )
             );
-            
-            Log::info("Withdraw request status changed email sent", [
-                'user_id' => $event->user->id,
-                'user_email' => $event->user->email,
-                'withdrawal_code' => $event->withdrawRequest->withdrawal_code,
-                'old_status' => $event->oldStatus,
-                'new_status' => $event->newStatus
-            ]);
         } catch (\Exception $e) {
             Log::error("Error sending withdraw request status changed email", [
                 'error' => $e->getMessage(),

@@ -1,178 +1,243 @@
 <x-layouts.plain-app>
     <x-slot name="title">Detail Produk - {{ $product->name }}</x-slot>
-    
+
     <div class="container mx-auto px-4 py-8">
-        <div class="max-w-4xl mx-auto">
+        <div class="max-w-6xl mx-auto">
             <!-- Breadcrumb -->
             <nav class="flex mb-8" aria-label="Breadcrumb">
-                <ol class="flex items-center space-x-2">
-                    <li>
-                        <a href="{{ route('seller.products.index') }}" class="text-gray-500 hover:text-gray-700">
+                <ol class="inline-flex items-center space-x-1 md:space-x-2">
+                    <li class="inline-flex items-center">
+                        <a href="{{ route('seller.products.index') }}"
+                            class="inline-flex items-center text-sm font-medium text-secondary-600 hover:text-secondary-800 transition">
+                            <i class="fas fa-boxes mr-2"></i>
                             Kelola Produk
                         </a>
                     </li>
                     <li>
-                        <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
-                        </svg>
-                    </li>
-                    <li>
-                        <span class="text-gray-900 font-medium">{{ $product->name }}</span>
+                        <div class="flex items-center">
+                            <i class="fas fa-chevron-right text-neutral-400 mx-2"></i>
+                            <span
+                                class="ml-1 text-sm font-medium text-neutral-900 md:ml-2">{{ Str::limit($product->name, 30) }}</span>
+                        </div>
                     </li>
                 </ol>
             </nav>
 
             <!-- Header -->
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
-                <div>
-                    <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ $product->name }}</h1>
-                    <div class="flex items-center space-x-4">
-                        <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full {{ $product->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+                <div class="flex-1">
+                    <div class="flex items-center gap-4 mb-4">
+                        <h1 class="text-2xl font-bold text-neutral-900">{{ $product->name }}</h1>
+                        <span
+                            class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium {{ $product->is_active ? 'bg-success-100 text-success-800' : 'bg-error-100 text-error-800' }}">
+                            <i
+                                class="fas {{ $product->is_active ? 'fa-check-circle mr-1' : 'fa-times-circle mr-1' }}"></i>
                             {{ $product->is_active ? 'Aktif' : 'Nonaktif' }}
                         </span>
-                        <span class="text-sm text-gray-500">
-                            Dibuat: {{ $product->created_at->format('d M Y') }}
-                        </span>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-4 text-sm">
+                        <div class="flex items-center text-neutral-500">
+                            <i class="fas fa-calendar-day mr-2"></i>
+                            Dibuat: {{ $product->created_at->translatedFormat('d M Y') }}
+                        </div>
+                        <div class="flex items-center text-neutral-500">
+                            <i class="fas fa-history mr-2"></i>
+                            Diupdate: {{ $product->updated_at->diffForHumans() }}
+                        </div>
+                        <div class="flex items-center text-neutral-500">
+                            <i class="fas fa-barcode mr-2"></i>
+                            ID: {{ $product->id }}
+                        </div>
                     </div>
                 </div>
-                
-                <div class="flex items-center space-x-3 mt-4 sm:mt-0">
-                    <a href="{{ route('seller.products.edit', $product->id) }}" 
-                       class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 flex items-center">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                        </svg>
-                        Edit
+
+                <div class="flex flex-wrap gap-3">
+                    <a href="{{ route('seller.products.edit', $product->id) }}"
+                        class="bg-primary-600 hover:bg-primary-700 text-white font-medium py-2.5 px-5 rounded-lg transition shadow-md hover:shadow-lg flex items-center">
+                        <i class="fas fa-edit mr-2"></i>
+                        Edit Produk
                     </a>
-                    
-                    <form action="{{ route('seller.products.toggle-status', $product->id) }}" 
-                          method="POST" class="inline">
+
+                    <form action="{{ route('seller.products.toggle-status', $product->id) }}" method="POST"
+                        class="inline">
                         @csrf
                         @method('PATCH')
-                        <button type="submit" 
-                                class="bg-yellow-600 hover:bg-yellow-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 flex items-center">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"/>
-                            </svg>
+                        <button type="submit"
+                            class="bg-blue-600 hover:bg-warning-700 text-white font-medium py-2.5 px-5 rounded-lg transition shadow-md hover:shadow-lg flex items-center">
+                            <i class="fas {{ $product->is_active ? 'fa-toggle-on mr-2' : 'fa-toggle-off mr-2' }}"></i>
                             {{ $product->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
                         </button>
                     </form>
                 </div>
             </div>
 
-            <!-- Flash Messages -->
-            @if(session('success'))
-                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6" role="alert">
-                    <span class="block sm:inline">{{ session('success') }}</span>
-                </div>
-            @endif
-
-            @if(session('error'))
-                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6" role="alert">
-                    <span class="block sm:inline">{{ session('error') }}</span>
-                </div>
-            @endif
-
             <!-- Product Details -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <!-- Main Info -->
-                <div class="lg:col-span-2">
-                    <div class="bg-white shadow rounded-lg p-6 mb-6">
-                        <h2 class="text-xl font-semibold text-gray-900 mb-4">Informasi Produk</h2>
-                        
-                        <dl class="grid grid-cols-1 gap-4">
-                            <div>
-                                <dt class="text-sm font-medium text-gray-500">Nama Produk</dt>
-                                <dd class="mt-1 text-lg text-gray-900">{{ $product->name }}</dd>
-                            </div>
-                            
-                            @if($product->description)
-                                <div>
-                                    <dt class="text-sm font-medium text-gray-500">Deskripsi</dt>
-                                    <dd class="mt-1 text-gray-900 whitespace-pre-wrap">{{ $product->description }}</dd>
+                <div class="lg:col-span-2 space-y-6">
+                    <!-- Product Image & Basic Info -->
+                    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                        <div class="md:flex">
+                            {{-- <div class="md:w-1/3 bg-neutral-100 flex items-center justify-center p-6">
+                                @if ($product->image)
+                                    <img src="{{ $product->image }}" alt="{{ $product->name }}"
+                                        class="h-48 w-full object-contain">
+                                @else
+                                    <div class="text-neutral-300 text-6xl">
+                                        <i class="fas fa-image"></i>
+                                    </div>
+                                @endif
+                            </div> --}}
+                            <div class="p-6 md:w-2/3">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <h2 class="text-xl font-bold text-neutral-900 mb-2">{{ $product->name }}</h2>
+                                        <div class="flex items-center mb-4">
+                                            <span
+                                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800 mr-2">
+                                                <i class="fas fa-tag mr-1"></i>
+                                                {{ $product->category->name ?? 'Tanpa Kategori' }}
+                                            </span>
+                                            <span
+                                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-secondary-100 text-secondary-800">
+                                                <i class="fas fa-box mr-1"></i> {{ $product->stock }} stok
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="text-2xl font-bold text-success-600">
+                                        Rp {{ number_format($product->price, 0, ',', '.') }}
+                                    </div>
                                 </div>
-                            @endif
-                        </dl>
+
+                                <div class="border-t border-neutral-200 pt-4">
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <p class="text-sm text-neutral-500">Berat per Pcs</p>
+                                            <p class="font-medium text-neutral-900">{{ $product->weight_per_pcs }} kg
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-neutral-500">Dimensi</p>
+                                            <p class="font-medium text-neutral-900">
+                                                {{ $product->length }}x{{ $product->width }}x{{ $product->height }}
+                                                cm</p>
+                                        </div>
+
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Description & Details -->
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <div class="border-b border-neutral-200 pb-4 mb-4">
+                            <h2 class="text-xl font-semibold text-neutral-900">Deskripsi Produk</h2>
+                        </div>
+                        <div class="prose max-w-none text-neutral-700">
+                            {!! $product->description
+                                ? nl2br(e($product->description))
+                                : '<p class="text-neutral-400">Tidak ada deskripsi</p>' !!}
+                        </div>
                     </div>
                 </div>
 
-                <!-- Stats & Quick Info -->
+                <!-- Sidebar -->
                 <div class="space-y-6">
-                    <!-- Pricing Info -->
-                    <div class="bg-white shadow rounded-lg p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Informasi Harga & Berat</h3>
-                        
-                        <div class="space-y-4">
-                            <div class="flex justify-between items-center p-3 bg-green-50 rounded-lg">
-                                <span class="text-sm font-medium text-gray-600">Harga</span>
-                                <span class="text-lg font-bold text-green-600">
-                                    Rp {{ number_format($product->price, 0, ',', '.') }}
-                                </span>
-                            </div>
-                            
-                            <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
-                                <span class="text-sm font-medium text-gray-600">Berat per Pcs</span>
-                                <span class="text-lg font-bold text-blue-600">
-                                    {{ $product->weight_per_pcs }} kg
-                                </span>
-                            </div>
+                    <!-- Quick Actions -->
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <div class="border-b border-neutral-200 pb-4 mb-4">
+                            <h3 class="text-lg font-semibold text-neutral-900">Aksi Cepat</h3>
                         </div>
-                    </div>
-
-                    <!-- Status Card -->
-                    <div class="bg-white shadow rounded-lg p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Status Produk</h3>
-                        
                         <div class="space-y-3">
-                            <div class="flex items-center justify-between">
-                                <span class="text-sm text-gray-600">Status Aktif</span>
-                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $product->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                    {{ $product->is_active ? 'Aktif' : 'Nonaktif' }}
-                                </span>
-                            </div>
-                            
-                            <div class="flex items-center justify-between">
-                                <span class="text-sm text-gray-600">Dibuat pada</span>
-                                <span class="text-sm font-medium text-gray-900">
-                                    {{ $product->created_at->format('d M Y H:i') }}
-                                </span>
-                            </div>
-                            
-                            <div class="flex items-center justify-between">
-                                <span class="text-sm text-gray-600">Terakhir diupdate</span>
-                                <span class="text-sm font-medium text-gray-900">
-                                    {{ $product->updated_at->format('d M Y H:i') }}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Actions -->
-                    <div class="bg-white shadow rounded-lg p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Aksi Cepat</h3>
-                        
-                        <div class="space-y-3">
-                            <a href="{{ route('seller.products.edit', $product->id) }}" 
-                               class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 flex items-center justify-center">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                </svg>
+                            <a href="{{ route('seller.products.edit', $product->id) }}"
+                                class="w-full bg-primary-600 hover:bg-primary-700 text-white font-medium py-2.5 px-4 rounded-lg transition shadow hover:shadow-md flex items-center justify-center">
+                                <i class="fas fa-edit mr-2"></i>
                                 Edit Produk
                             </a>
-                            
-                            <form action="{{ route('seller.products.destroy', $product->id) }}" 
-                                  method="POST" 
-                                  onsubmit="return confirm('Apakah Anda yakin ingin menghapus produk ini?')">
+
+                            <form action="{{ route('seller.products.toggle-status', $product->id) }}" method="POST"
+                                class="w-full">
+                                @csrf
+                                @method('PATCH')
+                                <button type="submit"
+                                    class="w-full bg-blue-600 hover:bg-warning-700 text-white font-medium py-2.5 px-4 rounded-lg transition shadow hover:shadow-md flex items-center justify-center">
+                                    <i
+                                        class="fas {{ $product->is_active ? 'fa-toggle-on mr-2' : 'fa-toggle-off mr-2' }}"></i>
+                                    {{ $product->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
+                                </button>
+                            </form>
+
+                            <form action="{{ route('seller.products.destroy', $product->id) }}" method="POST"
+                                onsubmit="return confirm('Apakah Anda yakin ingin menghapus produk ini?')"
+                                class="w-full">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" 
-                                        class="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200 flex items-center justify-center">
-                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                    </svg>
+                                <button type="submit"
+                                    class="w-full bg-error-600 hover:bg-error-700 text-white font-medium py-2.5 px-4 rounded-lg transition shadow hover:shadow-md flex items-center justify-center">
+                                    <i class="fas fa-trash-alt mr-2"></i>
                                     Hapus Produk
                                 </button>
                             </form>
+                        </div>
+                    </div>
+
+
+
+                    <!-- Timeline -->
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <div class="border-b border-neutral-200 pb-4 mb-4">
+                            <h3 class="text-lg font-semibold text-neutral-900">Riwayat Produk</h3>
+                        </div>
+                        <div class="flow-root">
+                            <ul class="-mb-8">
+                                <li>
+                                    <div class="relative pb-8">
+                                        <div class="relative flex items-start space-x-3">
+                                            <div class="relative">
+                                                <span
+                                                    class="h-8 w-8 rounded-full bg-primary-100 flex items-center justify-center">
+                                                    <i class="fas fa-plus text-primary-600"></i>
+                                                </span>
+                                            </div>
+                                            <div class="min-w-0 flex-1">
+                                                <div>
+                                                    <div class="text-sm">
+                                                        <p class="font-medium text-neutral-900">Produk dibuat</p>
+                                                    </div>
+                                                    <p class="mt-0.5 text-sm text-neutral-500">
+                                                        {{ $product->created_at->translatedFormat('d M Y H:i') }}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="relative pb-8">
+                                        <div class="relative flex items-start space-x-3">
+                                            <div class="relative">
+                                                <span
+                                                    class="h-8 w-8 rounded-full bg-secondary-100 flex items-center justify-center">
+                                                    <i class="fas fa-edit text-secondary-600"></i>
+                                                </span>
+                                            </div>
+                                            <div class="min-w-0 flex-1">
+                                                <div>
+                                                    <div class="text-sm">
+                                                        <p class="font-medium text-neutral-900">Terakhir diupdate</p>
+                                                    </div>
+                                                    <p class="mt-0.5 text-sm text-neutral-500">
+                                                        {{ $product->updated_at->translatedFormat('d M Y H:i') }}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
                         </div>
                     </div>
                 </div>

@@ -5,6 +5,7 @@ namespace App\Enums;
 enum WalletTransactionStatus: string
 {
     case PENDING = 'pending';
+    case PROCESSING = 'processing';
     case SUCCESS = 'success';
     case FAILED = 'failed';
     case CANCELLED = 'cancelled';
@@ -24,6 +25,7 @@ enum WalletTransactionStatus: string
     {
         return match($this) {
             self::PENDING => 'Menunggu',
+            self::PROCESSING => 'Sedang Diproses',
             self::SUCCESS => 'Berhasil',
             self::FAILED => 'Gagal',
             self::CANCELLED => 'Dibatalkan',
@@ -36,7 +38,8 @@ enum WalletTransactionStatus: string
     public function description(): string
     {
         return match($this) {
-            self::PENDING => 'Transaksi sedang diproses',
+            self::PENDING => 'Transaksi sedang menunggu',
+            self::PROCESSING => 'Transaksi sedang diproses',
             self::SUCCESS => 'Transaksi berhasil diselesaikan',
             self::FAILED => 'Transaksi gagal diproses',
             self::CANCELLED => 'Transaksi dibatalkan',
@@ -49,10 +52,11 @@ enum WalletTransactionStatus: string
     public function color(): string
     {
         return match($this) {
-            self::PENDING => 'pending',
+            self::PENDING => 'warning',
+            self::PROCESSING => 'info',
             self::SUCCESS => 'success',
             self::FAILED => 'danger',
-            self::CANCELLED => 'warning',
+            self::CANCELLED => 'secondary',
         };
     }
 

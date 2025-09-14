@@ -14,8 +14,14 @@ return new class extends Migration
         Schema::create('pickup_requests', function (Blueprint $table) {
             $table->id();
             $table->string('pickup_code')->unique();
+            $table->string('tracking_number')->unique()->nullable();
+
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            
+            $table->enum('delivery_type', ['pickup', 'drop_off'])->default('pickup'); 
+             $table->foreignId('address_id')
+                  ->nullable() 
+                  ->constrained('user_addresses')
+                  ->onDelete('cascade');
             $table->string('recipient_name');
             $table->string('recipient_phone');
             $table->string('recipient_city');
@@ -25,16 +31,7 @@ return new class extends Migration
             $table->decimal('recipient_latitude', 10, 8)->nullable();
             $table->decimal('recipient_longitude', 11, 8)->nullable();
             
-            $table->string('pickup_name');
-            $table->string('pickup_phone');
-            $table->string('pickup_city');
-            $table->string('pickup_province');
-            $table->string('pickup_postal_code');
-            $table->text('pickup_address');
-            $table->decimal('pickup_latitude', 10, 8)->nullable();
-            $table->decimal('pickup_longitude', 11, 8)->nullable();
-            
-            $table->enum('payment_method', ['balance', 'wallet']);
+            $table->enum('payment_method', ['wallet','cod']);
             $table->decimal('shipping_cost', 15, 2)->default(0);
             $table->decimal('service_fee', 15, 2)->default(0);
             $table->decimal('product_total', 15, 2)->default(0);

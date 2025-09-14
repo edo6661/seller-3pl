@@ -1,0 +1,141 @@
+<x-layouts.plain-app>
+    <x-slot:title>Profil Saya</x-slot:title>
+    <div class="bg-gray-50 py-12">
+        <div class="container mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+            <div class="overflow-hidden rounded-lg bg-white shadow-md">
+                <div class="p-6 md:flex md:items-center md:justify-between">
+                    <div class="flex-1 md:flex md:items-center">
+                        <div class="flex-shrink-0">
+                            <img class="h-24 w-24 rounded-full object-cover"
+                                src="{{ $profileData['user']->avatar_url }}"
+                                alt="Avatar {{ $profileData['user']->name }}">
+
+                        </div>
+                        <div class="mt-4 md:mt-0 md:ml-6">
+                            <h1 class="text-2xl font-bold text-gray-900">{{ $profileData['user']->name }}</h1>
+                            <p class="mt-1 text-sm font-medium text-gray-500">{{ $profileData['user']->getRoleLabelAttribute() }}</p>
+                        </div>
+                    </div>
+                                        <div class="mt-6 flex-shrink-0 md:mt-0 md:ml-4">
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <a href="{{ route('profile.edit', ['id' => $profileData['user']->id]) }}" class="inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                                Edit Profil
+                            </a>
+                            @if($isPasswordExists)
+                                <a href="{{ route('profile.change-password.form') }}" class="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                                    <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                    </svg>
+                                    Ganti Password
+                                </a>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+                @if ($profileData['user']->isSeller() && $profileData['seller_profile'])
+                    @php
+                        $status = $profileData['seller_profile']->verification_status;
+                    @endphp
+
+                    @if ($status === \App\Enums\SellerVerificationStatus::PENDING || $status === \App\Enums\SellerVerificationStatus::REJECTED)
+                        <div class="border-t border-gray-200">
+                            <div class="px-6 py-5">
+                                <div class="rounded-md bg-{{ $status->color() }}-50 p-4">
+                                    <div class="flex">
+                                        <div class="flex-shrink-0">
+                                            @if ($status === \App\Enums\SellerVerificationStatus::PENDING)
+                                                <svg class="h-5 w-5 text-{{ $status->color() }}-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                                                </svg>
+                                            @else 
+                                                <svg class="h-5 w-5 text-{{ $status->color() }}-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                                                </svg>
+                                            @endif
+                                        </div>
+                                        <div class="ml-3">
+                                            <h3 class="text-sm font-medium text-{{ $status->color() }}-800">
+                                                Status Verifikasi: {{ $status->label() }}
+                                            </h3>
+                                            <div class="mt-2 text-sm text-{{ $status->color() }}-700">
+                                                @if ($status === \App\Enums\SellerVerificationStatus::PENDING)
+                                                    <p>Profil Anda sedang dalam peninjauan oleh tim admin. Fitur COD akan aktif setelah verifikasi disetujui.</p>
+                                                @else
+                                                    <p>Verifikasi Anda ditolak. Silakan periksa catatan dari admin dan perbarui dokumen Anda.</p>
+                                                    @if($profileData['seller_profile']->verification_notes)
+                                                        <p class="mt-2 font-semibold">Catatan dari Admin:</p>
+                                                        <p class="italic">"{{ $profileData['seller_profile']->verification_notes }}"</p>
+                                                        <a href="{{ route('profile.verification.resubmit') }}" class="mt-2 inline-flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-500">
+                                                            Perbarui Dokumen
+                                                        </a>
+                                                    @endif
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+                @endif
+                <div class="border-t border-gray-200 px-6 py-5">
+                    <h3 class="text-lg font-medium leading-6 text-gray-900">Kelengkapan Profil</h3>
+                    <div class="mt-4">
+                        <div class="flex items-center justify-between">
+                            <p class="text-sm text-gray-600">
+                                @if ($completionPercentage < 100)
+                                    Lengkapi profil Anda untuk mengoptimalkan pengalaman.
+                                @else
+                                    Profil Anda sudah lengkap!
+                                @endif
+                            </p>
+                            <span class="text-sm font-semibold text-indigo-600">{{ $completionPercentage }}%</span>
+                        </div>
+                        <div class="mt-2 w-full rounded-full bg-gray-200">
+                            <div class="rounded-full bg-indigo-600 p-1 text-center text-xs font-medium leading-none text-indigo-100" style="width: {{ $completionPercentage }}%"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="border-t border-gray-200 px-4 py-5 sm:p-0">
+                    <dl class="sm:divide-y sm:divide-gray-200">
+                        <div class="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:py-5 sm:px-6">
+                            <dt class="text-sm font-medium text-gray-500">Nama Lengkap</dt>
+                            <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">{{ $profileData['user_fields']['name'] }}</dd>
+                        </div>
+                        <div class="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:py-5 sm:px-6">
+                            <dt class="text-sm font-medium text-gray-500">Alamat Email</dt>
+                            <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">{{ $profileData['user_fields']['email'] }}</dd>
+                        </div>
+                        <div class="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:py-5 sm:px-6">
+                            <dt class="text-sm font-medium text-gray-500">Nomor Telepon</dt>
+                            <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">{{ $profileData['user_fields']['phone'] ?? '-' }}</dd>
+                        </div>
+                        @if ($profileData['user']->isSeller())
+                            <div class="py-3 sm:py-5 sm:px-6">
+                                <h3 class="text-md font-semibold text-gray-800">Informasi Penjual</h3>
+                            </div>
+                            <div class="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:py-5 sm:px-6">
+                                <dt class="text-sm font-medium text-gray-500">Nama Bisnis</dt>
+                                <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">{{ $profileData['seller_profile']->display_name ?? '-' }}</dd>
+                            </div>
+                            <div class="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:py-5 sm:px-6">
+                                <dt class="text-sm font-medium text-gray-500">Alamat</dt>
+                                <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">{{ $profileData['seller_profile'] ? $profileData['seller_profile']->getFullAddressAttribute() : '-' }}</dd>
+                            </div>
+                            <div class="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:py-5 sm:px-6">
+                                <dt class="text-sm font-medium text-gray-500">Koordinat Peta</dt>
+                                <dd class="mt-1 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
+                                    @if ($profileData['seller_profile'] && $profileData['seller_profile']->hasCoordinates())
+                                        Lat: {{ $profileData['seller_profile']->latitude }}, Long: {{ $profileData['seller_profile']->longitude }}
+                                    @else
+                                        -
+                                    @endif
+                                </dd>
+                            </div>
+                        @endif
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+</x-layouts.plain-app>

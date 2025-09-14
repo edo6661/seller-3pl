@@ -21,6 +21,10 @@ return new class extends Migration
             $table->string('postal_code');
             $table->decimal('latitude', 10, 8)->nullable();
             $table->decimal('longitude', 11, 8)->nullable();
+            $table->string('ktp_image_path')->nullable();
+            $table->string('passbook_image_path')->nullable();
+            $table->text('verification_notes')->nullable();
+            $table->enum('verification_status', ['pending', 'verified', 'rejected'])->default('pending');
             $table->boolean('is_profile_complete')->default(false);
             $table->timestamps();
         });
