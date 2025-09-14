@@ -123,15 +123,16 @@
         }
         
         .icon {
-            width: 60px;
+            width: 60px;    
             height: 60px;
             background: rgba(255, 255, 255, 0.2);
             border-radius: 50%;
-            display: inline-flex;
+            display: flex; 
             align-items: center;
             justify-content: center;
-            margin-bottom: 20px;
+            margin: 0 auto 20px auto; 
             font-size: 24px;
+            line-height: 1; 
         }
         
         @media only screen and (max-width: 600px) {
