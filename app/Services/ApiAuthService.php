@@ -35,13 +35,6 @@ class ApiAuthService
             ]);
         }
 
-        if (!$user->isEmailVerified()) {
-            $this->emailVerificationService->resendVerificationEmail($user->email);
-            throw ValidationException::withMessages([
-                'email' => ['Akun Anda belum diverifikasi. Silakan periksa email Anda untuk verifikasi.'],
-            ]);
-        }
-
         // Buat token untuk API authentication
         $token = $user->createToken($deviceName)->plainTextToken;
         

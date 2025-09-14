@@ -31,14 +31,6 @@ class AuthService
             ]);
         }
 
-        if ($user->isEmailVerified() === false) {
-
-            $this->emailVerificationService->resendVerificationEmail($user->email);
-            throw ValidationException::withMessages([
-                'email' => ['Akun Anda belum diverifikasi. Silakan periksa email Anda untuk verifikasi.'],
-            ]);
-        }
-
         Auth::login($user, $remember);
         
         return true;
