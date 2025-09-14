@@ -217,7 +217,7 @@
                     @if($recentWalletTransactions->count() > 0)
                         <div class="space-y-4">
                             @foreach($recentWalletTransactions as $transaction)
-                                <div class="flex items-center justify-between p-4 bg-neutral-50 rounded-lg">
+                                <div class="flex xl:items-center justify-between p-4 bg-neutral-50 rounded-lg xl:flex-row flex-col">
                                     <div class="flex items-center space-x-3">
                                         <div class="flex-shrink-0">
                                             <div class="w-8 h-8 rounded-full flex items-center justify-center
