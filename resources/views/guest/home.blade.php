@@ -1,4 +1,6 @@
-<x-layouts.plain-app>
+<x-layouts.plain-app
+    :title="'Home'"
+>
   <!-- Hero Section -->
   <section class="bg-gradient-to-br from-primary-50 to-secondary-50 py-20">
       <div class="max-w-screen-7xl mx-auto px-4 sm:px-6 lg:px-8">

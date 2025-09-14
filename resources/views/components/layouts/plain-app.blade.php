@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-    <x-layouts.head />
+    <x-layouts.head
+        :title="$title ?? config('app.name', 'Pusat Kirim')"
+    />
 
     <body>
         <x-shared.header/>
