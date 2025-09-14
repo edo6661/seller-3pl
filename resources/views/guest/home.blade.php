@@ -4,7 +4,7 @@
       <div class="max-w-screen-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div class="text-center">
               <h1 class="text-4xl md:text-6xl font-bold text-neutral-900 mb-6">
-                  <span class="text-primary-600">PusatAntar</span>
+                  <span class="text-primary-600">PusatKirim</span>
                   <br>Solusi Pengantaran Terpercaya
               </h1>
               <p class="text-lg md:text-xl text-neutral-600 max-w-screen-3xl mx-auto mb-8">
@@ -96,7 +96,7 @@
       <div class="max-w-screen-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div class="text-center mb-12">
               <h2 class="text-3xl md:text-4xl font-bold text-neutral-900 mb-4">
-                  Mengapa Pilih <span class="text-primary-600">PusatAntar?</span>
+                  Mengapa Pilih <span class="text-primary-600">PusatKirim?</span>
               </h2>
               <p class="text-lg text-neutral-600 max-w-screen-2xl mx-auto">
                   Kami memahami kebutuhan seller independen yang ingin fokus pada bisnis, bukan urusan pengiriman.
@@ -163,7 +163,7 @@
                   Khusus untuk <span class="text-primary-600">Seller Independen</span>
               </h2>
               <p class="text-lg text-neutral-600 max-w-screen-2xl mx-auto">
-                  PusatAntar dirancang khusus untuk seller yang berjualan di luar platform e-commerce.
+                  PusatKirim dirancang khusus untuk seller yang berjualan di luar platform e-commerce.
               </p>
           </div>
 
@@ -215,7 +215,7 @@
               <div class="bg-gradient-to-br from-primary-500 to-secondary-500 rounded-2xl p-8 text-white">
                   <h3 class="text-2xl font-bold mb-4">Siap Memulai?</h3>
                   <p class="mb-6 opacity-90">
-                      Bergabunglah dengan ribuan seller yang telah mempercayakan pengiriman mereka kepada PusatAntar.
+                      Bergabunglah dengan ribuan seller yang telah mempercayakan pengiriman mereka kepada PusatKirim.
                   </p>
                   <div class="space-y-4">
                       <div class="flex items-center">

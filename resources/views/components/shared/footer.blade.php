@@ -9,7 +9,7 @@
                         class="w-8 h-8 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-lg flex items-center justify-center">
                         <i class="fas fa-shipping-fast text-white text-sm"></i>
                     </div>
-                    <span class="text-2xl font-bold">PusatAntar</span>
+                    <span class="text-2xl font-bold">PusatKirim</span>
                 </div>
                 <p class="text-neutral-400 text-sm leading-relaxed">
                     Platform pengiriman terpercaya yang menghubungkan penjual dengan layanan kurir profesional. Kirim
@@ -113,9 +113,9 @@
                     </div>
                     <div class="flex items-center space-x-3">
                         <i class="fas fa-envelope text-primary-400"></i>
-                        <a href="mailto:support@pusatantar.com"
+                        <a href="mailto:support@PusatKirim.com"
                             class="text-neutral-400 hover:text-primary-400 transition-colors duration-200 text-sm">
-                            support@pusatantar.com
+                            support@PusatKirim.com
                         </a>
                     </div>
                     <div class="flex items-start space-x-3">
@@ -136,7 +136,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div class="flex flex-col sm:flex-row justify-between items-center space-y-2 sm:space-y-0">
                 <p class="text-neutral-400 text-sm">
-                    © {{ date('Y') }} PusatAntar. Semua hak cipta dilindungi.
+                    © {{ date('Y') }} PusatKirim. Semua hak cipta dilindungi.
                 </p>
                 <div class="flex items-center space-x-6 text-sm">
                     <a href="#" class="text-neutral-400 hover:text-primary-400 transition-colors duration-200">

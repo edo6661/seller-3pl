@@ -33,11 +33,12 @@
 
         <div class="flex items-center justify-between p-4 border-b border-neutral-200">
             <a href="{{ route('guest.home') }}" class="flex items-center space-x-3">
-                <div class="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center shadow-md">
-                    <img src="{{ asset('storage/img/logo.png') }}" alt="PusatAntar Logo" class="h-8 w-8 rounded-lg">
+                <div class="rounded-xl flex items-center justify-center">
+                       <img src="{{ asset('assets/logo.png') }}" alt="Pusat Kirim Logo" class=" rounded object-cover w-16">
                 </div>
+                
                 <div>
-                    <span class="text-xl font-bold text-neutral-800">PusatAntar</span>
+                    <span class="text-xl font-bold text-neutral-800">Pusat Kirim</span>
                     <p class="text-xs text-neutral-500">Delivery Platform</p>
                 </div>
             </a>
@@ -185,10 +186,10 @@
                     <i class="fas fa-bars text-xl"></i>
                 </button>
                 <a href="{{ route('guest.home') }}" class="flex items-center space-x-2">
-                    <div class="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg flex items-center justify-center">
-                        <img src="{{ asset('storage/img/logo.png') }}" alt="PusatAntar Logo" class="h-6 w-6 rounded">
+                    <div class="rounded-lg flex items-center justify-center">
+                        <img src="{{ asset('assets/logo.png') }}" alt="Pusat Kirim Logo" class=" rounded object-cover w-16">
                     </div>
-                    <span class="text-lg font-bold text-neutral-800">PusatAntar</span>
+                    <span class="text-lg font-bold text-neutral-800">Pusat Kirim</span>
                 </a>
                 
                 @auth
