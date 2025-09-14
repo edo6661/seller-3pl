@@ -4,6 +4,9 @@
 .env.local
 .env.production
 .env.backup
+.env.asli
+.env.koyeb
+.env.prods
 .phpactor.json
 .phpunit.result.cache
 /.fleet
