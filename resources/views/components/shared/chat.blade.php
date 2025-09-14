@@ -649,7 +649,7 @@ function chatWidget() {
                 oscillator.start(audioContext.currentTime);
                 oscillator.stop(audioContext.currentTime + 0.3);
             } catch (error) {
-                console.log('Cannot play notification sound:', error);
+                console.error('Cannot play notification sound:', error);
             }
         },
         // Utility functions

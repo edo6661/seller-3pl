@@ -138,7 +138,6 @@
                 processedMessages: new Set(), // Track processed messages to prevent duplicates
                 
                 init() {
-                    console.log('Chat index manager initialized for user:', this.currentUserId, 'role:', this.currentUserRole);
                     this.setupRealtimeListeners();
                     this.initializeConversationsData();
                 },
@@ -163,21 +162,18 @@
                         // Admin listen ke channel admin untuk pesan dari seller
                         window.Echo.channel('admin-notifications')
                             .listen('.message.sent', (e) => {
-                                console.log('Admin received message from seller:', e);
                                 this.handleNewMessage(e);
                             });
                         
                         // Admin juga listen ke channel personal (backup/redundancy)
                         window.Echo.channel(`user.${this.currentUserId}`)
                             .listen('.message.sent', (e) => {
-                                console.log('Admin received direct message:', e);
                                 this.handleNewMessage(e);
                             });
                     } else {
                         // Seller listen ke channel personal saja
                         window.Echo.channel(`user.${this.currentUserId}`)
                             .listen('.message.sent', (e) => {
-                                console.log('Seller received message:', e);
                                 this.handleNewMessage(e);
                             });
                     }
@@ -185,33 +181,27 @@
                     // Listen untuk update unread count
                     window.Echo.channel(`unread-count.${this.currentUserId}`)
                         .listen('.count.updated', (e) => {
-                            console.log('Unread count updated:', e);
                             // Update total unread count di UI jika ada
                         });
                     
                     // Connection status
                     window.Echo.connector.pusher.connection.bind('connected', () => {
-                        console.log('✅ Connected to Pusher - Chat Index');
                     });
                     
                     window.Echo.connector.pusher.connection.bind('disconnected', () => {
-                        console.log('❌ Disconnected from Pusher - Chat Index');
                     });
                 },
                 
                 handleNewMessage(messageData) {
-                    console.log('Processing new message in chat index:', messageData);
                     
                     // Jangan proses pesan dari diri sendiri
                     if (messageData.sender_id === this.currentUserId) {
-                        console.log('Ignoring message from self');
                         return;
                     }
                     
                     // Prevent duplicate processing of the same message
                     const messageKey = `${messageData.id}-${messageData.conversation_id}`;
                     if (this.processedMessages.has(messageKey)) {
-                        console.log('Message already processed, skipping:', messageKey);
                         return;
                     }
                     
@@ -271,7 +261,6 @@
                         }, 3000);
                     } else {
                         // Jika conversation tidak ada, refresh halaman
-                        console.log('Conversation not found, refreshing page');
                         window.location.reload();
                     }
                 },
@@ -309,7 +298,6 @@
                         oscillator.start(audioContext.currentTime);
                         oscillator.stop(audioContext.currentTime + 0.3);
                     } catch (error) {
-                        console.log('Cannot play notification sound:', error);
                     }
                 },
                 
@@ -361,7 +349,6 @@
                         
                         if (response.ok) {
                             const data = await response.json();
-                            console.log('Refreshed unread count:', data.count);
                             // Update global unread count jika diperlukan
                         }
                     } catch (error) {

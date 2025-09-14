@@ -142,7 +142,6 @@
                 setupEcho() {
                     window.Echo.channel(`conversation.${this.conversationId}`)
                         .listen('.message.sent', (e) => {
-                            console.log('New message received:', e);
                             if (e.sender_id !== this.currentUserId) {
                                 this.addMessageToChat({
                                     id: e.id,
@@ -161,11 +160,9 @@
                         });
                     window.Echo.connector.pusher.connection.bind('connected', () => {
                         this.isOnline = true;
-                        console.log('Connected to Pusher');
                     });
                     window.Echo.connector.pusher.connection.bind('disconnected', () => {
                         this.isOnline = false;
-                        console.log('Disconnected from Pusher');
                     });
                     window.Echo.connector.pusher.connection.bind('error', (err) => {
                         this.isOnline = false;
@@ -333,7 +330,6 @@
                         oscillator.start(audioContext.currentTime);
                         oscillator.stop(audioContext.currentTime + 0.3);
                     } catch (error) {
-                        console.log('Cannot play notification sound:', error);
                     }
                 },
                 escapeHtml(text) {

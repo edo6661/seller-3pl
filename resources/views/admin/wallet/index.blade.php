@@ -945,7 +945,6 @@
                 if (bankAccounts.length > 0) {
                     // Jika ada data, loop dan buat HTML untuk setiap rekening bank
                     bankAccounts.forEach(bank => {
-                        console.log('Bank Account:', bank);
                         const bankCard = `
                             <div class="bg-white rounded-lg shadow-sm p-4 border border-neutral-200 flex flex-col justify-between">
                                 <div>

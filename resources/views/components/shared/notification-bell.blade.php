@@ -21,7 +21,6 @@
               x-transition:enter-end="scale-100 opacity-100"
               class="absolute -top-1 -right-1 bg-red-500 rounded-full h-3 w-3 animate-ping"
                x-cloak
-              
               >
         </span>
     </button>
@@ -124,7 +123,6 @@ function notificationManager() {
         authToken: null,
         processedNotifications: new Set(), 
         init() {
-            console.log('Notification manager initialized');
             this.authToken = this.getAuthToken();
             if (!this.authToken) {
                 console.error('No auth token found');
@@ -157,47 +155,38 @@ function notificationManager() {
                 if (this.currentUserRole === 'admin') {
                     window.Echo.channel('admin-notifications')
                         .listen('.pickup.created', (e) => {
-                            console.log('Admin received pickup created notification:', e);
                             this.handleNewNotification(e);
                         })
                         .listen('.pickup.status.updated', (e) => {
-                            console.log('Admin received pickup status updated notification:', e);
                             this.handleNewNotification(e);
                         })
                         .listen('.chat.notification', (e) => {
-                            console.log('Admin received chat notification:', e);
                             this.handleNewNotification(e);
                         });
                 }
                 window.Echo.channel(`user.${this.currentUserId}`)
                     .listen('.pickup.created', (e) => {
-                        console.log('User received pickup created notification:', e);
                         this.handleNewNotification(e);
                     })
                     .listen('.pickup.status.updated', (e) => {
-                        console.log('User received pickup status updated notification:', e);
                         this.handleNewNotification(e);
                     })
                     .listen('.chat.notification', (e) => {
-                        console.log('User received chat notification:', e);
                         this.handleNewNotification(e);
                     });
                 window.Echo.connector.pusher.connection.bind('connected', () => {
-                    console.log('✅ Connected to Pusher - Notifications');
                 });
             } catch (error) {
                 console.error('Error setting up realtime listeners:', error);
             }
         },
         handleNewNotification(eventData) {
-            console.log('Processing new notification:', eventData);
             if (!eventData.notification) {
                 console.warn('No notification data in event:', eventData);
                 return;
             }
             const notificationKey = `${eventData.notification.type}-${eventData.message_id || eventData.notification.created_at || Date.now()}`;
             if (this.processedNotifications.has(notificationKey)) {
-                console.log('Notification already processed:', notificationKey);
                 return;
             }
             this.processedNotifications.add(notificationKey);
@@ -220,9 +209,7 @@ function notificationManager() {
                 this.hasNewNotification = true;
                 this.playNotificationSound();
                 this.showToastNotification(notification);
-                console.log('New notification added:', notification);
             } else {
-                console.log('Notification already exists:', notification.id);
             }
         },
         showToastNotification(notification) {
@@ -260,7 +247,6 @@ function notificationManager() {
                 if (data.success) {
                     this.notifications = data.notifications || [];
                     this.totalUnread = data.unread_count || 0;
-                    console.log('Notifications loaded from server:', {
                         count: this.notifications.length,
                         unread_count: this.totalUnread
                     });
@@ -430,7 +416,6 @@ function notificationManager() {
                 oscillator.start(audioContext.currentTime);
                 oscillator.stop(audioContext.currentTime + 0.3);
             } catch (error) {
-                console.log('Cannot play notification sound:', error);
             }
         }
     }
