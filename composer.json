@@ -17,7 +17,8 @@
         "league/flysystem-aws-s3-v3": "3.0",
         "midtrans/midtrans-php": "^2.6",
         "mk-j/php_xlsxwriter": "^0.39.0",
-        "pusher/pusher-php-server": "^7.2"
+        "pusher/pusher-php-server": "^7.2",
+        "resend/resend-laravel": "^0.21.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

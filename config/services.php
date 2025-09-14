@@ -23,11 +23,6 @@ return [
         'secret' => env('AWS_SECRET_ACCESS_KEY'),
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
-
-    'resend' => [
-        'key' => env('RESEND_KEY'),
-    ],
-
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),
@@ -40,5 +35,10 @@ return [
         'redirect' => env('GOOGLE_REDIRECT_URI'),
         'maps_api_key' => env('GOOGLE_MAP_API_KEY'),
         'backend_maps_api_key' => env('GOOGLE_MAP_BACKEND_API_KEY'),
-    ],   
+    ],
+    'resend' => [
+        'MAIL_MAILER' => env('MAIL_MAILER', 'smtp'),
+        'MAIL_FROM_ADDRESS' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
+        'RESEND_API_KEY' => env('RESEND_API_KEY'),
+    ]
 ];
