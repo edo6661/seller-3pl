@@ -1,6 +1,5 @@
 <?php
 namespace App\Services;
-
 use App\Enums\SellerVerificationStatus;
 use App\Models\User;
 use App\Enums\UserRole;
@@ -9,12 +8,12 @@ class UserService
 {
     public function getAllUsers(?string $search, ?string $role, ?string $status): LengthAwarePaginator
     {
-        $query = User::query();
+        $query = User::with(['sellerProfile']); 
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('phone', 'like', "%{$search}%");
+                ->orWhere('email', 'like', "%{$search}%")
+                ->orWhere('phone', 'like', "%{$search}%");
             });
         }
         if ($role && $role !== 'all') {
@@ -24,6 +23,30 @@ class UserService
             $query->whereNotNull('email_verified_at');
         } elseif ($status === 'unverified') {
             $query->whereNull('email_verified_at');
+        }
+        return $query->orderBy('created_at', 'desc')
+                    ->paginate(10)
+                    ->withQueryString();
+    }
+    public function getSellersForVerification(?string $search, ?string $verificationStatus): LengthAwarePaginator
+    {
+        $query = User::with(['sellerProfile'])
+                    ->where('role', UserRole::SELLER)
+                    ->whereHas('sellerProfile');
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                ->orWhere('email', 'like', "%{$search}%")
+                ->orWhere('phone', 'like', "%{$search}%")
+                ->orWhereHas('sellerProfile', function ($sq) use ($search) {
+                    $sq->where('business_name', 'like', "%{$search}%");
+                });
+            });
+        }
+        if ($verificationStatus && $verificationStatus !== 'all') {
+            $query->whereHas('sellerProfile', function ($q) use ($verificationStatus) {
+                $q->where('verification_status', $verificationStatus);
+            });
         }
         return $query->orderBy('created_at', 'desc')
                     ->paginate(10)

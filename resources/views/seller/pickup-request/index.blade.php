@@ -1,8 +1,6 @@
 <x-layouts.plain-app>
     <x-slot name="title">Daftar Pickup Request</x-slot>
-
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!-- Header with gradient background -->
         <div class="mb-8 p-6 bg-gradient-to-r from-primary-500 to-primary-600 rounded-xl text-white">
             <h1 class="text-2xl font-bold mb-2 flex items-center">
                 <i class="fas fa-truck-pickup mr-3"></i>
@@ -10,10 +8,7 @@
             </h1>
             <p class="opacity-90">Kelola semua permintaan pickup Anda</p>
         </div>
-
-        <!-- Stats Cards with vibrant colors -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <!-- Total Request -->
             <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-primary-100">
                 <div class="p-6 flex items-center">
                     <div class="p-3 rounded-full bg-primary-100 text-primary-600">
@@ -25,8 +20,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Pending -->
             <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-warning-100">
                 <div class="p-6 flex items-center">
                     <div class="p-3 rounded-full bg-warning-100 text-warning-600">
@@ -38,8 +31,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Delivered -->
             <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-success-100">
                 <div class="p-6 flex items-center">
                     <div class="p-3 rounded-full bg-success-100 text-success-600">
@@ -51,8 +42,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Total Revenue -->
             <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-secondary-100">
                 <div class="p-6 flex items-center">
                     <div class="p-3 rounded-full bg-secondary-100 text-secondary-600">
@@ -66,8 +55,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- Search and Filter with colorful accents -->
         <div class="bg-white rounded-xl shadow-lg mb-6 border border-neutral-100">
             <div class="p-6">
                 <div class="flex flex-col sm:flex-row gap-4">
@@ -82,7 +69,6 @@
                                     placeholder="Cari pickup request..."
                                     class="w-full pl-10 pr-4 py-2.5 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition">
                             </div>
-
                             <select name="status"
                                 class="border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent px-4 py-2.5 transition">
                                 <option value="">Semua Status</option>
@@ -101,7 +87,6 @@
                                 <option value="cancelled" {{ $status === 'cancelled' ? 'selected' : '' }}>Cancelled
                                 </option>
                             </select>
-
                             <button type="submit"
                                 class="px-4 py-2.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition shadow-md flex items-center justify-center">
                                 <i class="fas fa-filter mr-2"></i>
@@ -119,8 +104,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- Pickup Requests Table with colorful status badges -->
         <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-neutral-100">
             @if ($pickupRequests->count() > 0)
                 <div class="overflow-x-auto">
@@ -242,6 +225,13 @@
                                                 title="Detail">
                                                 <i class="fas fa-eye"></i>
                                             </a>
+                                            
+                                            <a href="{{ route('seller.pickup-request.create-ticket', $pickupRequest->id) }}"
+                                                class="text-secondary-600 hover:text-secondary-800 transition"
+                                                title="Buat Tiket Bantuan">
+                                                <i class="fas fa-life-ring"></i>
+                                            </a>
+                                            
                                             {{-- @if ($pickupRequest->canBeCancelled())
                                                 <form method="POST"
                                                     action="{{ route('seller.pickup-request.cancel', $pickupRequest->id) }}"
@@ -262,8 +252,6 @@
                         </tbody>
                     </table>
                 </div>
-
-                <!-- Pagination would go here if needed -->
             @else
                 <div class="p-12 text-center">
                     <div class="text-neutral-300 text-5xl mb-4">

@@ -18,6 +18,14 @@
                         <i class="fas fa-arrow-left mr-2"></i>
                         Kembali
                     </a>
+                    
+                    <!-- Tambahkan tombol Create Ticket -->
+                    <a href="{{ route('seller.pickup-request.create-ticket', $pickupRequest->id) }}"
+                        class="inline-flex items-center px-4 py-2 bg-secondary text-white rounded-lg hover:bg-secondary-600 transition-colors shadow-sm">
+                        <i class="fas fa-life-ring mr-2"></i>
+                        Buat Tiket Bantuan
+                    </a>
+                    
                     {{-- @if ($pickupRequest->canBeCancelled())
                         <a href="{{ route('seller.pickup-request.edit', $pickupRequest->id) }}"
                             class="inline-flex items-center px-4 py-2 bg-secondary text-white rounded-lg hover:bg-secondary-600 transition-colors shadow-sm">

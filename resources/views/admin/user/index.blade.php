@@ -13,6 +13,12 @@
                     <h1 class="text-2xl font-bold text-neutral-800">Kelola Pengguna</h1>
                     <p class="text-sm text-neutral-600 mt-1">Manajemen data pengguna sistem</p>
                 </div>
+                <div class="flex gap-2 mt-4 md:mt-0">
+                    <a href="{{ route('admin.sellers.verification') }}"
+                        class="px-4 py-2 text-sm font-medium bg-secondary-600 text-white rounded-lg hover:bg-secondary-700 transition-colors">
+                        Verifikasi Seller
+                    </a>
+                </div>
             </div>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
@@ -136,9 +142,9 @@
                                 <th scope="col"
                                     class="px-6 py-3 text-left text-xs font-medium text-neutral-600 uppercase tracking-wider">
                                     Bergabung</th>
-                                <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-neutral-600 uppercase tracking-wider">
+                                {{-- <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-neutral-600 uppercase tracking-wider">
                                     Aksi
-                                </th>
+                                </th> --}}
 
                             </tr>
                         </thead>
@@ -212,10 +218,9 @@
                                             {{ $user->created_at->diffForHumans() }}
                                         </div>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                                    {{-- <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                                         @if ($user->isSeller() && $user->sellerProfile && $user->sellerProfile->verification_status === \App\Enums\SellerVerificationStatus::PENDING)
                                             <div class="flex items-center justify-center gap-2">
-                                                {{-- Tombol Setujui --}}
                                                 <form action="{{ route('admin.users.approve', $user) }}" method="POST" onsubmit="return confirm('Anda yakin ingin menyetujui verifikasi seller ini?');">
                                                     @csrf
                                                     @method('PATCH')
@@ -223,7 +228,6 @@
                                                         <i class="fas fa-check-circle"></i>
                                                     </button>
                                                 </form>
-                                                {{-- Tombol Tolak --}}
                                                 <button @click="showRejectModal = true; rejectActionUrl = '{{ route('admin.users.reject', $user) }}'"
                                                         class="text-error-600 hover:text-error-900" title="Tolak">
                                                     <i class="fas fa-times-circle"></i>
@@ -232,7 +236,7 @@
                                         @else
                                             <span class="text-neutral-400">-</span>
                                         @endif
-                                    </td>
+                                    </td> --}}
                                 </tr>
                             @endforeach
                         </tbody>

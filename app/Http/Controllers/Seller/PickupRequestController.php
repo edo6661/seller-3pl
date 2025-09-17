@@ -96,15 +96,11 @@ class PickupRequestController extends Controller
             $data['user_id'] = $this->getSellerId();
             $data['seller'] = $this->getSeller();
             $data['requested_at'] = now();
-
             $pickupRequest = $this->pickupRequestService->createPickupRequest($data);
-            
             event(new PickupRequestCreated($pickupRequest, $data['seller']));
-
             return redirect()
                 ->route('seller.pickup-request.show', $pickupRequest)
                 ->with('success', 'Pickup request berhasil dibuat! Admin akan segera memproses permintaan Anda.');
-                
         } catch (\Exception $e) {
             return back()
                 ->withInput()
@@ -236,5 +232,20 @@ class PickupRequestController extends Controller
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());
         }
+    }
+    public function createTicketFromPickup($id)
+    {
+        $sellerId = $this->getSellerId(); 
+        $pickupRequest = $this->pickupRequestService->getPickupRequestById($id);
+        if (!$pickupRequest || $pickupRequest->user_id !== $sellerId) {
+            abort(404);
+        }
+        $ticketData = [
+            'pickup_code' => $pickupRequest->pickup_code,
+            'tracking_number' => $pickupRequest->courier_tracking_number,
+            'pickup_request' => $pickupRequest
+        ];
+        $seller = $this->getSeller();
+        return view('seller.support.create', compact('ticketData'));
     }
 }

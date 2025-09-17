@@ -1,22 +1,17 @@
 <?php
-
 namespace App\Http\Controllers\Admin;
-
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\UserService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
-
 class UserController extends Controller
 {
     protected UserService $userService;
-
     public function __construct(UserService $userService)
     {
         $this->userService = $userService;
     }
-
     /**
      * Display a listing of the resource.
      */
@@ -25,28 +20,43 @@ class UserController extends Controller
         $search = $request->get('search');
         $role = $request->get('role');
         $status = $request->get('status');
-        
         $users = $this->userService->getAllUsers($search, $role, $status);
         $stats = $this->userService->getUserStats();
-        
         return view('admin.user.index', compact('users', 'stats', 'search', 'role', 'status'));
     }
     public function approve(User $user)
     {
         $this->userService->approveVerification($user);
-
-        return redirect()->route('admin.users.index')->with('success', 'Verifikasi seller berhasil disetujui.');
+        return redirect()->route('admin.sellers.verification')->with('success', 'Verifikasi seller berhasil disetujui.');
     }
-
     /**
      * Menolak verifikasi seller.
      */
     public function reject(Request $request, User $user)
     {
         $request->validate(['notes' => 'required|string|max:500']);
-
         $this->userService->rejectVerification($user, $request->input('notes'));
-
-        return redirect()->route('admin.users.index')->with('success', 'Verifikasi seller berhasil ditolak.');
+        return redirect()->route('admin.sellers.verification')->with('success', 'Verifikasi seller berhasil ditolak.');
+    }
+    public function verificationIndex(Request $request): View
+    {
+        $search = $request->get('search');
+        $verificationStatus = $request->get('verification_status');
+        $sellers = $this->userService->getSellersForVerification($search, $verificationStatus);
+        $verificationStats = [
+            'pending' => User::where('role', 'seller')
+                            ->whereHas('sellerProfile', function($q) {
+                                $q->where('verification_status', \App\Enums\SellerVerificationStatus::PENDING);
+                            })->count(),
+            'verified' => User::where('role', 'seller')
+                            ->whereHas('sellerProfile', function($q) {
+                                $q->where('verification_status', \App\Enums\SellerVerificationStatus::VERIFIED);
+                            })->count(),
+            'rejected' => User::where('role', 'seller')
+                            ->whereHas('sellerProfile', function($q) {
+                                $q->where('verification_status', \App\Enums\SellerVerificationStatus::REJECTED);
+                            })->count(),
+        ];
+        return view('admin.user.verification', compact('sellers', 'verificationStats', 'search', 'verificationStatus'));
     }
 }

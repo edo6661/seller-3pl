@@ -51,4 +51,7 @@ Route::prefix('pickup-request')->name('seller.pickup-request.')->group(function 
     Route::post('/{id}/start-delivery', [PickupRequestController::class, 'startDelivery'])
         ->middleware('teamPermission:pickup.manage')
         ->name('start-delivery');
-});
+    Route::get('/{id}/create-ticket', [PickupRequestController::class, 'createTicketFromPickup'])
+        ->middleware('teamPermission:pickup.view')
+        ->name('create-ticket');
+    });
