@@ -4,9 +4,11 @@ use App\Enums\SellerVerificationStatus;
 use App\Models\User;
 use App\Models\SellerProfile;
 use App\Enums\UserRole;
+use App\Events\SellerDocumentsUploaded;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage; 
 class ProfileService
 {
@@ -45,6 +47,7 @@ class ProfileService
     public function updateProfile(int $userId, array $data): bool
     {
         try {
+            Log::info('Updating profile for user ID: ' . $userId, ['data' => $data]);
             DB::beginTransaction();
             $user = User::findOrFail($userId);
             $userFields = [];
@@ -60,6 +63,7 @@ class ProfileService
             }
             if ($user->isSeller()) {
                 $profile = $this->getOrCreateSellerProfile($userId);
+                $oldStatus = $profile->verification_status;
                 $profileFields = [];
                 if (isset($data['address'])) $profileFields['address'] = $data['address'];
                 if (isset($data['city'])) $profileFields['city'] = $data['city'];
@@ -67,18 +71,28 @@ class ProfileService
                 if (isset($data['postal_code'])) $profileFields['postal_code'] = $data['postal_code'];
                 if (isset($data['latitude'])) $profileFields['latitude'] = $data['latitude'];
                 if (isset($data['longitude'])) $profileFields['longitude'] = $data['longitude'];
+                $uploadedDocuments = [];
                 if (isset($data['ktp_image'])) {
                     $profileFields['ktp_image_path'] = $this->uploadVerificationDocument($profile, $data['ktp_image'], 'ktp');
+                    $uploadedDocuments[] = 'ktp';
                 }
                 if (isset($data['passbook_image'])) {
                     $profileFields['passbook_image_path'] = $this->uploadVerificationDocument($profile, $data['passbook_image'], 'passbook');
+                    $uploadedDocuments[] = 'passbook';
                 }
-                if (isset($data['ktp_image']) || isset($data['passbook_image'])) {
-                    $profileFields['verification_status'] = SellerVerificationStatus::PENDING; 
+                if (!empty($uploadedDocuments)) {
+                    $profileFields['verification_status'] = SellerVerificationStatus::PENDING;
                     $profileFields['verification_notes'] = null;
                 }
                 if (!empty($profileFields)) {
                     $profile->update($profileFields);
+                }
+                if (!empty($uploadedDocuments)) {
+                    event(new SellerDocumentsUploaded(
+                        $user,
+                        $uploadedDocuments,
+                        false 
+                    ));
                 }
             }
             DB::commit();
@@ -233,14 +247,25 @@ class ProfileService
                 return false;
             }
             $profileFields = [];
+            $uploadedDocuments = [];
             if (isset($data['ktp_image'])) {
                 $profileFields['ktp_image_path'] = $this->uploadVerificationDocument($profile, $data['ktp_image'], 'ktp');
+                $uploadedDocuments[] = 'ktp';
             }
             if (isset($data['passbook_image'])) {
                 $profileFields['passbook_image_path'] = $this->uploadVerificationDocument($profile, $data['passbook_image'], 'passbook');
+                $uploadedDocuments[] = 'passbook';
             }
             $profileFields['verification_status'] = SellerVerificationStatus::PENDING;
-            $profileFields['verification_notes'] = null; 
-            return $profile->update($profileFields);
+            $profileFields['verification_notes'] = null;
+            $result = $profile->update($profileFields);
+            if ($result && !empty($uploadedDocuments)) {
+                event(new SellerDocumentsUploaded(
+                    $user,
+                    $uploadedDocuments,
+                    true 
+                ));
+            }
+            return $result;
         }
     }

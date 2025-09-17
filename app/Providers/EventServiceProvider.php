@@ -12,10 +12,7 @@ use App\Events\SupportTicketReplied;
 use App\Events\TopUpTransactionCreated;
 use App\Events\TransactionStatusChanged;
 use App\Events\UserRegistered;
-use App\Events\UserStoppedTyping;
-use App\Events\UserTyping;
 use App\Events\WithdrawRequestCreated;
-use App\Events\WithdrawRequestStatusChanged;
 use App\Listeners\MessageSentListener;
 use App\Listeners\NewChatNotificationListener;
 use App\Listeners\PickupRequestCreatedListener;
@@ -23,14 +20,16 @@ use App\Listeners\PickupRequestStatusUpdatedListener;
 use App\Listeners\SendEmailVerificationNotification;
 use App\Listeners\SendPasswordResetNotification;
 use App\Listeners\SendPaymentNotification;
-use App\Listeners\SendWithdrawRequestCreatedNotification;
-use App\Listeners\SendWithdrawRequestStatusChangedNotification;
 use App\Listeners\SupportTicketCreatedListener;
 use App\Listeners\SupportTicketRepliedListener;
 use App\Listeners\TopUpTransactionCreatedListener;
 use App\Listeners\TransactionStatusChangedListener;
 use App\Listeners\WithdrawRequestCreatedListener;
 use Illuminate\Support\ServiceProvider;
+use App\Events\SellerVerificationStatusChanged;
+use App\Events\SellerDocumentsUploaded;
+use App\Listeners\SellerVerificationStatusChangedListener;
+use App\Listeners\SellerDocumentsUploadedListener;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -72,6 +71,12 @@ class EventServiceProvider extends ServiceProvider
         ],
         TransactionStatusChanged::class => [
             TransactionStatusChangedListener::class,
+        ],
+        SellerVerificationStatusChanged::class => [
+            SellerVerificationStatusChangedListener::class,
+        ],
+        SellerDocumentsUploaded::class => [
+            SellerDocumentsUploadedListener::class,
         ],
     ];
 

@@ -3,6 +3,7 @@ namespace App\Services;
 use App\Enums\SellerVerificationStatus;
 use App\Models\User;
 use App\Enums\UserRole;
+use App\Events\SellerVerificationStatusChanged;
 use Illuminate\Pagination\LengthAwarePaginator;
 class UserService
 {
@@ -74,21 +75,34 @@ class UserService
     public function approveVerification(User $user): bool
     {
         if ($user->isSeller() && $user->sellerProfile) {
-            $user->sellerProfile->update(attributes: [
+            $oldStatus = $user->sellerProfile->verification_status;
+            $user->sellerProfile->update([
                 'verification_status' => SellerVerificationStatus::VERIFIED,
                 'verification_notes' => null,
             ]);
+            event(new SellerVerificationStatusChanged(
+                $user,
+                $oldStatus,
+                SellerVerificationStatus::VERIFIED
+            ));
             return true;
         }
         return false;
     }
-    public function rejectVerification(User $user, string $notes): bool
+     public function rejectVerification(User $user, string $notes): bool
         {
             if ($user->isSeller() && $user->sellerProfile) {
+                $oldStatus = $user->sellerProfile->verification_status;
                 $user->sellerProfile->update([
                     'verification_status' => SellerVerificationStatus::REJECTED,
                     'verification_notes' => $notes,
                 ]);
+                event(new SellerVerificationStatusChanged(
+                    $user,
+                    $oldStatus,
+                    SellerVerificationStatus::REJECTED,
+                    $notes
+                ));
                 return true;
             }
             return false;

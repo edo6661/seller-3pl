@@ -6,16 +6,13 @@ use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-
 class NotificationController extends Controller
 {
     protected NotificationService $notificationService;
-
     public function __construct(NotificationService $notificationService)
     {
         $this->notificationService = $notificationService;
     }
-
     public function index(Request $request)
     {
         try {
@@ -23,7 +20,6 @@ class NotificationController extends Controller
             $limit = $request->get('limit', 20);
             $notifications = $this->notificationService->getUserNotifications($user->id, $limit);
             $unreadCount = $this->notificationService->getUnreadCount($user->id);
-
             return response()->json([
                 'success' => true,
                 'notifications' => $notifications->map(function ($notification) {
@@ -47,22 +43,18 @@ class NotificationController extends Controller
             ], 500);
         }
     }
-
     public function markAsRead($id)
     {
         try {
             $user = Auth::user();
             $notification = \App\Models\Notification::where('user_id', $user->id)->find($id);
-
             if (!$notification) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Notifikasi tidak ditemukan'
                 ], 404);
             }
-
             $this->notificationService->markAsRead($id);
-
             return response()->json([
                 'success' => true,
                 'message' => 'Notifikasi telah ditandai sebagai dibaca'
@@ -74,13 +66,11 @@ class NotificationController extends Controller
             ], 500);
         }
     }
-
     public function markAllAsRead()
     {
         try {
             $user = Auth::user();
             $count = $this->notificationService->markAllAsRead($user->id);
-
             return response()->json([
                 'success' => true,
                 'message' => "{$count} notifikasi telah ditandai sebagai dibaca",
@@ -93,14 +83,12 @@ class NotificationController extends Controller
             ], 500);
         }
     }
-
     public function clearAll()
     {
         try {
             $user = Auth::user();
             $count = \App\Models\Notification::where('user_id', $user->id)->count();
             \App\Models\Notification::where('user_id', $user->id)->delete();
-
             return response()->json([
                 'success' => true,
                 'message' => "{$count} notifikasi telah dihapus",
@@ -113,13 +101,11 @@ class NotificationController extends Controller
             ], 500);
         }
     }
-
     public function getUnreadCount()
     {
         try {
             $user = Auth::user();
             $count = $this->notificationService->getUnreadCount($user->id);
-
             return response()->json([
                 'success' => true,
                 'unread_count' => $count
@@ -131,26 +117,21 @@ class NotificationController extends Controller
             ], 500);
         }
     }
-
     function handleClick($id)
     {
         try {
             $user = Auth::user();
             $notification = Notification::where('user_id', $user->id)->find($id);
-
             if (!$notification) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Notifikasi tidak ditemukan'
                 ], 404);
             }
-
             if (!$notification->read_at) {
                 $this->notificationService->markAsRead($id);
             }
-
             $redirectUrl = $this->getRedirectUrl($notification, $user);
-
             return response()->json([
                 'success' => true,
                 'redirect_url' => $redirectUrl,
@@ -163,15 +144,13 @@ class NotificationController extends Controller
             ], 500);
         }
     }
-
     /**
      * Get redirect URL based on notification type
      */
     private function getRedirectUrl($notification, $user): string
     {
         $isAdmin = $user->role->value === 'admin';
-        $additionalData = $notification->additional_data ?? []; 
-        Log::info('Notification Additional Data: ', $additionalData);
+        $additionalData = $notification->additional_data ?? [];
         switch ($notification->type) {
             case 'chat':
                 $conversationId = $additionalData['conversation_id'] ?? null;
@@ -179,7 +158,6 @@ class NotificationController extends Controller
                     return route('chat.show', $conversationId);
                 }
                 return route('chat.index');
-
             case 'pick_up_request':
                 $pickupId = $additionalData['pickup_request_id'] ?? null;
                 if ($pickupId) {
@@ -190,7 +168,6 @@ class NotificationController extends Controller
                 return $isAdmin
                     ? route('admin.pickup-requests.index')
                     : route('seller.pickup-request.index');
-
             case 'support_ticket':
                 $ticketId = $additionalData['ticket_id'] ?? null;
                 if ($ticketId) {
@@ -201,7 +178,6 @@ class NotificationController extends Controller
                 return $isAdmin
                     ? route('admin.support.index')
                     : route('seller.support.index');
-
             case 'wallet':
                 $transactionId = $additionalData['transaction_id'] ?? null;
                 if ($transactionId) {
@@ -212,7 +188,21 @@ class NotificationController extends Controller
                 return $isAdmin
                     ? route('admin.wallets.index')
                     : route('seller.wallet.index');
-
+            case 'seller_verification':
+                if ($isAdmin) {
+                    return route('admin.sellers.verification');
+                } else {
+                    $newStatus = $additionalData['new_status'] ?? null;
+                    if ($newStatus === 'rejected') {
+                        return route('profile.verification.resubmit');
+                    }
+                    return route('profile.index');
+                }
+            case 'seller_documents_uploaded':
+                if ($isAdmin) {
+                    return route('admin.sellers.verification');
+                }
+                return route('admin.dashboard');
             default:
                 return $isAdmin
                     ? route('admin.dashboard')
