@@ -64,7 +64,7 @@
                                                 </p>
                                             </div>
                                             <div class="flex-shrink-0 ml-3">
-                                                <a href="{{ Storage::disk('r2')->url($attachment['path']) }}" 
+                                                <a href="{{ Storage::disk('r2')->temporaryUrl($attachment['path'], now()->addMinutes(15)) }}"
                                                    target="_blank" 
                                                    class="text-primary-600 hover:text-primary-800">
                                                     <i class="fas fa-download"></i>
@@ -125,7 +125,7 @@
                                                 <div class="mt-3 pt-3 border-t {{ $response->is_admin_response ? 'border-blue-200' : 'border-green-200' }}">
                                                     <div class="flex flex-wrap gap-2">
                                                         @foreach ($response->attachments as $attachment)
-                                                            <a href="{{ Storage::disk('r2')->url($attachment['path']) }}" 
+                                                            <a href="{{ Storage::disk('r2')->temporaryUrl($attachment['path'], now()->addMinutes(15)) }}"
                                                                target="_blank"
                                                                class="inline-flex items-center px-2 py-1 rounded text-xs {{ $response->is_admin_response ? 'bg-blue-100 text-blue-700 hover:bg-blue-200' : 'bg-green-100 text-green-700 hover:bg-green-200' }} transition">
                                                                 <i class="fas fa-paperclip mr-1"></i>
