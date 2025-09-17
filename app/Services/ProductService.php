@@ -8,21 +8,21 @@ class ProductService
     public function getUserProducts(int $userId): Collection
     {
         return Product::where('user_id', $userId)
-            ->orderBy('name')
+            ->orderBy('created_at', 'desc')
             ->get();
     }
     public function getActiveProducts(int $userId): Collection
     {
         return Product::where('user_id', $userId)
             ->active()
-            ->orderBy('name')
+            ->orderBy('created_at', 'desc')
             ->get();
     }
     public function getInactiveProducts(int $userId): Collection
     {
         return Product::where('user_id', $userId)
             ->inactive()
-            ->orderBy('name')
+            ->orderBy('created_at', 'desc')
             ->get();
     }
     public function getProductById(int $id): ?Product
@@ -72,7 +72,7 @@ class ProductService
                 $query->where('name', 'like', "%{$search}%")
                     ->orWhere('description', 'like', "%{$search}%");
             })
-            ->orderBy('name')
+            ->orderBy('created_at', 'desc')
             ->get();
     }
     public function getProductStats(int $userId): array
