@@ -51,6 +51,9 @@ class SupportTicketService
     {
         return DB::transaction(function () use ($ticketId, $data) {
             $ticket = SupportTicket::findOrFail($ticketId);
+            if (!$ticket->canReceiveResponse()) {
+                throw new \Exception('Tidak dapat menambahkan respons ke tiket yang sudah selesai atau ditutup.');
+            }
             $user = User::find($data['user_id']);
             if (!empty($data['attachments'])) {
                 $attachments = [];

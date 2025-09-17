@@ -20,7 +20,7 @@
                         <i class="fas fa-arrow-left mr-2"></i>
                         Kembali
                     </a>
-                    @if ($ticket->canBeReopened())
+                    {{-- @if ($ticket->canBeReopened())
                         <form method="POST" action="{{ route('seller.support.reopen', $ticket->id) }}" class="inline">
                             @csrf
                             <button type="submit" class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-sm">
@@ -28,7 +28,7 @@
                                 Buka Ulang
                             </button>
                         </form>
-                    @endif
+                    @endif --}}
                 </div>
             </div>
         </div>
@@ -165,7 +165,7 @@
                 </div>
 
                 <!-- Add Response Form -->
-                @if (!$ticket->isClosed())
+                @if ($ticket->canReceiveResponse())
                     <div class="bg-white rounded-xl shadow-md overflow-hidden">
                         <div class="px-6 py-4 bg-neutral-50 border-b border-neutral-200">
                             <h3 class="text-lg font-semibold text-neutral-900 flex items-center gap-2">

@@ -114,26 +114,34 @@ class SupportTicketController extends Controller
     {
         $sellerId = $this->getSellerId();
         $ticket = $this->ticketService->getTicketDetail($id, $sellerId);
+        
         if (!$ticket) {
             abort(404, 'Tiket tidak ditemukan');
         }
+        
         abort_unless($ticket->user_id === $sellerId, 403, 'Anda tidak memiliki akses ke tiket ini.');
-        if ($ticket->isClosed()) {
-            return back()->with('error', 'Tidak dapat menambahkan respons ke tiket yang sudah ditutup.');
+        
+        if (!$ticket->canReceiveResponse()) {
+            return back()->with('error', 'Tidak dapat menambahkan respons ke tiket yang sudah diselesaikan atau ditutup.');
         }
+        
         try {
             $data = $request->validated();
             $data['user_id'] = $sellerId;
             $data['is_admin_response'] = false;
+            
             if ($request->hasFile('attachments')) {
                 $data['attachments'] = $request->file('attachments');
             }
+            
             $this->ticketService->addResponse($id, $data);
+            
             return back()->with('success', 'Respons berhasil ditambahkan.');
         } catch (\Exception $e) {
             return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
+
     /**
      * AJAX: Cari pickup request berdasarkan kode/nomor resi
      */

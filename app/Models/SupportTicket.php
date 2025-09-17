@@ -217,8 +217,15 @@ class SupportTicket extends Model
         
         return $prefix . $date . str_pad($sequence, 4, '0', STR_PAD_LEFT);
     }
+    public function canReceiveResponse(): bool
+    {
+        return !in_array($this->status, ['resolved', 'closed']);
+    }
 
-    // Boot method
+    public function isFinalized(): bool
+    {
+        return in_array($this->status, ['resolved', 'closed']);
+    }
     protected static function boot()
     {
         parent::boot();
