@@ -35,7 +35,7 @@ class SupportTicketCreated implements ShouldBroadcast
             'ticket_type' => $this->ticket->ticket_type,
             'created_at' => $this->ticket->created_at->toISOString(),
             'notification' => [
-                'type' => 'support_ticket_created',
+                'type' => 'support_ticket', 
                 'title' => 'Support Ticket Baru',
                 'message' => "Ticket #{$this->ticket->ticket_number} dari {$this->user->name} membutuhkan perhatian Anda.",
                 'icon' => 'fas fa-ticket-alt',

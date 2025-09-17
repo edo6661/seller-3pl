@@ -22,17 +22,16 @@ class TopUpTransactionCreatedListener implements ShouldQueue
         try {
             $admins = User::where('role', UserRole::ADMIN)->get();
             foreach ($admins as $admin) {
-                Log::info('Creating topup notification for admin', [
-                    'admin_id' => $admin->id,
-                    'transaction_id' => $transaction->id,
-                    'user_id' => $user->id
-                ]);
                 $this->notificationService->createForUser(
                     $admin->id,
-                    'topup_transaction_created',
+                    'wallet', 
                     'Permintaan Top Up Baru',
                     $this->getAdminNotificationMessage($transaction, $user),
-                   
+                    [
+                        'transaction_id' => $transaction->id,
+                        'reference_id' => $transaction->reference_id,
+                        'amount' => $transaction->amount
+                    ]
                 );
             }
         } catch (\Exception $e) {

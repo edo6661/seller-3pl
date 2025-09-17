@@ -262,47 +262,14 @@ class PickupRequestController extends Controller
     /**
      * Get pickup request detail
      */
-    public function show($id): JsonResponse
+    public function show($id)
     {
         try {
             $pickupRequest = $this->pickupRequestService->getPickupRequestById($id);
             if (!$pickupRequest) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Pickup request tidak ditemukan'
-                ], 404);
+                abort(404, 'Pickup request tidak ditemukan');
             }
-            return response()->json([
-                'success' => true,
-                'data' => [
-                    'id' => $pickupRequest->id,
-                    'pickup_code' => $pickupRequest->pickup_code,
-                    'status' => $pickupRequest->status,
-                    'delivery_type' => $pickupRequest->delivery_type,
-                    'payment_method' => $pickupRequest->payment_method,
-                    'recipient_name' => $pickupRequest->recipient_name,
-                    'recipient_phone' => $pickupRequest->recipient_phone,
-                    'recipient_address' => $pickupRequest->getFullRecipientAddressAttribute(),
-                    'pickup_address' => $pickupRequest->getFullPickupAddressAttribute(),
-                    'total_amount' => $pickupRequest->total_amount,
-                    'items_count' => $pickupRequest->items->count(),
-                    'courier_service' => $pickupRequest->courier_service,
-                    'courier_tracking_number' => $pickupRequest->courier_tracking_number,
-                    'user' => [
-                        'name' => $pickupRequest->user->name,
-                        'email' => $pickupRequest->user->email
-                    ],
-                    'created_at' => $pickupRequest->created_at->format('d M Y H:i'),
-                    'pickup_scheduled_at' => $pickupRequest->pickup_scheduled_at ? $pickupRequest->pickup_scheduled_at->format('d M Y H:i') : null,
-                    'picked_up_at' => $pickupRequest->picked_up_at ? $pickupRequest->picked_up_at->format('d M Y H:i') : null,
-                    'delivered_at' => $pickupRequest->delivered_at ? $pickupRequest->delivered_at->format('d M Y H:i') : null,
-                    'can_be_cancelled' => $pickupRequest->canBeCancelled(),
-                    'can_be_scheduled' => $pickupRequest->canBeScheduled(),
-                    'can_be_picked_up' => $pickupRequest->canBePickedUp(),
-                    'is_pickup_type' => $pickupRequest->isPickupType(),
-                    'is_drop_off_type' => $pickupRequest->isDropOffType()
-                ]
-            ]);
+            return view('admin.pickup_request.show', compact('pickupRequest'));
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -310,4 +277,52 @@ class PickupRequestController extends Controller
             ], 500);
         }
     }
+    // public function show($id): JsonResponse
+    // {
+    //     try {
+    //         $pickupRequest = $this->pickupRequestService->getPickupRequestById($id);
+    //         if (!$pickupRequest) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'Pickup request tidak ditemukan'
+    //             ], 404);
+    //         }
+    //         return response()->json([
+    //             'success' => true,
+    //             'data' => [
+    //                 'id' => $pickupRequest->id,
+    //                 'pickup_code' => $pickupRequest->pickup_code,
+    //                 'status' => $pickupRequest->status,
+    //                 'delivery_type' => $pickupRequest->delivery_type,
+    //                 'payment_method' => $pickupRequest->payment_method,
+    //                 'recipient_name' => $pickupRequest->recipient_name,
+    //                 'recipient_phone' => $pickupRequest->recipient_phone,
+    //                 'recipient_address' => $pickupRequest->getFullRecipientAddressAttribute(),
+    //                 'pickup_address' => $pickupRequest->getFullPickupAddressAttribute(),
+    //                 'total_amount' => $pickupRequest->total_amount,
+    //                 'items_count' => $pickupRequest->items->count(),
+    //                 'courier_service' => $pickupRequest->courier_service,
+    //                 'courier_tracking_number' => $pickupRequest->courier_tracking_number,
+    //                 'user' => [
+    //                     'name' => $pickupRequest->user->name,
+    //                     'email' => $pickupRequest->user->email
+    //                 ],
+    //                 'created_at' => $pickupRequest->created_at->format('d M Y H:i'),
+    //                 'pickup_scheduled_at' => $pickupRequest->pickup_scheduled_at ? $pickupRequest->pickup_scheduled_at->format('d M Y H:i') : null,
+    //                 'picked_up_at' => $pickupRequest->picked_up_at ? $pickupRequest->picked_up_at->format('d M Y H:i') : null,
+    //                 'delivered_at' => $pickupRequest->delivered_at ? $pickupRequest->delivered_at->format('d M Y H:i') : null,
+    //                 'can_be_cancelled' => $pickupRequest->canBeCancelled(),
+    //                 'can_be_scheduled' => $pickupRequest->canBeScheduled(),
+    //                 'can_be_picked_up' => $pickupRequest->canBePickedUp(),
+    //                 'is_pickup_type' => $pickupRequest->isPickupType(),
+    //                 'is_drop_off_type' => $pickupRequest->isDropOffType()
+    //             ]
+    //         ]);
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
 }

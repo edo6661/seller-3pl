@@ -26,7 +26,7 @@ class NotificationService
     }
     public function createForUser(int $userId, string $type, string $title, string $message, array $additionalData = []): Notification
     {
-        if ($type === 'new_chat_message' && isset($additionalData['message_id'])) {
+        if ($type === 'chat' && isset($additionalData['message_id'])) {
             $existingNotification = Notification::where([
                 'user_id' => $userId,
                 'type' => $type,
@@ -48,11 +48,9 @@ class NotificationService
             'user_id' => $userId,
             'type' => $type,
             'title' => $title,
-            'message' => $message
+            'message' => $message,
+            'additional_data' => $additionalData,
         ];
-        if (!empty($additionalData)) {
-            $notificationData = array_merge($notificationData, $additionalData);
-        }
         $notification = $this->createNotification($notificationData);
         return $notification;
     }
@@ -109,7 +107,7 @@ class NotificationService
         ];
         return $this->createForUser(
             $userId,
-            'pickup_update',
+            'pick_up_request', 
             $titles[$status] ?? 'Update Pickup',
             $messages[$status] ?? "Status pickup {$pickupCode} telah diupdate."
         );
@@ -117,7 +115,7 @@ class NotificationService
     public function cleanupDuplicateNotifications(int $userId): int
     {
         $duplicates = Notification::where('user_id', $userId)
-            ->where('type', 'new_chat_message')
+            ->where('type', 'chat')
             ->selectRaw('MIN(id) as keep_id, message, COUNT(*) as count')
             ->groupBy('message')
             ->having('count', '>', 1)
@@ -125,7 +123,7 @@ class NotificationService
         $deletedCount = 0;
         foreach ($duplicates as $duplicate) {
             $deleted = Notification::where('user_id', $userId)
-                ->where('type', 'new_chat_message')
+                ->where('type', 'chat')
                 ->where('message', $duplicate->message)
                 ->where('id', '!=', $duplicate->keep_id)
                 ->delete();

@@ -1,6 +1,7 @@
 @props([
     'unreadCount' => 0
 ])
+
 <script>
 function notificationManager() {
     return {
@@ -14,6 +15,7 @@ function notificationManager() {
         currentUserRole: '{{ auth()->user()->role->value ?? "guest" }}',
         authToken: null,
         processedNotifications: new Set(), 
+
         init() {
             this.authToken = this.getAuthToken();
             if (!this.authToken) {
@@ -21,21 +23,26 @@ function notificationManager() {
                 this.error = 'Token autentikasi tidak ditemukan';
                 return;
             }
+            
             this.loadNotifications();
+            
             if (this.currentUserId && window.Echo) {
                 this.setupRealtimeListeners();
             }
         },
+
         getAuthToken() {
             const token = document.querySelector('meta[name="csrf-token"]');
             return token ? token.getAttribute('content') : null;
         },
+
         getCookie(name) {
             const value = `; ${document.cookie}`;
             const parts = value.split(`; ${name}=`);
             if (parts.length === 2) return parts.pop().split(';').shift();
             return null;
         },
+
         toggleNotifications() {
             this.showNotifications = !this.showNotifications;
             this.hasNewNotification = false;
@@ -43,6 +50,7 @@ function notificationManager() {
                 this.loadNotifications();
             }
         },
+
         setupRealtimeListeners() {
             try {
                 if (this.currentUserRole === 'admin') {
@@ -55,8 +63,21 @@ function notificationManager() {
                         })
                         .listen('.chat.notification', (e) => {
                             this.handleNewNotification(e);
+                        })
+                        .listen('.support.ticket.created', (e) => {
+                            this.handleNewNotification(e);
+                        })
+                        .listen('.support.ticket.replied', (e) => {
+                            this.handleNewNotification(e);
+                        })
+                        .listen('.wallet.topup.created', (e) => {
+                            this.handleNewNotification(e);
+                        })
+                        .listen('.wallet.withdraw.created', (e) => {
+                            this.handleNewNotification(e);
                         });
                 }
+
                 window.Echo.channel(`user.${this.currentUserId}`)
                     .listen('.pickup.created', (e) => {
                         this.handleNewNotification(e);
@@ -66,23 +87,39 @@ function notificationManager() {
                     })
                     .listen('.chat.notification', (e) => {
                         this.handleNewNotification(e);
+                    })
+                    .listen('.support.ticket.created', (e) => {
+                        this.handleNewNotification(e);
+                    })
+                    .listen('.support.ticket.replied', (e) => {
+                        this.handleNewNotification(e);
+                    })
+                    .listen('.wallet.transaction.status_changed', (e) => {
+                        this.handleNewNotification(e);
                     });
+
                 window.Echo.connector.pusher.connection.bind('connected', () => {
+                    console.log('WebSocket connected');
                 });
             } catch (error) {
                 console.error('Error setting up realtime listeners:', error);
             }
         },
+
         handleNewNotification(eventData) {
             if (!eventData.notification) {
                 console.warn('No notification data in event:', eventData);
                 return;
             }
+
             const notificationKey = `${eventData.notification.type}-${eventData.message_id || eventData.notification.created_at || Date.now()}`;
+            
             if (this.processedNotifications.has(notificationKey)) {
                 return;
             }
+            
             this.processedNotifications.add(notificationKey);
+
             const notification = {
                 id: eventData.notification.id || Date.now(),
                 type: eventData.notification.type,
@@ -92,30 +129,37 @@ function notificationManager() {
                 read_at: null,
                 data: eventData
             };
+
             const existingIndex = this.notifications.findIndex(n => n.id === notification.id);
             if (existingIndex === -1) {
                 if (this.notifications.length >= 50) {
                     this.notifications.pop(); 
                 }
+                
                 this.notifications.unshift(notification);
                 this.totalUnread++;
                 this.hasNewNotification = true;
+                
                 this.playNotificationSound();
                 this.showToastNotification(notification);
             }
         },
+
         showToastNotification(notification) {
             if (window.showHeaderToast) {
                 window.showHeaderToast('info', notification.title + ': ' + notification.message);
             }
         },
+
         async loadNotifications() {
             if (!this.authToken) {
                 this.error = 'Token autentikasi tidak ditemukan';
                 return;
             }
+
             this.isLoading = true;
             this.error = null;
+
             try {
                 const response = await fetch('/notifications', {
                     method: 'GET',
@@ -126,6 +170,7 @@ function notificationManager() {
                         'X-CSRF-TOKEN': this.authToken
                     }
                 });
+
                 if (!response.ok) {
                     if (response.status === 401) {
                         throw new Error('Sesi telah berakhir. Silakan login kembali.');
@@ -135,11 +180,11 @@ function notificationManager() {
                         throw new Error(`Error ${response.status}: ${response.statusText}`);
                     }
                 }
+
                 const data = await response.json();
                 if (data.success) {
                     this.notifications = data.notifications || [];
                     this.totalUnread = data.unread_count || 0;
-                    
                 } else {
                     throw new Error(data.message || 'Gagal memuat notifikasi');
                 }
@@ -150,8 +195,10 @@ function notificationManager() {
                 this.isLoading = false;
             }
         },
+
         async markAsRead(notificationId) {
             if (!this.authToken) return;
+
             try {
                 const response = await fetch(`/notifications/${notificationId}/read`, {
                     method: 'POST',
@@ -162,6 +209,7 @@ function notificationManager() {
                         'X-CSRF-TOKEN': this.authToken
                     }
                 });
+
                 if (response.ok) {
                     const notification = this.notifications.find(n => n.id === notificationId);
                     if (notification && !notification.read_at) {
@@ -175,9 +223,12 @@ function notificationManager() {
                 console.error('Error marking notification as read:', error);
             }
         },
+
         async markAllAsRead() {
             if (!this.authToken || this.isLoading) return;
+
             this.isLoading = true;
+
             try {
                 const response = await fetch('/notifications/mark-all-read', {
                     method: 'POST',
@@ -188,6 +239,7 @@ function notificationManager() {
                         'X-CSRF-TOKEN': this.authToken
                     }
                 });
+
                 if (response.ok) {
                     this.notifications.forEach(notification => {
                         if (!notification.read_at) {
@@ -204,10 +256,13 @@ function notificationManager() {
                 this.isLoading = false;
             }
         },
+
         async clearAllNotifications() {
             if (!this.authToken || this.isLoading) return;
             if (!confirm('Hapus semua notifikasi?')) return;
+
             this.isLoading = true;
+
             try {
                 const response = await fetch('/notifications/clear-all', {
                     method: 'DELETE',
@@ -218,6 +273,7 @@ function notificationManager() {
                         'X-CSRF-TOKEN': this.authToken
                     }
                 });
+
                 if (response.ok) {
                     this.notifications = [];
                     this.totalUnread = 0;
@@ -231,91 +287,134 @@ function notificationManager() {
                 this.isLoading = false;
             }
         },
-        handleNotificationClick(notification) {
-            if (!notification.read_at) {
-                this.markAsRead(notification.id);
-            }
-            if (notification.type === 'pickup_created' || notification.type === 'pickup_status_updated') {
-                if (notification.data && notification.data.id) {
-                    if (this.currentUserRole === 'admin') {
-                        window.location.href = `/admin/pickup-requests/${notification.data.id}`;
-                    } else {
-                        window.location.href = `/seller/pickup-request/${notification.data.id}`;
+
+        async handleNotificationClick(notification) {
+            try {
+                const response = await fetch(`/notifications/${notification.id}/click`, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${this.authToken}`,
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
                     }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success && data.redirect_url) {
+                        if (!notification.read_at) {
+                            notification.read_at = new Date().toISOString();
+                            this.totalUnread = Math.max(0, this.totalUnread - 1);
+                        }
+                        this.showNotifications = false;
+                        // console.log('Redirecting to:', data.redirect_url);
+                        window.location.href = data.redirect_url;
+                    } else {
+                        console.error('Failed to handle notification click:', data.message);
+                        if (!notification.read_at) {
+                            this.markAsRead(notification.id);
+                        }
+                        this.showNotifications = false;
+                    }
+                } else {
+                    console.error('Failed to handle notification click:', response.statusText);
+                    if (!notification.read_at) {
+                        this.markAsRead(notification.id);
+                    }
+                    this.showNotifications = false;
                 }
-            } else if (notification.type === 'new_chat_message') {
-                if (notification.data && notification.data.conversation_id) {
-                    window.location.href = `/chat/${notification.data.conversation_id}`;
+            } catch (error) {
+                console.error('Error handling notification click:', error);
+                if (!notification.read_at) {
+                    this.markAsRead(notification.id);
                 }
+                this.showNotifications = false;
             }
-            this.showNotifications = false;
         },
+
         getNotificationIcon(type) {
             const icons = {
-                'pickup_created': 'fas fa-truck',
-                'pickup_status_updated': 'fas fa-clipboard-check',
-                'new_chat_message': 'fas fa-comments',
+                'pick_up_request': 'fas fa-truck',
+                'chat': 'fas fa-comments',
+                'support_ticket': 'fas fa-ticket-alt',
+                'wallet': 'fas fa-wallet',
                 'default': 'fas fa-bell'
             };
             return icons[type] || icons.default;
         },
+
         getNotificationColor(type) {
             const colors = {
-                'pickup_created': 'bg-blue-100 text-blue-600',
-                'pickup_status_updated': 'bg-green-100 text-green-600',
-                'new_chat_message': 'bg-purple-100 text-purple-600',
+                'pick_up_request': 'bg-blue-100 text-blue-600',
+                'chat': 'bg-purple-100 text-purple-600',
+                'support_ticket': 'bg-orange-100 text-orange-600',
+                'wallet': 'bg-green-100 text-green-600',
                 'default': 'bg-gray-100 text-gray-600'
             };
             return colors[type] || colors.default;
         },
+
         formatTime(timestamp) {
             try {
                 const date = new Date(timestamp);
                 const now = new Date();
                 const diff = now - date;
+
                 if (diff < 60000) {
                     return 'Baru saja';
                 }
+
                 if (diff < 3600000) {
                     const minutes = Math.floor(diff / 60000);
                     return `${minutes} menit yang lalu`;
                 }
+
                 if (date.toDateString() === now.toDateString()) {
                     return date.toLocaleTimeString('id-ID', { 
                         hour: '2-digit', 
                         minute: '2-digit' 
                     });
                 }
+
                 return date.toLocaleDateString('id-ID');
             } catch (error) {
                 console.error('Error formatting time:', error);
                 return 'Waktu tidak valid';
             }
         },
+
         playNotificationSound() {
             try {
                 const audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 const oscillator = audioContext.createOscillator();
                 const gainNode = audioContext.createGain();
+                
                 oscillator.connect(gainNode);
                 gainNode.connect(audioContext.destination);
+                
                 oscillator.frequency.value = 800;
                 oscillator.type = 'sine';
+                
                 gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
                 gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                
                 oscillator.start(audioContext.currentTime);
                 oscillator.stop(audioContext.currentTime + 0.3);
             } catch (error) {
+                console.error('Error playing notification sound:', error);
             }
         }
     }
 }
 </script>
+
 <div class="relative" x-data="notificationManager()" x-init="init()">
     <button @click="toggleNotifications()" 
             class="relative p-2 text-neutral-600 hover:text-primary-600 transition-colors duration-200 rounded-lg hover:bg-neutral-100"
             :class="{ 'text-primary-600 bg-primary-50': showNotifications }">
         <i class="fas fa-bell text-lg"></i>
+        
         <span x-show="totalUnread > 0" 
               x-text="totalUnread > 99 ? '99+' : totalUnread"
               x-transition:enter="transform ease-out duration-200"
@@ -324,6 +423,7 @@ function notificationManager() {
               class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center min-w-[20px]"
                x-cloak>
         </span>
+        
         <span x-show="hasNewNotification" 
               x-transition:enter="transform ease-out duration-200"
               x-transition:enter-start="scale-0 opacity-0"
@@ -332,6 +432,7 @@ function notificationManager() {
                x-cloak>
         </span>
     </button>
+
     <div x-show="showNotifications" 
          x-cloak 
          @click.away="showNotifications = false"
@@ -342,6 +443,7 @@ function notificationManager() {
          x-transition:leave-start="opacity-100 scale-100"
          x-transition:leave-end="opacity-0 scale-95"
          class="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-xl shadow-xl border border-neutral-200 z-50 max-h-96 overflow-hidden">
+        
         <div class="flex items-center justify-between p-4 border-b border-neutral-200 bg-neutral-50">
             <h3 class="text-lg font-semibold text-neutral-900">Notifikasi</h3>
             <div class="flex items-center space-x-2">
@@ -359,10 +461,12 @@ function notificationManager() {
                 </button>
             </div>
         </div>
+
         <div x-show="isLoading && notifications.length === 0" class="p-8 text-center">
             <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
             <p class="text-neutral-500 text-sm mt-2">Memuat notifikasi...</p>
         </div>
+
         <div x-show="error && !isLoading" class="p-8 text-center">
             <div class="text-red-400 text-4xl mb-3">
                 <i class="fas fa-exclamation-triangle"></i>
@@ -373,6 +477,7 @@ function notificationManager() {
                 Coba Lagi
             </button>
         </div>
+
         <div class="max-h-80 overflow-y-auto" x-show="!isLoading && !error">
             <template x-for="notification in notifications" :key="notification.id">
                 <div class="p-4 border-b border-neutral-100 hover:bg-neutral-50 transition-colors cursor-pointer"
@@ -396,6 +501,7 @@ function notificationManager() {
                     </div>
                 </div>
             </template>
+
             <div x-show="notifications.length === 0 && !isLoading && !error" class="p-8 text-center">
                 <div class="text-neutral-300 text-4xl mb-3">
                     <i class="fas fa-bell-slash"></i>
@@ -403,6 +509,7 @@ function notificationManager() {
                 <p class="text-neutral-500 text-sm">Tidak ada notifikasi</p>
             </div>
         </div>
+
         <div class="p-3 border-t border-neutral-200 bg-neutral-50" x-show="!isLoading && !error">
             <a href="#" class="block text-center text-sm text-primary-600 hover:text-primary-800 font-medium">
                 Lihat Semua Notifikasi

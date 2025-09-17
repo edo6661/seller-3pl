@@ -169,7 +169,7 @@
     </aside>
 
     <div x-show="sidebarOpen" x-cloak @click="sidebarOpen = false" 
-         class="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
+         class="fixed inset-0 bg-black/50 z-30 lg:hidden"
          x-transition:enter="transition-opacity ease-linear duration-300"
          x-transition:enter-start="opacity-0"
          x-transition:enter-end="opacity-100"

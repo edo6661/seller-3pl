@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('type'); // pickup_confirmed, delivered, cod_collected, dll
             $table->string('title');
             $table->text('message');
+            $table->json('additional_data')->nullable();
             $table->timestamp('read_at')->nullable();
             $table->timestamps();
             

@@ -55,5 +55,6 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/mark-all-read', [NotificationController::class, 'markAllAsRead']);
         Route::delete('/clear-all', [NotificationController::class, 'clearAll']);
         Route::get('/unread-count', [NotificationController::class, 'getUnreadCount']);
+        Route::post('/{id}/click', [NotificationController::class, 'handleClick']);
     });
 });

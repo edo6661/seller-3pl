@@ -17,7 +17,7 @@ class DatabaseSeeder extends Seeder
             SellerProfileSeeder::class,
             ProductSeeder::class,
             BuyerRatingSeeder::class,
-            NotificationSeeder::class,
+            // NotificationSeeder::class,
             // WalletSeeder::class,
             // WalletTransactionSeeder::class,
             // WithdrawRequestSeeder::class,

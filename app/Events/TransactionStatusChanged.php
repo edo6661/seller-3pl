@@ -1,6 +1,5 @@
 <?php
 namespace App\Events;
-
 use App\Models\User;
 use App\Models\WalletTransaction;
 use Illuminate\Broadcasting\Channel;
@@ -8,11 +7,9 @@ use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
-
 class TransactionStatusChanged implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
-
     public function __construct(
         public User $user,
         public WalletTransaction $transaction,
@@ -20,14 +17,12 @@ class TransactionStatusChanged implements ShouldBroadcast
         public string $newStatus,
         public string $action 
     ) {}
-
     public function broadcastOn(): array
     {
         return [
             new Channel('user.' . $this->user->id)
         ];
     }
-
     public function broadcastWith(): array
     {
         return [
@@ -44,20 +39,17 @@ class TransactionStatusChanged implements ShouldBroadcast
             'notification' => $this->getNotificationData()
         ];
     }
-
     public function broadcastAs(): string
     {
         return 'wallet.transaction.status_changed';
     }
-
     private function getNotificationData(): array
     {
         $isTopUp = $this->transaction->type->value === 'topup';
         $transactionType = $isTopUp ? 'Top Up' : 'Penarikan';
-
         return match($this->action) {
             'approve' => [
-                'type' => $isTopUp ? 'topup_approved' : 'withdraw_approved',
+                'type' => 'wallet', 
                 'title' => "{$transactionType} Disetujui",
                 'message' => $isTopUp 
                     ? "Top Up sebesar {$this->transaction->formatted_amount} telah berhasil disetujui. Saldo Anda telah ditambahkan."
@@ -66,7 +58,7 @@ class TransactionStatusChanged implements ShouldBroadcast
                 'color' => 'success'
             ],
             'reject' => [
-                'type' => $isTopUp ? 'topup_rejected' : 'withdraw_rejected',
+                'type' => 'wallet', 
                 'title' => "{$transactionType} Ditolak",
                 'message' => $isTopUp
                     ? "Top Up sebesar {$this->transaction->formatted_amount} ditolak. Silakan periksa detail untuk informasi lebih lanjut."
@@ -75,7 +67,7 @@ class TransactionStatusChanged implements ShouldBroadcast
                 'color' => 'danger'
             ],
             'process' => [
-                'type' => $isTopUp ? 'topup_processing' : 'withdraw_processing',
+                'type' => 'wallet', 
                 'title' => "{$transactionType} Sedang Diproses",
                 'message' => $isTopUp
                     ? "Top Up sebesar {$this->transaction->formatted_amount} sedang diproses oleh admin."
@@ -84,7 +76,7 @@ class TransactionStatusChanged implements ShouldBroadcast
                 'color' => 'info'
             ],
             'cancel' => [
-                'type' => $isTopUp ? 'topup_cancelled' : 'withdraw_cancelled',
+                'type' => 'wallet', 
                 'title' => "{$transactionType} Dibatalkan",
                 'message' => $isTopUp
                     ? "Top Up sebesar {$this->transaction->formatted_amount} telah dibatalkan."
@@ -93,7 +85,7 @@ class TransactionStatusChanged implements ShouldBroadcast
                 'color' => 'secondary'
             ],
             default => [
-                'type' => 'transaction_updated',
+                'type' => 'wallet', 
                 'title' => 'Status Transaksi Diperbarui',
                 'message' => "Status transaksi {$transactionType} telah diperbarui.",
                 'icon' => 'fas fa-info-circle',

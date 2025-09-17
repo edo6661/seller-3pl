@@ -23,14 +23,9 @@ class SupportTicketCreatedListener implements ShouldQueue
         try {
             $admins = User::where('role', UserRole::ADMIN)->get();
             foreach ($admins as $admin) {
-                Log::info('Creating support ticket notification for admin', [
-                    'admin_id' => $admin->id,
-                    'ticket_id' => $ticket->id,
-                    'user_id' => $user->id
-                ]);
                 $this->notificationService->createForUser(
                     $admin->id,
-                    'support_ticket_created',
+                    'support_ticket', 
                     $this->getNotificationTitle($ticket),
                     $this->getNotificationMessage($ticket, $user),
                     [
@@ -38,13 +33,14 @@ class SupportTicketCreatedListener implements ShouldQueue
                         'ticket_number' => $ticket->ticket_number,
                         'priority' => $ticket->priority,
                         'category' => $ticket->category,
-                        'ticket_type' => $ticket->ticket_type
+                        'ticket_type' => $ticket->ticket_type,
+                        'user_id' => $user->id
                     ]
                 );
             }
             $this->notificationService->createForUser(
                 $user->id,
-                'ticket_confirmation',
+                'support_ticket', 
                 'Ticket Support Berhasil Dibuat',
                 "Ticket #{$ticket->ticket_number} telah berhasil dibuat. Tim support akan segera merespons dalam 1x24 jam.",
                 [
@@ -52,17 +48,11 @@ class SupportTicketCreatedListener implements ShouldQueue
                     'ticket_number' => $ticket->ticket_number
                 ]
             );
-            Log::info('Support ticket notifications created successfully', [
-                'ticket_id' => $ticket->id,
-                'user_id' => $user->id,
-                'admin_count' => $admins->count()
-            ]);
         } catch (\Exception $e) {
             Log::error('Failed to create support ticket notifications', [
                 'ticket_id' => $ticket->id,
                 'user_id' => $user->id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'error' => $e->getMessage()
             ]);
             throw $e;
         }

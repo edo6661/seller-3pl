@@ -1,7 +1,5 @@
 <?php
-// app/Events/PickupRequestCreated.php
 namespace App\Events;
-
 use App\Models\PickupRequest;
 use App\Models\User;
 use Illuminate\Broadcasting\Channel;
@@ -9,16 +7,13 @@ use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
-
 class PickupRequestCreated implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
-
     public function __construct(
         public PickupRequest $pickupRequest,
         public User $requester
     ) {}
-
     public function broadcastOn(): array
     {
         return [
@@ -26,7 +21,6 @@ class PickupRequestCreated implements ShouldBroadcast
             new Channel('admin-notifications')
         ];
     }
-
     public function broadcastWith(): array
     {
         return [
@@ -39,15 +33,17 @@ class PickupRequestCreated implements ShouldBroadcast
             'delivery_type' => $this->pickupRequest->delivery_type,
             'created_at' => $this->pickupRequest->created_at->toISOString(),
             'notification' => [
-                'type' => 'pickup_created',
+                'type' => 'pick_up_request', 
                 'title' => 'Pickup Request Baru',
                 'message' => "Pickup request {$this->pickupRequest->pickup_code} dari {$this->requester->name} telah dibuat dan menunggu konfirmasi.",
                 'icon' => 'fas fa-truck',
-                'color' => 'primary'
+                'color' => 'primary',
+                'additional_data' => [
+                    'pickup_request_id' => $this->pickupRequest->id
+                ]
             ]
         ];
     }
-
     public function broadcastAs(): string
     {
         return 'pickup.created';

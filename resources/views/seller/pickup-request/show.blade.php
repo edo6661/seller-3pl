@@ -193,7 +193,7 @@
                             Timeline
                         </h3>
                     </div>
-                    <div class="p-6">
+                    <div class="px-6 py-12 overflow-y-auto">
                         <div class="flow-root">
                             <ul class="-mb-8">
                                 <li>

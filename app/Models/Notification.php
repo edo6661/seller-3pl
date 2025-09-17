@@ -6,16 +6,18 @@ use Illuminate\Database\Eloquent\Model;
 
 class Notification extends Model
 {
-        protected $fillable = [
+    protected $fillable = [
         'user_id',
         'type',
         'title',
         'message',
+        'additional_data',
         'read_at'
     ];
 
     protected $casts = [
-        'read_at' => 'datetime'
+        'read_at' => 'datetime',
+        'additional_data' => 'array'
     ];
 
     // Relationships
@@ -54,6 +56,14 @@ class Notification extends Model
     public function isUnread()
     {
         return is_null($this->read_at);
+    }
+     public function getAdditionalData($key = null, $default = null)
+    {
+        if ($key === null) {
+            return $this->additional_data;
+        }
+        
+        return $this->additional_data[$key] ?? $default;
     }
 
 }

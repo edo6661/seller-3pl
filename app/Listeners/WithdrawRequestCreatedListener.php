@@ -1,6 +1,5 @@
 <?php
 namespace App\Listeners;
-
 use App\Enums\UserRole;
 use App\Events\WithdrawRequestCreated;
 use App\Models\User;
@@ -8,38 +7,33 @@ use App\Services\NotificationService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;
-
 class WithdrawRequestCreatedListener implements ShouldQueue
 {
     use InteractsWithQueue;
-
     protected NotificationService $notificationService;
-
     public function __construct(NotificationService $notificationService)
     {
         $this->notificationService = $notificationService;
     }
-
     public function handle(WithdrawRequestCreated $event): void
     {
         $transaction = $event->transaction;
         $user = $event->user;
-
         try {
             $admins = User::where('role', UserRole::ADMIN)->get();
-            
             foreach ($admins as $admin) {
-                Log::info('Creating withdraw notification for admin', [
-                    'admin_id' => $admin->id,
-                    'transaction_id' => $transaction->id,
-                    'user_id' => $user->id
-                ]);
-
                 $this->notificationService->createForUser(
                     $admin->id,
-                    'withdraw_request_created',
+                    'wallet', 
                     'Permintaan Penarikan Baru',
                     $this->getAdminNotificationMessage($transaction, $user),
+                    [
+                        'transaction_id' => $transaction->id,
+                        'reference_id' => $transaction->reference_id,
+                        'amount' => $transaction->amount,
+                        'bank_name' => $transaction->bank_name,
+                        'account_number' => $transaction->account_number
+                    ]
                 );
             }
         } catch (\Exception $e) {
@@ -52,7 +46,6 @@ class WithdrawRequestCreatedListener implements ShouldQueue
             throw $e;
         }
     }
-
     private function getAdminNotificationMessage($transaction, $user): string
     {
         return "Permintaan penarikan baru dari {$user->name}.\n" .
@@ -62,7 +55,6 @@ class WithdrawRequestCreatedListener implements ShouldQueue
                "Bank: {$transaction->bank_name} - {$transaction->account_number}\n" .
                "ID Transaksi: {$transaction->reference_id}";
     }
-
     public function failed(WithdrawRequestCreated $event, \Throwable $exception): void
     {
         Log::error('Failed to process WithdrawRequestCreated event', [

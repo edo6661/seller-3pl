@@ -1,5 +1,4 @@
 <?php
-// app/Events/TopUpTransactionCreated.php
 namespace App\Events;
 
 use App\Models\User;
@@ -40,11 +39,15 @@ class TopUpTransactionCreated implements ShouldBroadcast
             'status' => $this->transaction->status->value,
             'created_at' => $this->transaction->created_at->toISOString(),
             'notification' => [
-                'type' => 'topup_transaction_created',
+                'type' => 'wallet', // Simplified type
                 'title' => 'Permintaan Top Up Baru',
                 'message' => "Top Up sebesar {$this->transaction->formatted_amount} dari {$this->user->name} membutuhkan perhatian.",
                 'icon' => 'fas fa-wallet',
-                'color' => 'info'
+                'color' => 'info',
+                'additional_data' => [
+                    'transaction_id' => $this->transaction->id,
+                    'reference_id' => $this->transaction->reference_id
+                ]
             ]
         ];
     }

@@ -420,10 +420,10 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                         <div class="flex items-center space-x-2">
-                                            <button @click="showDetail({{ $pickupRequest->id }})" 
+                                            <a href="{{ route('admin.pickup-requests.show', $pickupRequest->id) }}" 
                                                     class="text-secondary-600 hover:text-secondary-900 transition-colors">
                                                 <i class="fas fa-eye" title="Lihat Detail"></i>
-                                            </button>
+                                            </a>
                                             @if($pickupRequest->status !== 'delivered')
                                                 <div class="relative" x-data="{ open: false }">
                                                 <button @click="open = !open" 

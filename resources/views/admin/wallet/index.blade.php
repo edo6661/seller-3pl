@@ -620,7 +620,7 @@
                 </button>
             </div>
             <div class="text-center">
-                <img id="paymentProofImage" src="" alt="Bukti Pembayaran" class="max-w-full h-auto rounded-lg shadow-md">
+                <img id="paymentProofImage" src="" alt="Bukti Pembayaran" class="max-w-full h-auto rounded-lg shadow-md max-h-[600px]">
             </div>
         </div>
     </div>

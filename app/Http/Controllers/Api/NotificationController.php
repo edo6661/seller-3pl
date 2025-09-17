@@ -1,11 +1,11 @@
 <?php
-
 namespace App\Http\Controllers\Api;
-
 use App\Http\Controllers\Controller;
+use App\Models\Notification;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class NotificationController extends Controller
 {
@@ -21,10 +21,9 @@ class NotificationController extends Controller
         try {
             $user = Auth::user();
             $limit = $request->get('limit', 20);
-            
             $notifications = $this->notificationService->getUserNotifications($user->id, $limit);
             $unreadCount = $this->notificationService->getUnreadCount($user->id);
-            
+
             return response()->json([
                 'success' => true,
                 'notifications' => $notifications->map(function ($notification) {
@@ -54,16 +53,16 @@ class NotificationController extends Controller
         try {
             $user = Auth::user();
             $notification = \App\Models\Notification::where('user_id', $user->id)->find($id);
-            
+
             if (!$notification) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Notifikasi tidak ditemukan'
                 ], 404);
             }
-            
+
             $this->notificationService->markAsRead($id);
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'Notifikasi telah ditandai sebagai dibaca'
@@ -81,7 +80,7 @@ class NotificationController extends Controller
         try {
             $user = Auth::user();
             $count = $this->notificationService->markAllAsRead($user->id);
-            
+
             return response()->json([
                 'success' => true,
                 'message' => "{$count} notifikasi telah ditandai sebagai dibaca",
@@ -101,7 +100,7 @@ class NotificationController extends Controller
             $user = Auth::user();
             $count = \App\Models\Notification::where('user_id', $user->id)->count();
             \App\Models\Notification::where('user_id', $user->id)->delete();
-            
+
             return response()->json([
                 'success' => true,
                 'message' => "{$count} notifikasi telah dihapus",
@@ -120,7 +119,7 @@ class NotificationController extends Controller
         try {
             $user = Auth::user();
             $count = $this->notificationService->getUnreadCount($user->id);
-            
+
             return response()->json([
                 'success' => true,
                 'unread_count' => $count
@@ -130,6 +129,94 @@ class NotificationController extends Controller
                 'success' => false,
                 'unread_count' => 0
             ], 500);
+        }
+    }
+
+    function handleClick($id)
+    {
+        try {
+            $user = Auth::user();
+            $notification = Notification::where('user_id', $user->id)->find($id);
+
+            if (!$notification) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Notifikasi tidak ditemukan'
+                ], 404);
+            }
+
+            if (!$notification->read_at) {
+                $this->notificationService->markAsRead($id);
+            }
+
+            $redirectUrl = $this->getRedirectUrl($notification, $user);
+
+            return response()->json([
+                'success' => true,
+                'redirect_url' => $redirectUrl,
+                'message' => 'Notifikasi telah ditandai sebagai dibaca'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memproses notifikasi'
+            ], 500);
+        }
+    }
+
+    /**
+     * Get redirect URL based on notification type
+     */
+    private function getRedirectUrl($notification, $user): string
+    {
+        $isAdmin = $user->role->value === 'admin';
+        $additionalData = $notification->additional_data ?? []; 
+        Log::info('Notification Additional Data: ', $additionalData);
+        switch ($notification->type) {
+            case 'chat':
+                $conversationId = $additionalData['conversation_id'] ?? null;
+                if ($conversationId) {
+                    return route('chat.show', $conversationId);
+                }
+                return route('chat.index');
+
+            case 'pick_up_request':
+                $pickupId = $additionalData['pickup_request_id'] ?? null;
+                if ($pickupId) {
+                    return $isAdmin
+                        ? route('admin.pickup-requests.show', $pickupId)
+                        : route('seller.pickup-request.show', $pickupId);
+                }
+                return $isAdmin
+                    ? route('admin.pickup-requests.index')
+                    : route('seller.pickup-request.index');
+
+            case 'support_ticket':
+                $ticketId = $additionalData['ticket_id'] ?? null;
+                if ($ticketId) {
+                    return $isAdmin
+                        ? route('admin.support.show', $ticketId)
+                        : route('seller.support.show', $ticketId);
+                }
+                return $isAdmin
+                    ? route('admin.support.index')
+                    : route('seller.support.index');
+
+            case 'wallet':
+                $transactionId = $additionalData['transaction_id'] ?? null;
+                if ($transactionId) {
+                    return $isAdmin
+                        ? route('admin.wallets.index')
+                        : route('seller.wallet.transaction.detail', $transactionId);
+                }
+                return $isAdmin
+                    ? route('admin.wallets.index')
+                    : route('seller.wallet.index');
+
+            default:
+                return $isAdmin
+                    ? route('admin.dashboard')
+                    : route('seller.dashboard');
         }
     }
 }

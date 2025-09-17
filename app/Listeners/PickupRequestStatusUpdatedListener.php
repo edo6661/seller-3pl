@@ -22,18 +22,28 @@ class PickupRequestStatusUpdatedListener implements ShouldQueue
         if ($notification) {
             $this->notificationService->createForUser(
                 $pickupRequest->user_id,
-                'pickup_status_updated',
+                'pick_up_request', 
                 $notification['title'],
-                $notification['message']
+                $notification['message'],
+                [
+                    'pickup_request_id' => $pickupRequest->id,
+                    'pickup_code' => $pickupRequest->pickup_code,
+                    'status' => $status
+                ]
             );
             if ($this->shouldNotifyAdmin($status)) {
                 $admins = User::where('role', 'admin')->get();
                 foreach ($admins as $admin) {
                     $this->notificationService->createForUser(
                         $admin->id,
-                        'pickup_status_updated',
+                        'pick_up_request', 
                         $notification['admin_title'] ?? $notification['title'],
-                        $notification['admin_message'] ?? $notification['message']
+                        $notification['admin_message'] ?? $notification['message'],
+                        [
+                            'pickup_request_id' => $pickupRequest->id,
+                            'pickup_code' => $pickupRequest->pickup_code,
+                            'status' => $status
+                        ]
                     );
                 }
             }
