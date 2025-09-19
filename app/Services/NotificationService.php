@@ -26,33 +26,51 @@ class NotificationService
     }
     public function createForUser(int $userId, string $type, string $title, string $message, array $additionalData = []): Notification
     {
-        if ($type === 'chat' && isset($additionalData['message_id'])) {
-            $existingNotification = Notification::where([
-                'user_id' => $userId,
-                'type' => $type,
-                'message' => $message
-            ])
-            ->where('created_at', '>=', now()->subMinutes(1)) 
-            ->first();
-            if ($existingNotification) {
-                Log::warning('Duplicate chat notification prevented', [
+        if (empty($userId) || empty($type) || empty($title) || empty($message)) {
+            throw new \InvalidArgumentException('Required parameters cannot be empty');
+        }
+        try {
+            if ($type === 'chat' && isset($additionalData['message_id'])) {
+                $existingNotification = Notification::where([
                     'user_id' => $userId,
                     'type' => $type,
-                    'message_id' => $additionalData['message_id'],
-                    'existing_notification_id' => $existingNotification->id
-                ]);
-                return $existingNotification;
+                    'message' => $message
+                ])
+                ->where('created_at', '>=', now()->subMinutes(1))
+                ->orderBy('created_at', 'desc')
+                ->first();
+                if ($existingNotification) {
+                    Log::warning('Duplicate chat notification prevented', [
+                        'user_id' => $userId,
+                        'type' => $type,
+                        'message_id' => $additionalData['message_id'],
+                        'existing_notification_id' => $existingNotification->id
+                    ]);
+                    return $existingNotification;
+                }
             }
+            $notificationData = [
+                'user_id' => $userId,
+                'type' => $type,
+                'title' => $title,
+                'message' => $message,
+                'additional_data' => $additionalData,
+            ];
+            $notification = $this->createNotification($notificationData);
+            Log::info('Notification created successfully', [
+                'notification_id' => $notification->id,
+                'user_id' => $userId,
+                'type' => $type
+            ]);
+            return $notification;
+        } catch (\Exception $e) {
+            Log::error('Failed to create notification', [
+                'user_id' => $userId,
+                'type' => $type,
+                'error' => $e->getMessage(),
+            ]);
+            throw $e;
         }
-        $notificationData = [
-            'user_id' => $userId,
-            'type' => $type,
-            'title' => $title,
-            'message' => $message,
-            'additional_data' => $additionalData,
-        ];
-        $notification = $this->createNotification($notificationData);
-        return $notification;
     }
     public function markAsRead(int $notificationId): bool
     {
